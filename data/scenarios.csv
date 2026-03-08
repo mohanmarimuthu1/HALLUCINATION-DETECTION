@@ -1,0 +1,63 @@
+scenario_id,query_id,domain,primary_doc_id,query,gold_answer,scenario_type,has_answer_in_corpus,n_eval_examples,is_used_in_eval,split,difficulty_level,use_case
+SC0001,Q0004,developer_docs,DOC0159,How can I test the API in a local development environment without affecting production data?,NO_ANSWER_IN_CORPUS,no_answer_probe,0,3,1,train,easy,rag_evaluation
+SC0002,Q0007,developer_docs,DOC0410,How do I authenticate using API keys?,API keys are passed as a bearer token in the Authorization header.,standard_qa,1,77,1,train,easy,rag_evaluation
+SC0003,Q0007,developer_docs,DOC0158,How do I authenticate using API keys?,API keys are passed as a bearer token in the Authorization header.,standard_qa,1,71,1,train,hard,rag_evaluation
+SC0004,Q0007,developer_docs,DOC0331,How do I authenticate using API keys?,API keys are passed as a bearer token in the Authorization header.,standard_qa,1,229,1,train,medium,rag_evaluation
+SC0005,Q0017,developer_docs,DOC0640,What is the rate limit for write requests?,Write requests are limited per minute and per project ID.,standard_qa,1,82,1,train,easy,rag_evaluation
+SC0006,Q0017,developer_docs,DOC0406,What is the rate limit for write requests?,Write requests are limited per minute and per project ID.,standard_qa,1,58,1,train,hard,rag_evaluation
+SC0007,Q0017,developer_docs,DOC0406,What is the rate limit for write requests?,Write requests are limited per minute and per project ID.,standard_qa,1,217,1,train,medium,rag_evaluation
+SC0008,Q0005,financial_reports,DOC0240,"How did operating margin change compared to the previous year, and what were the main drivers?",NO_ANSWER_IN_CORPUS,no_answer_probe,0,3,1,test,hard,rag_evaluation
+SC0009,Q0006,financial_reports,DOC0217,How did operating margin change year over year?,Operating margin improved by approximately two percentage points.,standard_qa,1,64,1,test,easy,rag_evaluation
+SC0010,Q0006,financial_reports,DOC0171,How did operating margin change year over year?,Operating margin improved by approximately two percentage points.,standard_qa,1,67,1,test,hard,rag_evaluation
+SC0011,Q0006,financial_reports,DOC0240,How did operating margin change year over year?,Operating margin improved by approximately two percentage points.,standard_qa,1,228,1,test,medium,rag_evaluation
+SC0012,Q0024,financial_reports,DOC0597,Which segment contributed most to revenue growth?,The enterprise subscription segment contributed the largest share of growth.,standard_qa,1,75,1,train,easy,rag_evaluation
+SC0013,Q0024,financial_reports,DOC0502,Which segment contributed most to revenue growth?,The enterprise subscription segment contributed the largest share of growth.,standard_qa,1,73,1,train,hard,rag_evaluation
+SC0014,Q0024,financial_reports,DOC0381,Which segment contributed most to revenue growth?,The enterprise subscription segment contributed the largest share of growth.,standard_qa,1,261,1,train,medium,rag_evaluation
+SC0015,Q0012,hr_policies,DOC0020,How many days of annual leave are employees entitled to?,Employees receive a standard allocation of annual leave as defined in their contract.,standard_qa,1,54,1,train,easy,rag_evaluation
+SC0016,Q0012,hr_policies,DOC0139,How many days of annual leave are employees entitled to?,Employees receive a standard allocation of annual leave as defined in their contract.,standard_qa,1,60,1,train,hard,rag_evaluation
+SC0017,Q0012,hr_policies,DOC0119,How many days of annual leave are employees entitled to?,Employees receive a standard allocation of annual leave as defined in their contract.,standard_qa,1,180,1,train,medium,rag_evaluation
+SC0018,Q0013,hr_policies,DOC0131,How many days of annual leave are granted to new employees?,NO_ANSWER_IN_CORPUS,no_answer_probe,0,3,1,train,easy,rag_evaluation
+SC0019,Q0019,hr_policies,DOC0118,What is the standard probation period for new hires?,The typical probation period is three to six months depending on role.,standard_qa,1,68,1,test,easy,rag_evaluation
+SC0020,Q0019,hr_policies,DOC0228,What is the standard probation period for new hires?,The typical probation period is three to six months depending on role.,standard_qa,1,49,1,test,hard,rag_evaluation
+SC0021,Q0019,hr_policies,DOC0033,What is the standard probation period for new hires?,The typical probation period is three to six months depending on role.,standard_qa,1,184,1,test,medium,rag_evaluation
+SC0022,Q0018,medical_guides,DOC0485,What is the recommended dosage for adult patients?,Dosage is weight-adjusted and must follow local clinical guidelines.,standard_qa,1,54,1,val,easy,rag_evaluation
+SC0023,Q0018,medical_guides,DOC0285,What is the recommended dosage for adult patients?,Dosage is weight-adjusted and must follow local clinical guidelines.,standard_qa,1,37,1,val,hard,rag_evaluation
+SC0024,Q0018,medical_guides,DOC0485,What is the recommended dosage for adult patients?,Dosage is weight-adjusted and must follow local clinical guidelines.,standard_qa,1,146,1,val,medium,rag_evaluation
+SC0025,Q0025,medical_guides,DOC0474,Which symptoms indicate that a patient with chest discomfort should be escalated for urgent evaluation?,NO_ANSWER_IN_CORPUS,no_answer_probe,0,3,1,train,medium,rag_evaluation
+SC0026,Q0026,medical_guides,DOC0259,Which symptoms indicate the need for immediate escalation?,"Red-flag symptoms include chest pain, severe shortness of breath, and confusion.",standard_qa,1,44,1,train,easy,rag_evaluation
+SC0027,Q0026,medical_guides,DOC0485,Which symptoms indicate the need for immediate escalation?,"Red-flag symptoms include chest pain, severe shortness of breath, and confusion.",standard_qa,1,31,1,train,hard,rag_evaluation
+SC0028,Q0026,medical_guides,DOC0485,Which symptoms indicate the need for immediate escalation?,"Red-flag symptoms include chest pain, severe shortness of breath, and confusion.",standard_qa,1,156,1,train,medium,rag_evaluation
+SC0029,Q0010,policies,DOC0156,How is user consent stored for analytics tracking?,User consent is stored as a hashed record with timestamps.,standard_qa,1,45,1,train,easy,rag_evaluation
+SC0030,Q0010,policies,DOC0116,How is user consent stored for analytics tracking?,User consent is stored as a hashed record with timestamps.,standard_qa,1,28,1,train,hard,rag_evaluation
+SC0031,Q0010,policies,DOC0156,How is user consent stored for analytics tracking?,User consent is stored as a hashed record with timestamps.,standard_qa,1,104,1,train,medium,rag_evaluation
+SC0032,Q0016,policies,DOC0156,What is the data retention policy for customer logs?,Customer logs are retained for 180 days by default.,standard_qa,1,29,1,train,easy,rag_evaluation
+SC0033,Q0016,policies,DOC0116,What is the data retention policy for customer logs?,Customer logs are retained for 180 days by default.,standard_qa,1,22,1,train,hard,rag_evaluation
+SC0034,Q0016,policies,DOC0156,What is the data retention policy for customer logs?,Customer logs are retained for 180 days by default.,standard_qa,1,115,1,train,medium,rag_evaluation
+SC0035,Q0023,policies,DOC0449,Which employees are allowed to access production databases?,NO_ANSWER_IN_CORPUS,no_answer_probe,0,3,1,test,hard,rag_evaluation
+SC0036,Q0001,product_docs,DOC0326,Can I downgrade from Enterprise to Standard without losing historical data?,NO_ANSWER_IN_CORPUS,no_answer_probe,0,3,1,train,hard,rag_evaluation
+SC0037,Q0002,product_docs,DOC0179,Can I downgrade from enterprise to pro mid-cycle?,Downgrades are applied at the end of the current billing period.,standard_qa,1,28,1,train,easy,rag_evaluation
+SC0038,Q0002,product_docs,DOC0276,Can I downgrade from enterprise to pro mid-cycle?,Downgrades are applied at the end of the current billing period.,standard_qa,1,17,1,train,hard,rag_evaluation
+SC0039,Q0002,product_docs,DOC0113,Can I downgrade from enterprise to pro mid-cycle?,Downgrades are applied at the end of the current billing period.,standard_qa,1,78,1,train,medium,rag_evaluation
+SC0040,Q0009,product_docs,DOC0336,How does the billing cycle work for annual plans?,Annual plans are billed once per year with proration on upgrades.,standard_qa,1,32,1,train,easy,rag_evaluation
+SC0041,Q0009,product_docs,DOC0339,How does the billing cycle work for annual plans?,Annual plans are billed once per year with proration on upgrades.,standard_qa,1,24,1,train,hard,rag_evaluation
+SC0042,Q0009,product_docs,DOC0336,How does the billing cycle work for annual plans?,Annual plans are billed once per year with proration on upgrades.,standard_qa,1,72,1,train,medium,rag_evaluation
+SC0043,Q0014,product_docs,DOC0344,What are the limits for the enterprise tier?,Enterprise tier includes custom limits negotiated per contract.,standard_qa,1,15,1,train,easy,rag_evaluation
+SC0044,Q0014,product_docs,DOC0326,What are the limits for the enterprise tier?,Enterprise tier includes custom limits negotiated per contract.,standard_qa,1,14,1,train,hard,rag_evaluation
+SC0045,Q0014,product_docs,DOC0326,What are the limits for the enterprise tier?,Enterprise tier includes custom limits negotiated per contract.,standard_qa,1,79,1,train,medium,rag_evaluation
+SC0046,Q0008,research_papers,DOC0369,How do the authors suggest extending this work in future research?,NO_ANSWER_IN_CORPUS,no_answer_probe,0,3,1,train,medium,rag_evaluation
+SC0047,Q0011,research_papers,DOC0497,How large is the evaluation dataset?,The evaluation dataset contains several tens of thousands of examples.,standard_qa,1,20,1,val,easy,rag_evaluation
+SC0048,Q0011,research_papers,DOC0132,How large is the evaluation dataset?,The evaluation dataset contains several tens of thousands of examples.,standard_qa,1,24,1,val,hard,rag_evaluation
+SC0049,Q0011,research_papers,DOC0085,How large is the evaluation dataset?,The evaluation dataset contains several tens of thousands of examples.,standard_qa,1,74,1,val,medium,rag_evaluation
+SC0050,Q0015,research_papers,DOC0105,What baseline models were used in the study?,The study compares transformer-based baselines with classical models.,standard_qa,1,25,1,train,easy,rag_evaluation
+SC0051,Q0015,research_papers,DOC0342,What baseline models were used in the study?,The study compares transformer-based baselines with classical models.,standard_qa,1,27,1,train,hard,rag_evaluation
+SC0052,Q0015,research_papers,DOC0284,What baseline models were used in the study?,The study compares transformer-based baselines with classical models.,standard_qa,1,91,1,train,medium,rag_evaluation
+SC0053,Q0003,support_faq,DOC0196,How can I reset my account password?,You can reset your password from the sign-in page using the forgot password link.,standard_qa,1,23,1,train,easy,rag_evaluation
+SC0054,Q0003,support_faq,DOC0117,How can I reset my account password?,You can reset your password from the sign-in page using the forgot password link.,standard_qa,1,15,1,train,hard,rag_evaluation
+SC0055,Q0003,support_faq,DOC0274,How can I reset my account password?,You can reset your password from the sign-in page using the forgot password link.,standard_qa,1,50,1,train,medium,rag_evaluation
+SC0056,Q0020,support_faq,DOC0129,What should I do if the app keeps crashing?,Collect logs and contact support with device details and app version.,standard_qa,1,16,1,train,easy,rag_evaluation
+SC0057,Q0020,support_faq,DOC0289,What should I do if the app keeps crashing?,Collect logs and contact support with device details and app version.,standard_qa,1,17,1,train,hard,rag_evaluation
+SC0058,Q0020,support_faq,DOC0501,What should I do if the app keeps crashing?,Collect logs and contact support with device details and app version.,standard_qa,1,60,1,train,medium,rag_evaluation
+SC0059,Q0021,support_faq,DOC0122,Where can I check the status of my support ticket?,Ticket status is available on the support portal under 'My Requests'.,standard_qa,1,20,1,train,easy,rag_evaluation
+SC0060,Q0021,support_faq,DOC0299,Where can I check the status of my support ticket?,Ticket status is available on the support portal under 'My Requests'.,standard_qa,1,11,1,train,hard,rag_evaluation
+SC0061,Q0021,support_faq,DOC0129,Where can I check the status of my support ticket?,Ticket status is available on the support portal under 'My Requests'.,standard_qa,1,60,1,train,medium,rag_evaluation
+SC0062,Q0022,support_faq,DOC0462,Where can I download my monthly invoices for accounting purposes?,NO_ANSWER_IN_CORPUS,no_answer_probe,0,3,1,train,medium,rag_evaluation

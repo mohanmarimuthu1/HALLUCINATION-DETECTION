@@ -1,0 +1,2 @@
+invalid type: string "For RAG systems, effective prompts include:\n- Clear instructions to use only the provided context\n- Explicit instruction to admit when information is not available\n- Request for source attribution when possible\n\n## Section 10: Evaluation Metrics\n\nEvaluating hallucination detection systems requires appropriate metrics:", expected i64dings for each chunk
+!^Gÿÿÿÿÿÿÿÿÿÿÿÿÿ
