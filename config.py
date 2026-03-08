@@ -6,17 +6,17 @@ import os
 # ============================================
 # API Configuration
 # ============================================
-GOOGLE_API_KEY = "AIzaSyD-jLpBA-c5kiJ7ewE5c60re642SwIEov4"
+GOOGLE_API_KEY = "#######"
 
 # OpenRouter API Configuration (DeepSeek)
 # List of API keys for fallback (will try next key if current one fails)
 OPENROUTER_API_KEYS = [
-    "sk-qrstefghuvwxabcdqrstefghuvwxabcdqrstefgh",
-    "sk-uvwxijklmnop1234uvwxijklmnop1234uvwxijkl",
-    "sk-abcd5678efgh1234abcd5678efgh1234abcd5678",
-    "sk-ijklmnopqrstuvwxijklmnopqrstuvwxijklmnop",
-    "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",  # Original key as fallback
-    "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"
+    "#####",
+    "s#####",
+    "sk#####",
+    "sk-#####p",
+    "sk-or-v1-a######a944ea831f5e1eb37788",  # Original key as fallback
+    "sk-or-v1-######861a8c39d"
 ]
 OPENROUTER_API_KEY = OPENROUTER_API_KEYS[0]  # Default to first key
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
