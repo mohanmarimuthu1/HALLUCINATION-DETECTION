@@ -6,7 +6,7 @@ import os
 # ============================================
 # API Configuration
 # ============================================
-GOOGLE_API_KEY = "AIzaSyD-jLpBA-c5kiJ7ewE5c60re642SwIEov4"
+GOOGLE_API_KEY = "AIzaSyAbJqhIHd9inBcfNai2k1sZAt8k4yTH6og"
 
 # OpenRouter API Configuration (DeepSeek)
 # List of API keys for fallback (will try next key if current one fails)

@@ -60,17 +60,24 @@ class LLMClient:
                 
             except Exception as e:
                 error_str = str(e).lower()
-                # If rate limit / quota, fall back to OpenRouter immediately
-                if "429" in error_str or "quota" in error_str or "too many requests" in error_str:
-                    print(f"\n[LLM Client] Gemini rate limit hit. Falling back to OpenRouter/DeepSeek...")
+                # If quota is exhausted, fall back to OpenRouter immediately
+                if "quota" in error_str:
+                    print(f"\\n[LLM Client] Gemini quota exhausted. Falling back to OpenRouter/DeepSeek...")
                     return self._generate_with_openrouter(prompt)
+                # If it's a rate limit (15 RPM), wait and retry instead of failing
+                elif "429" in error_str or "too many requests" in error_str:
+                    wait_time = 10 * (attempt + 1)
+                    print(f"\\n[LLM Client] Gemini rate limit hit. Waiting {wait_time}s before retry {attempt+1}/{max_retries}...")
+                    time.sleep(wait_time)
+                    if attempt == max_retries - 1:
+                        return self._generate_with_openrouter(prompt)
                 else:
-                    print(f"\n[LLM Client] Gemini error: {e}")
+                    print(f"\\n[LLM Client] Gemini error: {e}")
                     if attempt < max_retries - 1:
                         wait_time = (attempt + 1) * 2
                         time.sleep(wait_time)
                     else:
-                        print(f"\n[LLM Client] Max retries reached for Gemini. Falling back to OpenRouter...")
+                        print(f"\\n[LLM Client] Max retries reached for Gemini. Falling back to OpenRouter...")
                         return self._generate_with_openrouter(prompt)
         
         return self._generate_with_openrouter(prompt)

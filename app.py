@@ -11,9 +11,21 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import config
 from knowledge_base.document_loader import DocumentLoader
-from knowledge_base.vector_store import get_vector_store
-from rag.generator import get_generator
-from detection.hallucination_detector import get_hallucination_detector
+from knowledge_base.vector_store import get_vector_store as _get_vector_store
+from rag.generator import get_generator as _get_generator
+from detection.hallucination_detector import get_hallucination_detector as _get_hallucination_detector
+
+@st.cache_resource
+def get_vector_store():
+    return _get_vector_store()
+
+@st.cache_resource
+def get_generator():
+    return _get_generator()
+
+@st.cache_resource
+def get_hallucination_detector():
+    return _get_hallucination_detector()
 
 
 # Page configuration
