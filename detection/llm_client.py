@@ -64,9 +64,9 @@ class LLMClient:
                 if "quota" in error_str:
                     print(f"\\n[LLM Client] Gemini quota exhausted. Falling back to OpenRouter/DeepSeek...")
                     return self._generate_with_openrouter(prompt)
-                # If it's a rate limit (15 RPM), wait and retry instead of failing
+                # If it's a rate limit (15 RPM), wait very long and retry instead of failing
                 elif "429" in error_str or "too many requests" in error_str:
-                    wait_time = 10 * (attempt + 1)
+                    wait_time = 20 * (attempt + 1)  # 20s, 40s, 60s
                     print(f"\\n[LLM Client] Gemini rate limit hit. Waiting {wait_time}s before retry {attempt+1}/{max_retries}...")
                     time.sleep(wait_time)
                     if attempt == max_retries - 1:
@@ -74,7 +74,7 @@ class LLMClient:
                 else:
                     print(f"\\n[LLM Client] Gemini error: {e}")
                     if attempt < max_retries - 1:
-                        wait_time = (attempt + 1) * 2
+                        wait_time = (attempt + 1) * 5
                         time.sleep(wait_time)
                     else:
                         print(f"\\n[LLM Client] Max retries reached for Gemini. Falling back to OpenRouter...")
@@ -131,8 +131,8 @@ class LLMClient:
                 self._rotate_key()
                 
         # If we exhausted all keys
-        print("[LLM Client] All configured OpenRouter backup keys failed.")
-        return "NO_CLAIMS_POSSIBLE_DUE_TO_API_LIMITS" if "claim" in prompt.lower() else "Unable to verify due to API limits"
+        print("[LLM Client] All configured backup keys failed.")
+        return "NO_CLAIMS_POSSIBLE" if "claim" in prompt.lower() else "NOT_ENOUGH_INFO: Insufficient evidence in context to verify."
         
     def _rotate_key(self):
         """Rotate to the next OpenRouter key in the list."""

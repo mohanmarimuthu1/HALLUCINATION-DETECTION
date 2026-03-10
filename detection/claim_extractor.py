@@ -115,7 +115,7 @@ CLAIMS (numbered list only):"""
             if cleaned and len(cleaned) > 10:  # Filter out very short strings
                 claims.append(cleaned)
         
-        return claims[:5]  # Limit to 5 claims to reduce API calls
+        return claims[:2]  # Limit to 2 claims to heavily reduce API calls
 
 
 # Singleton instance

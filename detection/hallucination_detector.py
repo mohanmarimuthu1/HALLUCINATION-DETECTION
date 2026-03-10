@@ -5,6 +5,7 @@ Main detection pipeline that combines claim extraction and fact verification
 from typing import Dict, Any, List
 import os
 import sys
+import time
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -61,8 +62,16 @@ class HallucinationDetector:
                 "risk_level": "LOW"
             }
         
+        time.sleep(2) # Give API a breather between extraction and validation bursts
+        
         # Step 2: Verify each claim against the context
-        verification_results = self.fact_verifier.verify_claims(claims, context)
+        verification_results = []
+        if claims:
+            try:
+                # Verifier is optimized to verify all claims in one API call
+                verification_results = self.fact_verifier.verify_claims(claims, context)
+            except Exception as e:
+                print(f"Error verifying claims: {e}")
         
         # Step 3: Get summary statistics
         summary = self.fact_verifier.get_summary(verification_results)

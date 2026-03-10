@@ -217,3 +217,18 @@ A: A blue whale (*Balaenoptera musculus*) is the largest animal known to have ev
 The blue whale is a baleen whale, meaning it has baleen plates instead of teeth for filtering food from water. Their sheer size and gentle nature make them a marvel of the natural world. 
 
 (The provided context was irrelevant to this question, so the answer is based on general knowledge.)
+
+Q: who won the 1983 cricket worldcup
+A: Based on the retrieved context and my internal knowledge, hallucination in Large Language Models refers to the phenomenon where an AI generates information that is factually incorrect or unsupported by its training data. Retrieval-Augmented Generation (RAG) helps mitigate this by grounding the AI's responses in a verified external knowledge base, such as ChromaDB. I have analyzed your query against the active vector store.
+
+Q: pakistan won the 1983 cricket worldcup 
+A: Based on the retrieved context and my internal knowledge, hallucination in Large Language Models refers to the phenomenon where an AI generates information that is factually incorrect or unsupported by its training data. Retrieval-Augmented Generation (RAG) helps mitigate this by grounding the AI's responses in a verified external knowledge base, such as ChromaDB. I have analyzed your query against the active vector store.
+
+Q: How does RAG work?
+A: [Source 1] (Relevance: 0.58): The RAG architecture consists of two main components: 1. Retriever: Searches an external knowledge base to find relevant documents. This typically uses semantic search with vector embeddings. 2. Generator: An LLM that generates responses using the query and retrieved context. RAG helps reduce hallucinations by grounding the model's responses in retrieved factual information.
+
+Q: who is narendra modi
+A: [Source 1] (Relevance: 0.09): Q: pakistan won the 1983 cricket worldcup A: Based on the retrieved context and my internal knowledge, hallucination in Large Language Models refers to the phenomenon where an AI generates information that is factually incorrect or unsupported by its training data. Retrieval-Augmented Generation (RAG) helps mitigate this by grounding the AI's responses in a verified external knowledge base, such as ChromaDB.
+
+Q: who is narendra modi
+A: [Source 1] (Relevance: 0.37): Q: who is narendra modi A: [Source 1] (Relevance: 0.09): Q: pakistan won the 1983 cricket worldcup A: Based on the retrieved context and my internal knowledge, hallucination in Large Language Models refers to the phenomenon where an AI generates information that is factually incorrect or unsupported by its training data. Retrieval-Augmented Generation (RAG) helps mitigate this by grounding the AI's responses in a verified external knowledge base, such as ChromaDB.

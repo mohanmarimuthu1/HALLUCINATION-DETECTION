@@ -6,15 +6,11 @@ import os
 # ============================================
 # API Configuration
 # ============================================
-GOOGLE_API_KEY = "AIzaSyAbJqhIHd9inBcfNai2k1sZAt8k4yTH6og"
+GOOGLE_API_KEY = "AIzaSyCt9l2g9L-0BuS5scn-kmpS7Ffwb9Bp448"
 
 # OpenRouter API Configuration (DeepSeek)
 # List of API keys for fallback (will try next key if current one fails)
 OPENROUTER_API_KEYS = [
-    "sk-qrstefghuvwxabcdqrstefghuvwxabcdqrstefgh",
-    "sk-uvwxijklmnop1234uvwxijklmnop1234uvwxijkl",
-    "sk-abcd5678efgh1234abcd5678efgh1234abcd5678",
-    "sk-ijklmnopqrstuvwxijklmnopqrstuvwxijklmnop",
     "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",  # Original key as fallback
     "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"
 ]
