@@ -2,19 +2,24 @@
 Configuration settings for the Hallucination Detection System
 """
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ============================================
 # API Configuration
 # ============================================
-GOOGLE_API_KEY = "AIzaSyCt9l2g9L-0BuS5scn-kmpS7Ffwb9Bp448"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 
 # OpenRouter API Configuration (DeepSeek)
 # List of API keys for fallback (will try next key if current one fails)
 OPENROUTER_API_KEYS = [
-    "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",  # Original key as fallback
-    "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"
+    key for key in (
+        os.getenv("OPENROUTER_API_KEY_1", ""),
+        os.getenv("OPENROUTER_API_KEY_2", ""),
+    ) if key
 ]
-OPENROUTER_API_KEY = OPENROUTER_API_KEYS[0]  # Default to first key
+OPENROUTER_API_KEY = OPENROUTER_API_KEYS[0] if OPENROUTER_API_KEYS else ""  # Default to first key
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEEPSEEK_MODEL = "deepseek/deepseek-chat"  # DeepSeek model via OpenRouter
 
@@ -22,7 +27,7 @@ DEEPSEEK_MODEL = "deepseek/deepseek-chat"  # DeepSeek model via OpenRouter
 # Model Configuration
 # ============================================
 # LLM Model (use the correct model name)
-LLM_MODEL = "gemini-2.0-flash"
+LLM_MODEL = "gemma-3-27b-it"
 LLM_TEMPERATURE = 0.3  # Lower temperature for more factual responses
 
 # Embedding Model (runs locally - free!)
