@@ -413,26 +413,6 @@ def main():
                         st.session_state["result"] = result
                         st.session_state["detection"] = detection_result
 
-                        # Self-Learning / Auto-Update Mechanism
-                        if detection_result["risk_level"] == "LOW" and result.get("answer"):
-                            kb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "knowledge_base.txt")
-                            try:
-                                new_fact = f"\n\nQ: {query}\nA: {result['answer']}"
-                                
-                                # Append to persistent file
-                                with open(kb_path, "a", encoding="utf-8") as f:
-                                    f.write(new_fact)
-                                
-                                # Update vector store dynamically without complete rebuild
-                                from langchain_core.documents import Document
-                                vector_store = get_vector_store()
-                                doc = Document(page_content=new_fact, metadata={"source": "self_learned"})
-                                vector_store.add_documents([doc])
-                                
-                                st.toast("🧠 Knowledge base successfully updated with verified fact!")
-                            except Exception as e:
-                                print(f"Failed to auto-update knowledge base: {e}")
-
                     except Exception as e:
                         st.error(f"❌ {e}")
 
