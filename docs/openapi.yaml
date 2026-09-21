@@ -1,0 +1,248 @@
+openapi: 3.0.3
+info:
+  title: HALLUDETECT API
+  version: "1.0.0"
+  description: >
+    Standalone hallucination verification service. Verifies whether a given
+    answer is grounded in supplied or fetched evidence. Never falls back to
+    the underlying LLM's own world knowledge to justify a SUPPORTED or
+    GROUNDED verdict — absence of evidence resolves to NOT_VERIFIABLE.
+    See docs/contract.md for the full, versioned contract this spec mirrors.
+servers:
+  - url: /v1
+
+paths:
+  /verify:
+    post:
+      operationId: verify
+      summary: Verify whether an answer is grounded in evidence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResult'
+        '400':
+          description: Malformed request
+        '401':
+          description: Missing or invalid API key
+        '429':
+          description: Rate limit exceeded
+
+  /healthz:
+    get:
+      operationId: healthCheck
+      summary: Liveness/health check
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                required: [status]
+
+components:
+  schemas:
+    EvidenceSource:
+      type: string
+      enum: [none, web, custom]
+      description: >
+        Where evidence comes from when `evidence` is not supplied directly.
+        Ignored if `evidence` is a non-empty array.
+
+    ModelProvider:
+      type: string
+      enum: [openrouter, gemini, openai, anthropic, custom]
+
+    Verdict:
+      type: string
+      enum: [GROUNDED, CONTRADICTED, NOT_ENOUGH_INFO, NOT_VERIFIABLE]
+      description: Overall verdict for the answer.
+
+    ClaimLabel:
+      type: string
+      enum: [SUPPORTED, CONTRADICTED, NOT_ENOUGH_INFO]
+      description: >
+        Per-claim verification label. Distinct from and smaller than
+        Verdict — there is no per-claim NOT_VERIFIABLE.
+
+    ModelPrefs:
+      type: object
+      description: LLM backend preferences. If omitted, defaults to the OpenRouter free-model pool.
+      properties:
+        provider:
+          $ref: '#/components/schemas/ModelProvider'
+          default: openrouter
+        allow_free_pool:
+          type: boolean
+          default: true
+        pinned_model:
+          type: string
+          nullable: true
+          default: null
+        user_api_key:
+          type: string
+          nullable: true
+          default: null
+          description: >
+            Caller's own provider API key. Never logged or echoed back in
+            the response.
+
+    VerifyRequest:
+      type: object
+      required:
+        - answer
+        - evidence_source
+      properties:
+        answer:
+          type: string
+          description: The answer text to verify.
+        question:
+          type: string
+          description: The question the answer responds to. Improves claim extraction.
+        evidence:
+          type: array
+          items:
+            type: string
+          description: >
+            Caller-supplied evidence chunks. If present and non-empty, the
+            answer is verified against this evidence only, and
+            evidence_source is ignored.
+        evidence_source:
+          $ref: '#/components/schemas/EvidenceSource'
+        model_prefs:
+          $ref: '#/components/schemas/ModelPrefs'
+
+    ClaimResult:
+      type: object
+      required:
+        - claim_id
+        - text
+        - label
+        - confidence
+        - evidence_chunk_ids
+        - quote
+        - quote_verified
+      properties:
+        claim_id:
+          type: string
+          description: >
+            Stable id for this claim within the request. Verdicts are
+            joined to claims by this id, never by array position.
+        text:
+          type: string
+        label:
+          $ref: '#/components/schemas/ClaimLabel'
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+        evidence_chunk_ids:
+          type: array
+          items:
+            type: string
+        quote:
+          type: string
+          description: Verbatim quote from the cited evidence chunk supporting label.
+        quote_verified:
+          type: boolean
+          description: >
+            Whether quote was programmatically confirmed to be a verbatim
+            (or near-verbatim) substring of the cited evidence chunk. A
+            claim can only carry label SUPPORTED if this is true; otherwise
+            it is downgraded server-side to NOT_ENOUGH_INFO before the
+            response is returned.
+
+    ModelUsed:
+      type: object
+      required: [provider, model]
+      properties:
+        provider:
+          type: string
+        model:
+          type: string
+
+    Timings:
+      type: object
+      required: [total, retrieval, extraction, verification]
+      properties:
+        total:
+          type: integer
+          description: Milliseconds.
+        retrieval:
+          type: integer
+        extraction:
+          type: integer
+        verification:
+          type: integer
+
+    AnalysisResult:
+      type: object
+      required:
+        - request_id
+        - verdict
+        - p_hallucinated
+        - groundedness
+        - groundedness_ci
+        - claims
+        - n_verifiable_claims
+        - model_used
+        - cost_usd
+        - timings_ms
+        - calibration_version
+      properties:
+        request_id:
+          type: string
+        verdict:
+          $ref: '#/components/schemas/Verdict'
+        p_hallucinated:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Calibrated probability the answer contains an unsupported/contradicted claim.
+        groundedness:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Calibrated fraction of verifiable claims that are supported.
+        groundedness_ci:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 2
+          maxItems: 2
+          description: Wilson 95% confidence interval [low, high] for groundedness.
+        claims:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClaimResult'
+        n_verifiable_claims:
+          type: integer
+          description: >
+            Count of extracted FACTUAL claims eligible for verification.
+            If less than 3, verdict is forced to NOT_VERIFIABLE.
+        model_used:
+          $ref: '#/components/schemas/ModelUsed'
+        cost_usd:
+          type: number
+          format: float
+        timings_ms:
+          $ref: '#/components/schemas/Timings'
+        calibration_version:
+          type: string
