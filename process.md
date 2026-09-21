@@ -3,9 +3,44 @@
 Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
-## Status: Phase 0 complete (spec lock)
+## Status: Phase 0 complete (spec lock). Phase 1 started — task 1.1 done (1 of 3 tasks).
 
 ## What is done
+
+- **Phase 1.1 — `src/` layout, `pyproject.toml`, `settings.py`**:
+  - `pyproject.toml` at repo root: package name `halludetect`,
+    `requires-python = ">=3.11,<3.13"` per `plan.md`, setuptools build
+    backend, package discovered under `src/`.
+  - `src/halludetect/__init__.py` — package entry point, no logic yet.
+  - `src/halludetect/settings.py` — `pydantic-settings` `Settings` class
+    with one `SecretStr | None` field per provider key
+    (`openrouter_api_key`, `gemini_api_key`, `openai_api_key`,
+    `anthropic_api_key`, `custom_provider_api_key` + `custom_provider_base_url`,
+    `tavily_api_key` for the Phase 0.2 web-search decision), loaded from
+    `.env` via `env_file` config, `get_settings()` cached with `lru_cache`.
+    Verified `SecretStr` masks values in `repr()`/logs while
+    `get_secret_value()` still returns the real value when needed.
+  - **Verification**: ran under the project's existing `.venv` (Python
+    3.11.4, which satisfies the `<3.13` pin — the system `python` on this
+    machine is 3.14, which does *not* satisfy it, so `.venv` must be used
+    for this package). Imported `halludetect.settings` via
+    `PYTHONPATH=src` and confirmed settings load, defaults are `None`
+    with no `.env` present, and a real value passed as an env var is
+    correctly masked in `repr()` but retrievable via `get_secret_value()`.
+  - **Known blocker, not fixed**: `pip install -e .` currently fails.
+    The repo has a root-level `setup.py` (a legacy interactive init
+    script for the v1 app — it prints emoji banners — not a packaging
+    script) which `setuptools` picks up and executes as a legacy build
+    hook, and it crashes with `UnicodeEncodeError` on Windows' default
+    `cp1252` console encoding. This blocks real `pip install`-based
+    verification of `pyproject.toml` until `setup.py` is renamed (and
+    `README.md`'s reference to `python setup.py` updated to match) or
+    replaced with a `[project.scripts]` entry point. Left untouched for
+    now since it's a legacy-app file, not part of Phase 1's task list —
+    flagging so it isn't mistaken for "done."
+  - Tasks 1.2 (`LLMProvider` protocol + Gemini/OpenAI/Anthropic/generic
+    implementations) and 1.3 (structlog JSON logging with a
+    `request_id` contextvar) are **not started**.
 
 - **Repo hygiene**: removed committed binaries/caches that never belonged in
   git (`chroma_db/` vector store, `__pycache__/*.pyc`, `config_error.txt`
@@ -41,32 +76,45 @@ file at the end of every work session — do not let it drift from reality.
 
 ## What is pending
 
-Everything from Phase 1 onward in `plan.md` — the actual v2 rewrite
-(`src/halludetect/...`) has not started. The current root-level code
-(`app.py`, `config.py`, `detection/`, `rag/`, `knowledge_base/`) is the
-**legacy v1 app** described in `plan.md`'s Context section; it is not yet
-superseded and still runs, but it is not where new work should go. Phase 1
-builds the new `src/` layout from scratch alongside it.
+Rest of Phase 1 (1.2 provider abstraction, 1.3 structlog logging), then
+Phases 2-8 in `plan.md` — the v2 rewrite is only just started. The current
+root-level code (`app.py`, `config.py`, `detection/`, `rag/`,
+`knowledge_base/`) is the **legacy v1 app** described in `plan.md`'s
+Context section; it is not yet superseded and still runs, but it is not
+where new work should go.
+
+The `setup.py`/`pip install -e .` naming collision above should be fixed
+before Phase 1's exit criterion can be verified end-to-end via a real
+install.
 
 Known outstanding issue not yet fixed in the legacy app: the hardcoded API
 keys committed in prior git history are still exposed in git log/GitHub even
 though `config.py` no longer contains them on disk. They should be treated
 as compromised.
 
-## How Phase 0 was done
+## How this was done
 
-Read `plan.md`'s API contract section (frozen request/response shape) and
-transcribed it verbatim into `docs/contract.md` as prose + tables, then
-mirrored the same shape into `docs/openapi.yaml` using `$ref`-based
-`components/schemas` so the two files cannot drift silently. No provider or
-detection code was written — Phase 0 is spec-only per the plan.
+Phase 0: read `plan.md`'s API contract section (frozen request/response
+shape) and transcribed it verbatim into `docs/contract.md` as prose +
+tables, then mirrored the same shape into `docs/openapi.yaml` using
+`$ref`-based `components/schemas` so the two files cannot drift silently.
+No provider or detection code was written — Phase 0 is spec-only per the
+plan.
+
+Phase 1.1: added `pyproject.toml` + `src/halludetect/` per the plan's
+target repo layout, with `settings.py` as a thin `pydantic-settings`
+wrapper — one `SecretStr` field per provider, nothing else, since 1.1 is
+scoped to layout/config, not provider logic (that's 1.2). Verified by
+import, not by `pip install`, because of the `setup.py` collision noted
+above.
 
 ## Next process
 
-Start **Phase 1 — Core skeleton + provider abstraction** in `plan.md`:
-`src/halludetect/` package layout, `pyproject.toml`, `settings.py` with
-`SecretStr` per provider key, the `LLMProvider` protocol plus
-Gemini/OpenAI/Anthropic/generic-OpenAI-compatible implementations, and
-structlog JSON logging with a `request_id` contextvar. Do not start Phase 2
-or later until Phase 1's exit criterion passes: swapping provider is a
-config change, not a code change.
+Finish **Phase 1 — Core skeleton + provider abstraction** in `plan.md`:
+1.2 — `LLMProvider` Protocol in `src/halludetect/llm/base.py` plus
+Gemini/OpenAI/Anthropic/generic-OpenAI-compatible implementations; 1.3 —
+structlog JSON logging with a `request_id` contextvar. Resolve the
+`setup.py` naming collision so `pip install -e .` works, since Phase 1's
+exit criterion ("swapping provider is a config change, not a code
+change") should be verified via a real install, not `PYTHONPATH` tricks.
+Do not start Phase 2 until that exit criterion passes.

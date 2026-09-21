@@ -121,7 +121,7 @@ docs/contract.md              # the API contract above, versioned
 
 ## Phase 1 — Core skeleton + provider abstraction (2–3 days)
 
-- [ ] 1.1 `src/` layout, `pyproject.toml`, `settings.py` with `SecretStr` per provider (M)
+- [x] 1.1 `src/` layout, `pyproject.toml`, `settings.py` with `SecretStr` per provider (M)
 - [ ] 1.2 `LLMProvider` Protocol + `Gemini`/`OpenAI`/`Anthropic`/generic-OpenAI-compatible implementations (M)
 - [ ] 1.3 structlog JSON logging with `request_id` contextvar (S)
 
