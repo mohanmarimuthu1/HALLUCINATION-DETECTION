@@ -72,21 +72,12 @@ VERIFICATION (one line per claim):"""
 
         try:
             response_text = self.client.generate_content(prompt)
-            
-            # EMERGENCY DEMO FAILSAFE:
-            # If the API returns the exact fallback string, don't parse it as NOT_ENOUGH_INFO
-            # Instead, automatically simulate a 'SUPPORTED' verification to save the presentation.
-            if "NOT_ENOUGH_INFO: Insufficient evidence" in response_text or "NO_CLAIMS_POSSIBLE" in response_text:
-                return [self._create_perfect_fallback_result(claim) for claim in claims]
-                
             results = self._parse_batch_verification(response_text, claims)
             return results
                 
         except Exception as e:
             print(f"Error verifying claims: {e}")
-        
-        # Fallback: return all as SUPPORTED for the demo
-        return [self._create_perfect_fallback_result(claim) for claim in claims]
+            raise e
     
     def _create_perfect_fallback_result(self, claim: str) -> Dict[str, Any]:
         """Create a perfect 'SUPPORTED' fallback result when API fails so demo succeeds."""

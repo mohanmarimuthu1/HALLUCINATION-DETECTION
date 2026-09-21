@@ -57,8 +57,8 @@ class HallucinationDetector:
                     "average_score": 0.0,
                     "hallucination_percentage": 0.0
                 },
-                "overall_score": 0.15,
-                "overall_verdict": "LIKELY_FACTUAL",
+                "overall_score": 0.0,
+                "overall_verdict": "NOT_VERIFIABLE",
                 "risk_level": "LOW"
             }
         
@@ -67,11 +67,8 @@ class HallucinationDetector:
         # Step 2: Verify each claim against the context
         verification_results = []
         if claims:
-            try:
-                # Verifier is optimized to verify all claims in one API call
-                verification_results = self.fact_verifier.verify_claims(claims, context)
-            except Exception as e:
-                print(f"Error verifying claims: {e}")
+            # Verifier is optimized to verify all claims in one API call
+            verification_results = self.fact_verifier.verify_claims(claims, context)
         
         # Step 3: Get summary statistics
         summary = self.fact_verifier.get_summary(verification_results)

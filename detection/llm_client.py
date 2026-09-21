@@ -132,7 +132,8 @@ class LLMClient:
                 
         # If we exhausted all keys
         print("[LLM Client] All configured backup keys failed.")
-        return "NO_CLAIMS_POSSIBLE" if "claim" in prompt.lower() else "NOT_ENOUGH_INFO: Insufficient evidence in context to verify."
+        raise Exception("All configured APIs (Gemini and OpenRouter) have exhausted their quotas or are rate-limited. Please update the API keys in config.py.")
+
         
     def _rotate_key(self):
         """Rotate to the next OpenRouter key in the list."""
