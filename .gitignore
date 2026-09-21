@@ -1,7 +1,6 @@
 /2nd review.pptx
 /create_2nd_review_ppt.py
 /create_presentation.py
-/docs
 /docs.txt
 /evaluation_results.json
 /Final_Project_Review.pptx
@@ -14,5 +13,8 @@
 /update_remaining_slides.py
 /COLLEGE/
 __pycache__/
+*.pyc
 .venv/
 .env
+chroma_db/
+config_error.txt
