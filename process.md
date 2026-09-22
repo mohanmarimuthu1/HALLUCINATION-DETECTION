@@ -3,10 +3,44 @@
 Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
-## Status: Phase 0 complete (spec lock). Phase 1 in progress — 1.1 and 1.2 done (2 of 3 tasks).
+## Status: Phase 0 complete (spec lock). Phase 1 complete (all 3 tasks, exit criterion verified).
 
 ## What is done
 
+- **Phase 1.3 — structlog JSON logging with `request_id` contextvar**:
+  - `src/halludetect/logging.py` — `configure_logging()` sets up
+    `structlog` with a JSON renderer (`structlog.processors.JSONRenderer`),
+    ISO timestamps, and log level; `get_logger(name)` returns a bound
+    logger. A private `ContextVar[str | None]` holds the current
+    `request_id`; a processor (`_add_request_id`) injects it into every
+    log line's JSON payload when set, and omits the key entirely when not
+    (no fabricated ID). `bind_request_id(request_id=None)` sets the
+    contextvar - generating a `uuid4` if the caller passes nothing - and
+    returns whatever ID was set, so Phase 5's API layer can bind one per
+    request and echo it back as `AnalysisResult.request_id`
+    (`docs/contract.md`) without threading it through every function call.
+  - **Verification**: `tests/test_logging.py`, 5 tests, all offline (no
+    network, no live keys): request_id generation when omitted, explicit
+    request_id round-trip, `get_request_id()` returns `None` pre-bind,
+    a bound request_id appears in the rendered JSON log line (parsed with
+    `json.loads` via `capsys`), and logging with no bound request_id
+    produces valid JSON with the key absent rather than empty/null.
+  - Added `structlog>=24.0` to `pyproject.toml` dependencies.
+- **Phase 1 blocker resolved — `setup.py`/`pip install -e .` collision**:
+  renamed the legacy interactive init script `setup.py` -> `init_legacy_app.py`
+  (`git mv`, preserves history) since `setuptools` was picking it up as a
+  legacy build hook and crashing with `UnicodeEncodeError` on Windows'
+  `cp1252` console encoding before `pyproject.toml`-based install could even
+  run. Updated `README.md`'s two references (`project structure` listing,
+  `python setup.py` quick-start command) to match. No behavior change to
+  the script itself.
+  - **Verification**: `pip install -e .` now succeeds end-to-end in
+    `.venv` (previously failed). Re-imported `halludetect`, `halludetect.settings`,
+    `halludetect.logging`, and all four LLM provider modules with no
+    `PYTHONPATH` manipulation - confirms Phase 1's actual exit criterion
+    ("swapping provider is a config change, not a code change," which
+    presupposes the package installs normally). Full test suite (20 tests:
+    15 provider + 5 logging) still passes after the install.
 - **Phase 1.2 — `LLMProvider` Protocol + Gemini/OpenAI/Anthropic/generic-OpenAI-compatible implementations**:
   - `src/halludetect/llm/base.py` — `LLMProvider` Protocol (`@runtime_checkable`):
     `complete(prompt, *, max_tokens) -> LLMResponse` and `supports_json_schema() -> bool`.
@@ -64,19 +98,8 @@ file at the end of every work session — do not let it drift from reality.
     `PYTHONPATH=src` and confirmed settings load, defaults are `None`
     with no `.env` present, and a real value passed as an env var is
     correctly masked in `repr()` but retrievable via `get_secret_value()`.
-  - **Known blocker, not fixed**: `pip install -e .` currently fails.
-    The repo has a root-level `setup.py` (a legacy interactive init
-    script for the v1 app — it prints emoji banners — not a packaging
-    script) which `setuptools` picks up and executes as a legacy build
-    hook, and it crashes with `UnicodeEncodeError` on Windows' default
-    `cp1252` console encoding. This blocks real `pip install`-based
-    verification of `pyproject.toml` until `setup.py` is renamed (and
-    `README.md`'s reference to `python setup.py` updated to match) or
-    replaced with a `[project.scripts]` entry point. Left untouched for
-    now since it's a legacy-app file, not part of Phase 1's task list —
-    flagging so it isn't mistaken for "done."
-  - Task 1.3 (structlog JSON logging with a `request_id` contextvar) is
-    **not started**.
+  - The `setup.py`/`pip install -e .` collision noted here previously is
+    now resolved — see "Phase 1 blocker resolved" above.
 
 - **Repo hygiene**: removed committed binaries/caches that never belonged in
   git (`chroma_db/` vector store, `__pycache__/*.pyc`, `config_error.txt`
@@ -112,18 +135,14 @@ file at the end of every work session — do not let it drift from reality.
 
 ## What is pending
 
-Rest of Phase 1 (1.3 structlog logging), then Phases 2-8 in `plan.md` —
-the v2 rewrite is only just started. Note the four providers built in 1.2
-are not wired into anything yet - there is no router, no pipeline, nothing
-calls them outside the tests. That wiring is Phase 2 (router chain) and
-Phase 4 (detection pipeline). The current root-level code (`app.py`,
-`config.py`, `detection/`, `rag/`, `knowledge_base/`) is the **legacy v1
-app** described in `plan.md`'s Context section; it is not yet superseded
-and still runs, but it is not where new work should go.
-
-The `setup.py`/`pip install -e .` naming collision above should be fixed
-before Phase 1's exit criterion can be verified end-to-end via a real
-install.
+Phase 1 is complete. Phases 2-8 in `plan.md` are pending — the v2 rewrite
+is only just started. Note the four providers built in 1.2 and the logging
+in 1.3 are not wired into anything yet - there is no router, no pipeline,
+nothing calls them outside the tests. That wiring is Phase 2 (router
+chain) and Phase 4 (detection pipeline). The current root-level code
+(`app.py`, `config.py`, `detection/`, `rag/`, `knowledge_base/`) is the
+**legacy v1 app** described in `plan.md`'s Context section; it is not yet
+superseded and still runs, but it is not where new work should go.
 
 Known outstanding issue not yet fixed in the legacy app: the hardcoded API
 keys committed in prior git history are still exposed in git log/GitHub even
@@ -146,6 +165,16 @@ scoped to layout/config, not provider logic (that's 1.2). Verified by
 import, not by `pip install`, because of the `setup.py` collision noted
 above.
 
+Phase 1.3: wrote `configure_logging()`/`get_logger()`/`bind_request_id()`
+around a single module-level `ContextVar` rather than a logging adapter
+per call site, so any code path (router, pipeline, API middleware) can
+bind a request_id once per request and every log line downstream picks
+it up automatically. Verified by parsing rendered JSON log lines in
+tests, not by eyeballing console output. Also fixed the `setup.py`
+naming collision flagged as a Phase 1.1 blocker (`git mv` to
+`init_legacy_app.py`) so `pip install -e .` - Phase 1's actual exit
+criterion - could be verified for real instead of deferred again.
+
 Phase 1.2: defined the `LLMProvider` Protocol and exception hierarchy
 first, then wrote each provider against that shape using raw `httpx`
 calls to each vendor's REST API directly rather than pulling in four
@@ -158,12 +187,15 @@ are available.
 
 ## Next process
 
-Finish **Phase 1 — Core skeleton + provider abstraction** in `plan.md`:
-1.3 — structlog JSON logging with a `request_id` contextvar. Resolve the
-`setup.py` naming collision so `pip install -e .` works, since Phase 1's
-exit criterion ("swapping provider is a config change, not a code
-change") should be verified via a real install, not `PYTHONPATH`/pytest
-config tricks. Do not start Phase 2 until that exit criterion passes.
+Phase 1 is done and its exit criterion is verified via a real
+`pip install -e .`, not `PYTHONPATH`/pytest config tricks alone. Start
+**Phase 2 — OpenRouter free-model engine** in `plan.md`: fetch
+`/models`, filter zero-pricing free models, build the per-model health
+table, router chain (pinned -> free pool -> user paid key -> explicit
+fail), capability probe for structured JSON output, and the circuit
+breaker. Phase 2 and Phase 3 (evidence acquisition) are independent and
+parallelizable per `plan.md`'s critical path.
+
 When real provider keys become available, spot-check each of the four
 1.2 providers against its live API at least once - the current test
 suite only proves the code handles the *shapes* it was told to expect.
