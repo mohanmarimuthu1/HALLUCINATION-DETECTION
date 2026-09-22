@@ -18,3 +18,5 @@ __pycache__/
 .env
 chroma_db/
 config_error.txt
+*.egg-info/
+build/
