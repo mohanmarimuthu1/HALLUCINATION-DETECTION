@@ -25,3 +25,11 @@ class LLMTimeoutError(LLMError):
 
 class LLMResponseError(LLMError):
     """Provider returned a 2xx we could not parse, or a 4xx/5xx not covered above."""
+
+
+class LLMSchemaValidationError(LLMResponseError):
+    """Structured JSON output still didn't validate against the target
+    schema after exhausting repair-retry attempts (Phase 2.4). Raised
+    instead of returning a best-effort/partial parse - a caller must
+    handle this explicitly, never treat missing structure as success.
+    """
