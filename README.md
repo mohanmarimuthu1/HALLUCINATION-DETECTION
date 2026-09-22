@@ -45,7 +45,7 @@ This system detects when an LLM generates information that is not supported by o
 HALLUCINATION DETECTION/
 ├── app.py                      # Streamlit web application
 ├── config.py                   # Configuration settings
-├── setup.py                    # Setup and initialization script
+├── init_legacy_app.py          # Setup and initialization script
 ├── requirements.txt            # Project dependencies
 ├── README.md                   # This file
 │
@@ -82,7 +82,7 @@ pip install -r requirements.txt
 ### 2. Run Setup (First Time Only)
 
 ```bash
-python setup.py
+python init_legacy_app.py
 ```
 
 This will:
