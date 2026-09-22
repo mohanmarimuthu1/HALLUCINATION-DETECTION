@@ -3,9 +3,77 @@
 Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
-## Status: Phase 0 complete (spec lock). Phase 1 complete (all 3 tasks, exit criterion verified).
+## Status: Phase 0 and Phase 1 complete. Phase 2 (OpenRouter free-model
+engine) complete (all 5 tasks).
 
 ## What is done
+
+- **Phase 2 — OpenRouter free-model engine**:
+  - `src/halludetect/llm/openrouter.py` — `OpenRouterProvider` (2.1's
+    completion half): a thin `httpx.post` wrapper against
+    `openrouter.ai/api/v1/chat/completions`, same shape as the other four
+    providers. `fetch_free_models(api_key)` hits `/models` and keeps only
+    ids where `pricing.prompt == 0` and `pricing.completion == 0` (cast to
+    float since OpenRouter returns pricing as strings). `FreeModelCatalog`
+    wraps that fetch with a cache keyed on `time.monotonic()` and a
+    24-hour TTL (`get_models(force_refresh=False)`), so the router doesn't
+    refetch the model list on every request.
+  - `src/halludetect/llm/health.py` — `HealthTracker`/`ModelHealth` (2.2):
+    per-model `attempts`, `successes`, `success_rate`, `avg_latency_ms`,
+    `consecutive_failures`, `last_rate_limited_at`. `rank_available()`
+    sorts by success rate then latency, and gives untried models a fair
+    shot rather than ranking them last by default. Circuit breaker (2.5)
+    lives in the same class: `record_failure()` puts a model into a
+    time-boxed cooldown (`cooldown_until`) after `FAILURE_THRESHOLD`
+    (default 3) consecutive failures; `record_success()` resets the
+    consecutive-failure counter; `is_available()` checks the cooldown
+    against a clock, so a model self-recovers once the cooldown window
+    passes without any manual reset.
+  - `src/halludetect/llm/router.py` — `Router.complete()` (2.3): tries
+    `pinned_model` first if set, then free-pool models in
+    `HealthTracker.rank_available()` order (capped at
+    `max_free_models_tried`, default 5), then `user_provider` (a caller's
+    own paid-key provider) if given. Every attempt records success/failure
+    into the shared `HealthTracker`. If nothing succeeds, raises
+    `LLMResponseError` listing what was tried and why each failed - it
+    never returns a guess or silently picks a different result shape.
+    `provider_factory: Callable[[str], LLMProvider]` is injected rather
+    than the router constructing `OpenRouterProvider` itself, so tests
+    (and later, real callers) can swap in anything satisfying the
+    `LLMProvider` protocol per model id.
+  - `src/halludetect/llm/structured.py` — `complete_structured()` (2.4):
+    the actual capability probe. Since none of the providers built in 1.2
+    or 2.1 support a native `response_format`/schema mode at the HTTP
+    layer, this always goes through prompt-JSON: it asks for JSON matching
+    a Pydantic schema's `model_json_schema()`, strips markdown fences if
+    present, validates strictly, and on failure retries with the bad
+    output + validation error appended to the prompt, up to
+    `max_repairs` (default 2) times. Returns `(instance,
+    honored_on_first_try)` - the second value is the actual probe signal
+    future model-ranking logic can use, since `supports_json_schema()` on
+    a provider is still just a static pre-probe default. Raises
+    `LLMSchemaValidationError` (new, `LLMResponseError` subclass in
+    `exceptions.py`) after exhausting repairs - never returns a
+    best-effort partial parse.
+  - `src/halludetect/llm/fake.py` — `FakeProvider`/`fake_response()`: a
+    deterministic `LLMProvider` double that replays a scripted sequence of
+    responses/errors, one per `complete()` call. Used instead of
+    monkeypatching `httpx` for router/structured-output tests, since those
+    tests are about chain and retry logic, not HTTP parsing (that's
+    already covered per-provider in `test_llm_providers.py`).
+  - **Verification**: 25 new offline tests, all passing, no network, no
+    live keys: `tests/test_openrouter_catalog.py` (pricing filter, cache
+    TTL/refresh/force-refresh, auth-error propagation), `tests/test_health.py`
+    (success rate/latency math, cooldown trigger/expiry, reset-on-success,
+    ranking order, cooldown exclusion), `tests/test_router.py` (pinned
+    success skips free pool; pinned failure falls over to free pool; free
+    pool exhausted falls over to user key; total exhaustion raises instead
+    of guessing; health gets updated either way; `max_free_models_tried`
+    cap is respected), `tests/test_structured.py` (valid JSON first try,
+    valid JSON inside a markdown fence, repair-retry recovering on the
+    second attempt, schema-mismatch triggering a repair, exhausted repairs
+    raising `LLMSchemaValidationError`). Full suite is now 45/45.
+  - Added `LLMSchemaValidationError` to `src/halludetect/llm/exceptions.py`.
 
 - **Phase 1.3 — structlog JSON logging with `request_id` contextvar**:
   - `src/halludetect/logging.py` — `configure_logging()` sets up
@@ -135,14 +203,17 @@ file at the end of every work session — do not let it drift from reality.
 
 ## What is pending
 
-Phase 1 is complete. Phases 2-8 in `plan.md` are pending — the v2 rewrite
-is only just started. Note the four providers built in 1.2 and the logging
-in 1.3 are not wired into anything yet - there is no router, no pipeline,
-nothing calls them outside the tests. That wiring is Phase 2 (router
-chain) and Phase 4 (detection pipeline). The current root-level code
-(`app.py`, `config.py`, `detection/`, `rag/`, `knowledge_base/`) is the
-**legacy v1 app** described in `plan.md`'s Context section; it is not yet
-superseded and still runs, but it is not where new work should go.
+Phases 1 and 2 are complete. Phases 3-8 in `plan.md` are pending. Note
+that Phase 2's router, health tracker, and structured-output probe are
+still not wired into anything outside their own tests - there is no
+evidence source, no detection pipeline, no API. `Router` is usable as a
+class but nothing constructs one against a real `.env`/settings.py yet;
+that wiring, and the actual OpenRouter model list at runtime, happens
+once Phase 4 (detection pipeline) needs to call an LLM for real. The
+current root-level code (`app.py`, `config.py`, `detection/`, `rag/`,
+`knowledge_base/`) is the **legacy v1 app** described in `plan.md`'s
+Context section; it is not yet superseded and still runs, but it is not
+where new work should go.
 
 Known outstanding issue not yet fixed in the legacy app: the hardcoded API
 keys committed in prior git history are still exposed in git log/GitHub even
@@ -164,6 +235,26 @@ wrapper — one `SecretStr` field per provider, nothing else, since 1.1 is
 scoped to layout/config, not provider logic (that's 1.2). Verified by
 import, not by `pip install`, because of the `setup.py` collision noted
 above.
+
+Phase 2: built the free-model catalog (2.1) and health tracker with its
+circuit breaker (2.2/2.5) as independent, separately-tested units before
+writing the router (2.3), since the router's only job is to combine
+"which free models exist" with "which ones are currently healthy" plus
+the pinned/user-key fallbacks - it shouldn't know how either of those
+lists is produced. `Router` takes a `provider_factory` callable instead
+of importing `OpenRouterProvider` directly, which is what let the whole
+chain (including multi-model fail-over and the "everything fails" path)
+get tested with `FakeProvider` instead of mocking `httpx` four different
+ways. The capability probe (2.4) was scoped to what actually exists: none
+of the six provider classes built so far (four in 1.2, `OpenRouterProvider`
+in 2.1) send a native `response_format`/schema parameter, so "does the
+model honor response_schema" is answered by prompting for JSON and
+checking whether a repair round was needed - not by a native-mode branch
+that doesn't have an HTTP implementation behind it yet. Verified per-unit
+first, then the router's exit criterion (fail one model mid-run, confirm
+fail-over, confirm no crash) with `FakeProvider` scripted to raise on
+specific models - equivalent to killing a real model's key/endpoint,
+without needing live OpenRouter access to prove it.
 
 Phase 1.3: wrote `configure_logging()`/`get_logger()`/`bind_request_id()`
 around a single module-level `ContextVar` rather than a logging adapter
@@ -187,15 +278,22 @@ are available.
 
 ## Next process
 
-Phase 1 is done and its exit criterion is verified via a real
-`pip install -e .`, not `PYTHONPATH`/pytest config tricks alone. Start
-**Phase 2 — OpenRouter free-model engine** in `plan.md`: fetch
-`/models`, filter zero-pricing free models, build the per-model health
-table, router chain (pinned -> free pool -> user paid key -> explicit
-fail), capability probe for structured JSON output, and the circuit
-breaker. Phase 2 and Phase 3 (evidence acquisition) are independent and
-parallelizable per `plan.md`'s critical path.
+Phase 1 and Phase 2 are done. Start **Phase 3 — Evidence acquisition**
+in `plan.md`: `EvidenceSource` Protocol + `DirectEvidence` (caller-
+supplied, chunked), `WebSearchEvidence` (Tavily, per the Phase 0.2
+decision - active only if `tavily_api_key` is configured), the explicit
+`NOT_VERIFIABLE / no_evidence_configured` path with no silent
+LLM-knowledge fallback, and a plug-in hook for a caller's own
+retriever. Phase 3 has no dependency on Phase 2 (`plan.md`'s critical
+path marks them parallelizable) so this can proceed independently of
+anything the router does.
 
-When real provider keys become available, spot-check each of the four
-1.2 providers against its live API at least once - the current test
-suite only proves the code handles the *shapes* it was told to expect.
+Two things still open from earlier phases, not yet acted on:
+- When real provider keys become available, spot-check each of the four
+  1.2 providers, `OpenRouterProvider`, and the free-model catalog fetch
+  against their live APIs at least once - the test suites only prove the
+  code handles the *shapes* it was told to expect, not real responses.
+- Phase 2's `Router`/`HealthTracker`/`complete_structured` are built and
+  tested in isolation but not yet wired to `settings.py` or called from
+  anywhere real - that wiring happens naturally once Phase 4 needs to
+  issue actual verification calls.

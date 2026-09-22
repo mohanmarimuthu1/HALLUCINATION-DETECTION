@@ -129,11 +129,11 @@ docs/contract.md              # the API contract above, versioned
 
 ## Phase 2 — OpenRouter free-model engine (2–3 days) — the differentiator
 
-- [ ] 2.1 Fetch OpenRouter `/models`, filter `pricing.prompt == 0`, cache list, refresh daily (S)
-- [ ] 2.2 Per-model health table: rolling success rate, latency, last-rate-limited-at (M)
-- [ ] 2.3 Router chain: pinned model → next healthy free model → user's paid key (if given) → explicit fail (M)
-- [ ] 2.4 Capability probe: does model honor `response_schema`? If not, prompt-JSON + repair-retry + strict Pydantic validate; reject after 2 failed repairs (M)
-- [ ] 2.5 Circuit breaker: demote model after N consecutive failures, cooldown-based re-enable (S)
+- [x] 2.1 Fetch OpenRouter `/models`, filter `pricing.prompt == 0`, cache list, refresh daily (S)
+- [x] 2.2 Per-model health table: rolling success rate, latency, last-rate-limited-at (M)
+- [x] 2.3 Router chain: pinned model → next healthy free model → user's paid key (if given) → explicit fail (M)
+- [x] 2.4 Capability probe: does model honor `response_schema`? If not, prompt-JSON + repair-retry + strict Pydantic validate; reject after 2 failed repairs (M)
+- [x] 2.5 Circuit breaker: demote model after N consecutive failures, cooldown-based re-enable (S)
 
 **Exit:** pipeline runs correctly against ≥5 different free OpenRouter models with zero code changes; degrades gracefully when one model is down.
 
