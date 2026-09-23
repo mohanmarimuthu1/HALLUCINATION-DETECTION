@@ -3,12 +3,35 @@
 Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
-## Status: Phase 0, Phase 1, Phase 2 complete. Phase 3 (evidence
-acquisition) in progress — 3.1, 3.2, 3.3 done, 3.4 pending.
+## Status: Phase 0, Phase 1, Phase 2, Phase 3 complete (all 4 tasks).
 
 ## What is done
 
-- **Phase 3 — Evidence acquisition (in progress)**:
+- **Phase 3 — Evidence acquisition (complete)**:
+  - `src/halludetect/evidence/custom.py` — `CustomEvidenceSource` (3.4):
+    the plug-in hook for `evidence_source: custom`. Any object already
+    exposing `fetch(query) -> list[Evidence]` satisfies `EvidenceSource`
+    directly and needs no adapter; this wraps the more common case of a
+    caller's retriever returning plain `list[str]` chunks for a query,
+    chunking oversized strings the same way `DirectEvidence` does
+    (chunk ids `custom-{i}` / `custom-{i}-{j}`, `source="custom"`).
+    Unlike `WebSearchEvidence`, a retriever exception is *not* caught and
+    degraded to no evidence - it is the caller's own plugin, so a bug in
+    it should surface to them, not be hidden behind a silent empty
+    result.
+  - `src/halludetect/evidence/chunk.py` — extracted `chunk_text()` out of
+    `direct.py` (no behavior change) so `DirectEvidence` and
+    `CustomEvidenceSource` share one chunking implementation instead of
+    each maintaining their own copy of the same paragraph/sentence
+    splitting logic.
+  - **Verification**: `tests/test_custom_evidence.py` (7 tests): Protocol
+    conformance, the query is actually passed to the retriever, short
+    results become one chunk each, blank results are skipped, long
+    results split into bounded chunks under the shared chunker, a
+    retriever exception propagates rather than being swallowed, an empty
+    retriever result returns no evidence. Full suite re-run after the
+    `chunk.py` extraction confirmed no regression in `DirectEvidence`'s
+    existing tests. Full suite: 73/73 passing, offline.
   - `src/halludetect/evidence/web_search.py` — `WebSearchEvidence` (3.2):
     Tavily-backed, per the Phase 0.2 decision in `docs/contract.md`. A
     missing `api_key` returns `[]` before any network call, matching the
@@ -264,9 +287,7 @@ acquisition) in progress — 3.1, 3.2, 3.3 done, 3.4 pending.
 
 ## What is pending
 
-Phases 1 and 2 are complete. Phase 3 is partially done (3.1, 3.2, 3.3
-done; 3.4 the caller-retriever plug-in hook is pending). Phases 4-8 in
-`plan.md` are pending. Note
+Phases 1, 2, and 3 are complete. Phases 4-8 in `plan.md` are pending. Note
 that Phase 2's router, health tracker, and structured-output probe are
 still not wired into anything outside their own tests - there is no
 evidence source, no detection pipeline, no API. `Router` is usable as a
@@ -369,19 +390,26 @@ are available.
 
 ## Next process
 
-Phase 1 and Phase 2 are done. Phase 3 is 3/4 tasks done (3.1, 3.2, 3.3).
-Remaining in **Phase 3 — Evidence acquisition** (`plan.md`):
-- 3.4 plug-in hook for a caller's own retriever/RAG
-  (`evidence_source: custom` in the contract) — likely a thin adapter
-  module (e.g. `evidence/custom.py`) that wraps a caller-supplied
-  callable/object into the `EvidenceSource` Protocol, since the Protocol
-  itself already makes any conforming object usable; needs a decision on
-  how the API layer (Phase 5, not built yet) will register/pass that
-  plugin per-request.
+Phases 1, 2, and 3 are all done. Start **Phase 4 — Detection core** in
+`plan.md`: typed claim extraction (`FACTUAL/OPINION/INSTRUCTION/META`,
+cap `max_claims=12`), a structured verdict schema joined to claims by
+`claim_id` (never by array position), the quote-grounding check that
+downgrades an unverified `SUPPORTED` to `NOT_ENOUGH_INFO`, and calibrated
+scoring (Wilson CI, `n_verifiable_claims < 3` forces `NOT_VERIFIABLE`).
+This is where Phase 2's `Router`/`complete_structured` and Phase 3's
+`EvidenceSource` implementations actually get wired together and called
+for the first time - neither has had a real caller until now. `plan.md`'s
+biggest known risk section applies directly to 4.2/4.3: don't shortcut
+the structured-verdict parsing the way Phase 2.4's capability probe was
+built specifically to avoid.
 
-Phase 3 has no dependency on Phase 2 (`plan.md`'s critical path marks
-them parallelizable) so this can proceed independently of anything the
-router does.
+One open item carried over from Phase 3: `.env.example` still only lists
+the legacy v1 keys (`GOOGLE_API_KEY`, `OPENROUTER_API_KEY_1/2`), not the
+v2 `Settings` fields (`tavily_api_key`, `openrouter_api_key`,
+`gemini_api_key`, `openai_api_key`, `anthropic_api_key`,
+`custom_provider_*`). Worth fixing before Phase 4 needs real keys for a
+live spot-check, since right now there's nowhere in the repo that
+documents what a v2 `.env` should actually contain.
 
 Two things still open from earlier phases, not yet acted on:
 - When real provider keys become available, spot-check each of the four
