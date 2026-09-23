@@ -139,9 +139,9 @@ docs/contract.md              # the API contract above, versioned
 
 ## Phase 3 — Evidence acquisition (3–4 days)
 
-- [ ] 3.1 `EvidenceSource` Protocol; `DirectEvidence` — caller-supplied, chunked if long (S)
+- [x] 3.1 `EvidenceSource` Protocol; `DirectEvidence` — caller-supplied, chunked if long (S)
 - [ ] 3.2 `WebSearchEvidence` — active only if search API key configured (M)
-- [ ] 3.3 Explicit `NOT_VERIFIABLE / no_evidence_configured` path — no silent LLM-knowledge fallback (S)
+- [x] 3.3 Explicit `NOT_VERIFIABLE / no_evidence_configured` path — no silent LLM-knowledge fallback (S)
 - [ ] 3.4 Plug-in hook so a caller's own retriever/RAG can act as an evidence source (S)
 
 **Exit:** all three evidence modes work independently; absence of evidence is never papered over.

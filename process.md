@@ -3,10 +3,50 @@
 Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
-## Status: Phase 0 and Phase 1 complete. Phase 2 (OpenRouter free-model
-engine) complete (all 5 tasks).
+## Status: Phase 0, Phase 1, Phase 2 complete. Phase 3 (evidence
+acquisition) in progress — 3.1 and 3.3 done, 3.2 and 3.4 pending.
 
 ## What is done
+
+- **Phase 3 — Evidence acquisition (in progress)**:
+  - `src/halludetect/evidence/base.py` — `Evidence` frozen dataclass
+    (`chunk_id`, `text`, `source`) and the `EvidenceSource` Protocol
+    (`@runtime_checkable`): `fetch(query) -> list[Evidence]`. An empty
+    list is the explicit "no evidence" signal every evidence source
+    (direct, web, none, a caller's plugin) must be able to return — it is
+    what Phase 4's pipeline will use to force `NOT_VERIFIABLE` instead of
+    guessing.
+  - `src/halludetect/evidence/direct.py` — `DirectEvidence` (3.1): wraps
+    caller-supplied `request.evidence` strings (`docs/contract.md`:
+    "if evidence is present, verify against THIS ONLY"). `query` is
+    accepted only to satisfy the Protocol and is otherwise ignored.
+    Chunks each input string only if it exceeds `max_chunk_chars`
+    (default 1000): splits on paragraph boundaries first, then sentence
+    boundaries within an oversized paragraph, greedily repacking under
+    the limit. A single sentence longer than the limit is kept whole
+    rather than truncated — losing evidence text silently would be worse
+    than one oversized chunk. Chunk ids are `direct-{i}` for an input
+    that didn't need splitting, `direct-{i}-{j}` for the pieces of one
+    that did, so multiple inputs never collide.
+  - `src/halludetect/evidence/none.py` — `NoEvidenceSource` (3.3): always
+    returns `[]`, deliberately, not as a stub. This is the concrete
+    implementation of `evidence_source: none`, and per `docs/contract.md`
+    is also what a `web` request must fall back to identically once the
+    Tavily key check (3.2) is wired in — the module docstring records
+    that dependency for when 3.2 is built. Having this as a real,
+    tested, always-empty source now means the "no evidence → no guess"
+    rule already has a concrete object to point at, rather than being an
+    implicit gap that 3.2 or Phase 4 could quietly special-case around.
+  - **Verification**: `tests/test_evidence.py` (9 tests: Protocol
+    conformance, short strings each become their own chunk with the
+    unsplit id scheme, `query` is ignored, blank strings are skipped
+    entirely — never emitted as empty `Evidence`, long input splits on
+    paragraph-then-sentence boundaries with every original sentence
+    still present in the rejoined output, an oversized single sentence
+    is kept whole rather than dropped/truncated, multiple inputs chunk
+    independently without id collisions) and `tests/test_no_evidence.py`
+    (2 tests: Protocol conformance, always-empty regardless of query).
+    Full suite: 54/54 passing, offline, no network, no live keys.
 
 - **Phase 2 — OpenRouter free-model engine**:
   - `src/halludetect/llm/openrouter.py` — `OpenRouterProvider` (2.1's
@@ -203,7 +243,9 @@ engine) complete (all 5 tasks).
 
 ## What is pending
 
-Phases 1 and 2 are complete. Phases 3-8 in `plan.md` are pending. Note
+Phases 1 and 2 are complete. Phase 3 is partially done (3.1, 3.3 done;
+3.2 `WebSearchEvidence`/Tavily and 3.4 the caller-retriever plug-in hook
+are pending). Phases 4-8 in `plan.md` are pending. Note
 that Phase 2's router, health tracker, and structured-output probe are
 still not wired into anything outside their own tests - there is no
 evidence source, no detection pipeline, no API. `Router` is usable as a
@@ -266,6 +308,21 @@ naming collision flagged as a Phase 1.1 blocker (`git mv` to
 `init_legacy_app.py`) so `pip install -e .` - Phase 1's actual exit
 criterion - could be verified for real instead of deferred again.
 
+Phase 3 (3.1, 3.3): built `EvidenceSource` as a `Protocol` first, same
+pattern as `LLMProvider` in Phase 1.2, so `DirectEvidence`,
+`NoEvidenceSource`, and the still-pending `WebSearchEvidence`/custom
+plug-in (3.2/3.4) are interchangeable to whatever calls `fetch()` later.
+Did 3.1 and 3.3 together rather than 3.1 alone because both are
+self-contained (no external API, no settings/HTTP dependency) and 3.3's
+"no evidence" object is what 3.1's docstring and the contract's `web`
+fallback rule both point at — building them apart would have left a
+one-commit-later gap where "no evidence" was documented but had no
+concrete implementation. Deliberately did not touch 3.2 (`WebSearchEvidence`)
+in the same pass: it needs a real Tavily HTTP integration and the
+`settings.tavily_api_key` gate, which is a materially larger, separately-
+verifiable unit (plan.md sizes it M vs 3.1/3.3's S), not something to fold
+into the same commit for the sake of finishing the phase in one pass.
+
 Phase 1.2: defined the `LLMProvider` Protocol and exception hierarchy
 first, then wrote each provider against that shape using raw `httpx`
 calls to each vendor's REST API directly rather than pulling in four
@@ -278,15 +335,26 @@ are available.
 
 ## Next process
 
-Phase 1 and Phase 2 are done. Start **Phase 3 — Evidence acquisition**
-in `plan.md`: `EvidenceSource` Protocol + `DirectEvidence` (caller-
-supplied, chunked), `WebSearchEvidence` (Tavily, per the Phase 0.2
-decision - active only if `tavily_api_key` is configured), the explicit
-`NOT_VERIFIABLE / no_evidence_configured` path with no silent
-LLM-knowledge fallback, and a plug-in hook for a caller's own
-retriever. Phase 3 has no dependency on Phase 2 (`plan.md`'s critical
-path marks them parallelizable) so this can proceed independently of
-anything the router does.
+Phase 1 and Phase 2 are done. Phase 3 is ~40-50% done by task count (3.1,
+3.3 of 4 tasks; 3.2 is the largest remaining task by plan.md's own S/M/S/S
+sizing, so effort-wise this session's work is closer to 30-35% of the
+phase). Remaining in **Phase 3 — Evidence acquisition** (`plan.md`):
+- 3.2 `WebSearchEvidence` — real Tavily HTTP integration
+  (`src/halludetect/evidence/web_search.py`), gated on
+  `settings.tavily_api_key`; per `docs/contract.md` it must degrade to
+  the same behavior as `NoEvidenceSource` (3.3) when no key is
+  configured, never raise or silently switch evidence source.
+- 3.4 plug-in hook for a caller's own retriever/RAG
+  (`evidence_source: custom` in the contract) — likely a thin adapter
+  module (e.g. `evidence/custom.py`) that wraps a caller-supplied
+  callable/object into the `EvidenceSource` Protocol, since the Protocol
+  itself already makes any conforming object usable; needs a decision on
+  how the API layer (Phase 5, not built yet) will register/pass that
+  plugin per-request.
+
+Phase 3 has no dependency on Phase 2 (`plan.md`'s critical path marks
+them parallelizable) so this can proceed independently of anything the
+router does.
 
 Two things still open from earlier phases, not yet acted on:
 - When real provider keys become available, spot-check each of the four
