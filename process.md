@@ -4,11 +4,32 @@ Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
 ## Status: Phase 0, Phase 1, Phase 2 complete. Phase 3 (evidence
-acquisition) in progress — 3.1 and 3.3 done, 3.2 and 3.4 pending.
+acquisition) in progress — 3.1, 3.2, 3.3 done, 3.4 pending.
 
 ## What is done
 
 - **Phase 3 — Evidence acquisition (in progress)**:
+  - `src/halludetect/evidence/web_search.py` — `WebSearchEvidence` (3.2):
+    Tavily-backed, per the Phase 0.2 decision in `docs/contract.md`. A
+    missing `api_key` returns `[]` before any network call, matching the
+    contract's rule that a `web` request with no key configured behaves
+    identically to `NoEvidenceSource`. A live search failure (non-200
+    response, transport error, unparseable JSON) also degrades to `[]`
+    rather than raising - logged as a warning via `halludetect.logging`
+    so the failure is visible without turning into a request-level
+    crash. Result count is capped at `max_results`; blank-content
+    results are skipped the same way `DirectEvidence` skips blank
+    strings.
+  - **Verification**: `tests/test_web_search_evidence.py` (11 tests,
+    `httpx.post` monkeypatched, no live Tavily key or network):
+    Protocol conformance, no-key path never calls `httpx.post` at all
+    (asserted via a monkeypatch that raises if called), successful
+    parse into `Evidence` chunks, result count capped at
+    `max_results`, blank-content results skipped, HTTP error status
+    degrades to no evidence, transport/timeout error degrades to no
+    evidence, invalid JSON body degrades to no evidence, and the
+    request body actually carries the configured `api_key`/`query`/
+    `max_results`/`timeout`. Full suite: 66/66 passing, offline.
   - `src/halludetect/evidence/base.py` — `Evidence` frozen dataclass
     (`chunk_id`, `text`, `source`) and the `EvidenceSource` Protocol
     (`@runtime_checkable`): `fetch(query) -> list[Evidence]`. An empty
@@ -243,9 +264,9 @@ acquisition) in progress — 3.1 and 3.3 done, 3.2 and 3.4 pending.
 
 ## What is pending
 
-Phases 1 and 2 are complete. Phase 3 is partially done (3.1, 3.3 done;
-3.2 `WebSearchEvidence`/Tavily and 3.4 the caller-retriever plug-in hook
-are pending). Phases 4-8 in `plan.md` are pending. Note
+Phases 1 and 2 are complete. Phase 3 is partially done (3.1, 3.2, 3.3
+done; 3.4 the caller-retriever plug-in hook is pending). Phases 4-8 in
+`plan.md` are pending. Note
 that Phase 2's router, health tracker, and structured-output probe are
 still not wired into anything outside their own tests - there is no
 evidence source, no detection pipeline, no API. `Router` is usable as a
@@ -310,18 +331,31 @@ criterion - could be verified for real instead of deferred again.
 
 Phase 3 (3.1, 3.3): built `EvidenceSource` as a `Protocol` first, same
 pattern as `LLMProvider` in Phase 1.2, so `DirectEvidence`,
-`NoEvidenceSource`, and the still-pending `WebSearchEvidence`/custom
+`NoEvidenceSource`, and `WebSearchEvidence`/the still-pending custom
 plug-in (3.2/3.4) are interchangeable to whatever calls `fetch()` later.
 Did 3.1 and 3.3 together rather than 3.1 alone because both are
 self-contained (no external API, no settings/HTTP dependency) and 3.3's
 "no evidence" object is what 3.1's docstring and the contract's `web`
 fallback rule both point at — building them apart would have left a
 one-commit-later gap where "no evidence" was documented but had no
-concrete implementation. Deliberately did not touch 3.2 (`WebSearchEvidence`)
-in the same pass: it needs a real Tavily HTTP integration and the
-`settings.tavily_api_key` gate, which is a materially larger, separately-
-verifiable unit (plan.md sizes it M vs 3.1/3.3's S), not something to fold
-into the same commit for the sake of finishing the phase in one pass.
+concrete implementation.
+
+Phase 3 (3.2): built `WebSearchEvidence` against the same
+`httpx.post` + monkeypatch-in-tests pattern used by every Phase 1.2/2.1
+provider, rather than pulling in a Tavily SDK. The no-key check happens
+before any network call (mirrors `NoEvidenceSource`, and matches
+`docs/contract.md`'s rule that a missing key must be indistinguishable
+from `evidence_source: none`). Live failures (bad status, transport
+error, bad JSON) degrade to `[]` instead of raising, because Phase 3 has
+no fail-over chain the way Phase 2's `Router` does - there is nothing to
+fail over *to* for a single web-search call, so the only two honest
+options were "raise and crash the request" or "return no evidence and
+let the non-negotiable no-evidence rule apply." Chose the latter, but
+logged each degrade path as a `structlog` warning so the failure isn't
+silently invisible to operators - "never swallow the error" (the
+convention `llm/exceptions.py` states for providers) means never hide it
+from logs, not necessarily always propagate an exception when there's no
+caller who could do anything with it yet.
 
 Phase 1.2: defined the `LLMProvider` Protocol and exception hierarchy
 first, then wrote each provider against that shape using raw `httpx`
@@ -335,15 +369,8 @@ are available.
 
 ## Next process
 
-Phase 1 and Phase 2 are done. Phase 3 is ~40-50% done by task count (3.1,
-3.3 of 4 tasks; 3.2 is the largest remaining task by plan.md's own S/M/S/S
-sizing, so effort-wise this session's work is closer to 30-35% of the
-phase). Remaining in **Phase 3 — Evidence acquisition** (`plan.md`):
-- 3.2 `WebSearchEvidence` — real Tavily HTTP integration
-  (`src/halludetect/evidence/web_search.py`), gated on
-  `settings.tavily_api_key`; per `docs/contract.md` it must degrade to
-  the same behavior as `NoEvidenceSource` (3.3) when no key is
-  configured, never raise or silently switch evidence source.
+Phase 1 and Phase 2 are done. Phase 3 is 3/4 tasks done (3.1, 3.2, 3.3).
+Remaining in **Phase 3 — Evidence acquisition** (`plan.md`):
 - 3.4 plug-in hook for a caller's own retriever/RAG
   (`evidence_source: custom` in the contract) — likely a thin adapter
   module (e.g. `evidence/custom.py`) that wraps a caller-supplied
