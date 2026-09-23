@@ -20,3 +20,8 @@ chroma_db/
 config_error.txt
 *.egg-info/
 build/
+/claude.md
+/plan.md
+/process.md
+.claude
+
