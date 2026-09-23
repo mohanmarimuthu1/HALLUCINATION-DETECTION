@@ -403,13 +403,15 @@ biggest known risk section applies directly to 4.2/4.3: don't shortcut
 the structured-verdict parsing the way Phase 2.4's capability probe was
 built specifically to avoid.
 
-One open item carried over from Phase 3: `.env.example` still only lists
-the legacy v1 keys (`GOOGLE_API_KEY`, `OPENROUTER_API_KEY_1/2`), not the
-v2 `Settings` fields (`tavily_api_key`, `openrouter_api_key`,
+The `.env.example` gap noted above is fixed: it now documents both the
+legacy v1 keys and every v2 `Settings` field (`openrouter_api_key`,
 `gemini_api_key`, `openai_api_key`, `anthropic_api_key`,
-`custom_provider_*`). Worth fixing before Phase 4 needs real keys for a
-live spot-check, since right now there's nowhere in the repo that
-documents what a v2 `.env` should actually contain.
+`custom_provider_base_url`/`custom_provider_api_key`, `tavily_api_key`),
+confirmed against pydantic-settings' actual case-insensitive
+`FIELD_NAME` env-var matching (verified interactively, not assumed) and
+against `dotenv_values()` parsing the file without error.
+
+Phase 4 — Detection core — starts next session.
 
 Two things still open from earlier phases, not yet acted on:
 - When real provider keys become available, spot-check each of the four
