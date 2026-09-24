@@ -3,9 +3,96 @@
 Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
-## Status: Phase 0, Phase 1, Phase 2, Phase 3 complete (all 4 tasks).
+## Status: Phase 0, Phase 1, Phase 2, Phase 3 complete. Phase 4 — 4.1-4.4 complete, 4.5 partial (protocol/hook only, not wired).
 
 ## What is done
+
+- **Phase 4 — Detection core (4.1-4.4 complete, 4.5 partial)**:
+  - `src/halludetect/detect/schemas.py` — pydantic models for the whole
+    pipeline: `ClaimType`, `Label` (the smaller per-claim enum -
+    `docs/contract.md` has no per-claim `NOT_VERIFIABLE`), `Verdict`
+    (the top-level enum, which does), `ExtractedClaim`/`ExtractedClaims`
+    (extraction LLM call shape), `Claim` (extracted claim + locally
+    assigned `claim_id`), `RawClaimVerdict`/`RawVerdict` (verification LLM
+    call shape), `ClaimResult`/`ModelUsed`/`Timings`/`AnalysisResult`
+    (mirrors `docs/contract.md`'s response schema field-for-field),
+    `Signals` (intermediate per-label counts for `fuse.py`). Pydantic
+    `BaseModel`, not the plain dataclasses `llm/base.py`/`evidence/base.py`
+    use, because `ExtractedClaims`/`RawVerdict` are passed straight to
+    `complete_structured()` which needs `model_json_schema()`.
+  - `src/halludetect/detect/claims.py` — `extract_claims()` (4.1): prompts
+    for FACTUAL/OPINION/INSTRUCTION/META-tagged claims via
+    `complete_structured`, then assigns `claim_id` itself
+    (`claim-0`, `claim-1`, ...) rather than trusting the model to produce
+    one - v1's `claim_extractor.py` had no id concept at all, which is
+    exactly what let its verifier fall back to joining by position later.
+    `max_claims` (default 12) is the only cap and is always honored
+    exactly - v1 had a second, undocumented hardcoded cap
+    (`claims[:2]` in `_parse_claims`) on top of whatever the caller
+    configured.
+  - `src/halludetect/detect/verify.py` — `verify_claims()` (4.2): sends
+    only FACTUAL claims + evidence chunks to `complete_structured` against
+    `RawVerdict`, then joins each returned `RawClaimVerdict` back to its
+    `Claim` **by `claim_id`**, explicitly - `dict` lookup, not position.
+    A claim the model didn't return a verdict for gets an explicit
+    `NOT_ENOUGH_INFO`/confidence-0.0 default; a verdict for a claim_id
+    never asked about is dropped. v1's `fact_verifier.py`
+    (`_parse_batch_verification`) looked for a `CLAIM_N` marker per line
+    and fell back to `lines[i]` by raw index when the marker was missing -
+    a dropped or reordered line silently verified the wrong claim.
+  - `src/halludetect/detect/quote_check.py` — `quote_is_grounded()` (4.3):
+    exact substring match after whitespace normalization only - no fuzzy/
+    similarity fallback. A `rapidfuzz.partial_ratio` prototype was tried
+    and rejected: it scored a quote with an altered number ("...built in
+    1999" against evidence reading "...built in 1932.") at 96/100,
+    above any threshold that would still only catch real paraphrasing.
+    Accepting a factually altered quote as "grounded" is worse than no
+    fuzzy matching, so the dependency was removed rather than shipped
+    with an unsafe threshold. v1's `fact_verifier.py` never checked a
+    quote against evidence at all - a `SUPPORTED` verdict was accepted on
+    the model's freeform "explanation" string alone.
+  - `src/halludetect/detect/fuse.py` — `wilson_ci()`, `summarize()`,
+    `fuse()` (4.4): Wilson 95% CI over per-claim label counts;
+    `n_verifiable_claims < 3` forces `Verdict.NOT_VERIFIABLE` regardless of
+    label mix (`docs/contract.md` rule 1); any `CONTRADICTED` claim forces
+    `Verdict.CONTRADICTED` (outranks `NOT_ENOUGH_INFO`); all-supported is
+    `GROUNDED`. `p_hallucinated`/`groundedness` come from a documented,
+    named heuristic (`calibration_version = "heuristic-v0"`), not a fitted
+    model - there's no labeled calibration set until Phase 7's golden
+    sets exist to fit one against.
+  - `src/halludetect/detect/pipeline.py` — `run()`: orchestrates
+    evidence-fetch → `extract_claims` → filter to FACTUAL → `verify_claims`
+    → `quote_is_grounded` downgrade → `fuse`. Enforces the no-evidence
+    rule itself (defense in depth, not just documented): an empty
+    `evidence_source.fetch()` result skips extraction/verification
+    entirely and returns `NOT_VERIFIABLE` without ever calling the LLM -
+    this is the first real caller of both Phase 2's
+    `LLMProvider`/`complete_structured` and Phase 3's `EvidenceSource`
+    implementations together. Takes one already-resolved `LLMProvider` for
+    the whole request (not a `Router`) so `model_used` in the response is
+    attributable to one actual model even though extraction and
+    verification are two separate LLM calls - resolving *which* model via
+    the router is left to Phase 5's API layer.
+  - `src/halludetect/detect/nli.py` — **4.5, partial**: `NLIScorer`
+    Protocol + `CrossEncoderNLIScorer` lazy-loader skeleton only.
+    `sentence_transformers`/`torch` import happens inside
+    `CrossEncoderNLIScorer.__init__`, never at module import, so nothing
+    needs that (heavyweight) dependency installed unless a real model is
+    configured. **Not done**: no `settings.nli_model` field, not wired
+    into `pipeline.py`, and no concrete `label_order` verified against a
+    real checkpoint - NLI cross-encoder output label ordering isn't
+    standardized across checkpoints, so guessing one here would risk
+    silently inverting entailment/contradiction, which is exactly the
+    class of unverified assumption this project exists to avoid. Left
+    unchecked in `plan.md` rather than marked done.
+  - **Verification**: `tests/test_claims.py`, `tests/test_verify.py`,
+    `tests/test_quote_check.py`, `tests/test_fuse.py`,
+    `tests/test_pipeline.py` (33 new tests) plus **`tests/test_parsers.py`**
+    (Phase 4's exit criteria file, 6 tests) - every v1 parser bug listed
+    above reproduced as a failing-if-regressed case, each run against two
+    distinct `FakeProvider` instances (different `provider_name`/`model`)
+    to confirm the fix isn't tied to one model's output quirks. Full
+    suite: 106/106 passing, offline, no network, no live keys.
 
 - **Phase 3 — Evidence acquisition (complete)**:
   - `src/halludetect/evidence/custom.py` — `CustomEvidenceSource` (3.4):
@@ -287,17 +374,21 @@ file at the end of every work session — do not let it drift from reality.
 
 ## What is pending
 
-Phases 1, 2, and 3 are complete. Phases 4-8 in `plan.md` are pending. Note
-that Phase 2's router, health tracker, and structured-output probe are
-still not wired into anything outside their own tests - there is no
-evidence source, no detection pipeline, no API. `Router` is usable as a
-class but nothing constructs one against a real `.env`/settings.py yet;
-that wiring, and the actual OpenRouter model list at runtime, happens
-once Phase 4 (detection pipeline) needs to call an LLM for real. The
-current root-level code (`app.py`, `config.py`, `detection/`, `rag/`,
-`knowledge_base/`) is the **legacy v1 app** described in `plan.md`'s
-Context section; it is not yet superseded and still runs, but it is not
-where new work should go.
+Phases 1, 2, and 3 are complete. Phase 4 is done except 4.5 (optional NLI
+signal, only a protocol/lazy-loader skeleton exists - see above). Phases
+5-8 in `plan.md` are pending. Phase 2's `Router`, health tracker, and
+structured-output probe, and Phase 4's `detect.pipeline.run()`, are all
+still not wired into anything outside their own tests - there is still no
+API. `pipeline.run()` takes one already-resolved `LLMProvider` and an
+`EvidenceSource`; nothing yet constructs a `Router` against real
+`.env`/settings.py and hands its result to `pipeline.run()` for an actual
+request. That wiring - plus request/response (de)serialization against
+`docs/contract.md`, `evidence_source` selection logic (`none`/`web`/
+`custom`), and turning `model_prefs` into an actual `Router` call - is
+Phase 5's job. The current root-level code (`app.py`, `config.py`,
+`detection/`, `rag/`, `knowledge_base/`) is the **legacy v1 app**
+described in `plan.md`'s Context section; it is not yet superseded and
+still runs, but it is not where new work should go.
 
 Known outstanding issue not yet fixed in the legacy app: the hardcoded API
 keys committed in prior git history are still exposed in git log/GitHub even
@@ -305,6 +396,30 @@ though `config.py` no longer contains them on disk. They should be treated
 as compromised.
 
 ## How this was done
+
+Phase 4: built `detect/schemas.py` first (same protocol-first pattern as
+Phases 1-3), then `claims.py`/`verify.py`/`quote_check.py`/`fuse.py` as
+independently testable units before `pipeline.py` wired them together -
+each of those four modules exists specifically to close one named v1 bug
+(see the Phase 4 entry above and `tests/test_parsers.py`'s module
+docstring), so each got its own regression test before being composed.
+`quote_check.py`'s fuzzy-matching prototype was built, empirically tested
+against an adversarial case (a quote with a materially wrong number), and
+then deliberately reverted to exact-substring-only when that prototype
+scored the wrong-number case as "grounded" - verified by running
+`rapidfuzz.fuzz.partial_ratio` directly against the adversarial pair
+before deciding, not by assumption. `pipeline.py`'s no-evidence short
+circuit was written as a hard `if not evidence: return NOT_VERIFIABLE`
+before any LLM call, specifically so the rule holds even if a future
+caller forgets to check `evidence_source` - verified by asserting
+`provider.call_count == 0` in `tests/test_pipeline.py` and
+`tests/test_parsers.py`, not just by checking the returned verdict.
+4.5 (NLI cross-encoder) was scoped down to a Protocol + lazy-loader
+skeleton rather than a full concrete implementation, because a real
+cross-encoder checkpoint's output label ordering isn't standardized and
+guessing at one without a model available to verify against would be
+exactly the kind of unverified assumption this project exists to avoid;
+left unchecked in `plan.md` rather than marked done.
 
 Phase 0: read `plan.md`'s API contract section (frozen request/response
 shape) and transcribed it verbatim into `docs/contract.md` as prose +
@@ -390,28 +505,25 @@ are available.
 
 ## Next process
 
-Phases 1, 2, and 3 are all done. Start **Phase 4 — Detection core** in
-`plan.md`: typed claim extraction (`FACTUAL/OPINION/INSTRUCTION/META`,
-cap `max_claims=12`), a structured verdict schema joined to claims by
-`claim_id` (never by array position), the quote-grounding check that
-downgrades an unverified `SUPPORTED` to `NOT_ENOUGH_INFO`, and calibrated
-scoring (Wilson CI, `n_verifiable_claims < 3` forces `NOT_VERIFIABLE`).
-This is where Phase 2's `Router`/`complete_structured` and Phase 3's
-`EvidenceSource` implementations actually get wired together and called
-for the first time - neither has had a real caller until now. `plan.md`'s
-biggest known risk section applies directly to 4.2/4.3: don't shortcut
-the structured-verdict parsing the way Phase 2.4's capability probe was
-built specifically to avoid.
-
-The `.env.example` gap noted above is fixed: it now documents both the
-legacy v1 keys and every v2 `Settings` field (`openrouter_api_key`,
-`gemini_api_key`, `openai_api_key`, `anthropic_api_key`,
-`custom_provider_base_url`/`custom_provider_api_key`, `tavily_api_key`),
-confirmed against pydantic-settings' actual case-insensitive
-`FIELD_NAME` env-var matching (verified interactively, not assumed) and
-against `dotenv_values()` parsing the file without error.
-
-Phase 4 — Detection core — starts next session.
+Phase 4 is done except 4.5 (optional, deferred - see above). Start
+**Phase 5 — API & interface** in `plan.md`: FastAPI `/v1/verify` +
+`/healthz` (5.1), per-key auth + token-bucket rate limiting (5.2),
+cost/usage tracking per request (5.3), an optional thin demo UI with zero
+business logic (5.4). This is where `detect.pipeline.run()` gets a real
+caller for the first time: the API layer must (a) parse a request against
+`docs/contract.md`'s schema, (b) turn `evidence`/`evidence_source` into a
+concrete `EvidenceSource` (`DirectEvidence` if `evidence` is non-empty,
+else `WebSearchEvidence`/`NoEvidenceSource`/a registered `custom` plugin
+per `evidence_source`), (c) turn `model_prefs` into a resolved
+`LLMProvider` (construct a `Router` against `settings.py`'s real keys,
+call `.complete`... - actually `pipeline.run()` needs a single bound
+provider, so Phase 5 must resolve *which* model the router would pick
+once, up front, then pass a provider bound to that model into
+`pipeline.run()`, not hand the pipeline a `Router` directly), and (d)
+serialize `AnalysisResult` back out. `plan.md`'s biggest known risk
+section (free models flaking on structured JSON) is already handled at
+the `complete_structured`/`Router` layer built in Phase 2 - Phase 5 just
+has to not bypass it.
 
 Two things still open from earlier phases, not yet acted on:
 - When real provider keys become available, spot-check each of the four
@@ -419,6 +531,17 @@ Two things still open from earlier phases, not yet acted on:
   against their live APIs at least once - the test suites only prove the
   code handles the *shapes* it was told to expect, not real responses.
 - Phase 2's `Router`/`HealthTracker`/`complete_structured` are built and
-  tested in isolation but not yet wired to `settings.py` or called from
-  anywhere real - that wiring happens naturally once Phase 4 needs to
-  issue actual verification calls.
+  tested in isolation but still not wired to `settings.py` or called from
+  anywhere real - Phase 5 is where that wiring finally has to happen,
+  since it's the API layer that needs to actually issue verification
+  calls end to end.
+
+One thing open from this session:
+- Phase 4.5 (NLI cross-encoder second signal) has only a `Protocol` +
+  lazy-loader skeleton in `src/halludetect/detect/nli.py` - no
+  `settings.nli_model` field, no pipeline wiring, no verified
+  `label_order` for a real checkpoint. Picking this up means choosing an
+  actual cross-encoder model, adding `sentence-transformers`/`torch` as a
+  dependency (heavyweight - worth confirming with whoever owns deploy
+  size/build time before adding), and verifying that model's real output
+  label ordering before wiring `label_order`, not assuming one.

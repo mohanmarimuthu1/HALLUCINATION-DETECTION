@@ -148,11 +148,11 @@ docs/contract.md              # the API contract above, versioned
 
 ## Phase 4 — Detection core (4–5 days)
 
-- [ ] 4.1 Typed claim extraction (`FACTUAL/OPINION/INSTRUCTION/META`), verify only `FACTUAL`, cap `max_claims=12` (M)
-- [ ] 4.2 Structured verdict schema; join verdicts to claims by `claim_id`, never by position (M)
-- [ ] 4.3 Quote-grounding check: `SUPPORTED` without a verbatim quote in a cited chunk → downgraded to `NOT_ENOUGH_INFO`, flagged `quote_unverified` (M)
-- [ ] 4.4 Calibrated scoring: signal vector → fitted probability, Wilson CI, no hardcoded floor; `n_verifiable_claims < 3` → `NOT_VERIFIABLE` (M)
-- [ ] 4.5 NLI cross-encoder as optional second signal, lazy-loaded behind `settings.nli_model` (L)
+- [x] 4.1 Typed claim extraction (`FACTUAL/OPINION/INSTRUCTION/META`), verify only `FACTUAL`, cap `max_claims=12` (M)
+- [x] 4.2 Structured verdict schema; join verdicts to claims by `claim_id`, never by position (M)
+- [x] 4.3 Quote-grounding check: `SUPPORTED` without a verbatim quote in a cited chunk → downgraded to `NOT_ENOUGH_INFO`, flagged `quote_unverified` (M)
+- [x] 4.4 Calibrated scoring: signal vector → fitted probability, Wilson CI, no hardcoded floor; `n_verifiable_claims < 3` → `NOT_VERIFIABLE` (M)
+- [ ] 4.5 NLI cross-encoder as optional second signal, lazy-loaded behind `settings.nli_model` (L) — protocol + lazy-loader skeleton only, see process.md; not wired into pipeline.py or settings.py yet
 
 **Exit:** `tests/test_parsers.py` covers every v1 parser bug as a regression case, passing across ≥2 different providers.
 
