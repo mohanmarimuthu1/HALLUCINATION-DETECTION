@@ -43,6 +43,15 @@ class Settings(BaseSettings):
     rate_limit_capacity: float = 60.0
     rate_limit_refill_per_s: float = 1.0
 
+    # Result cache (Phase 6.1): identical requests within cache_ttl_s get
+    # the same AnalysisResult back without repeating any LLM calls.
+    # File-backed (diskcache), not in-memory, specifically so it survives a
+    # process restart - unlike the rate limiter/health tracker above, a
+    # cache that resets on every restart wouldn't be doing its job.
+    cache_enabled: bool = True
+    cache_dir: str = ".cache/halludetect"
+    cache_ttl_s: float = 3600.0
+
 
 @lru_cache
 def get_settings() -> Settings:

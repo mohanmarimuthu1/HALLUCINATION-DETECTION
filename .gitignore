@@ -34,3 +34,6 @@ build/
 # actual knowledge base file, which stays tracked.
 data/*.csv
 
+# Result cache (Phase 6.1) - runtime data, not source.
+/.cache/
+
