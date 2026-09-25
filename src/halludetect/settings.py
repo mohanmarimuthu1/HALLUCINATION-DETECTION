@@ -25,6 +25,22 @@ class Settings(BaseSettings):
     # Absence disables the "web" evidence_source; it must never crash a request.
     tavily_api_key: SecretStr | None = None
 
+    # Per-key auth for POST /v1/verify (Phase 5.2). Comma-separated list of
+    # valid client keys - distinct from the provider keys above, which
+    # authenticate *this service* to an LLM/search backend, not a caller to
+    # this service. A static list is deliberate scope for v1: a full
+    # user/key management system is not part of this project. No keys
+    # configured means every request is rejected with 401, never silently
+    # allowed through.
+    client_api_keys: SecretStr | None = None
+
+    # Token-bucket rate limiting per client key (Phase 5.2), in-memory and
+    # per-process - correct for a single instance; a multi-instance
+    # deployment needs a shared store instead (out of scope until Phase 6
+    # introduces the first shared-cache dependency this project takes on).
+    rate_limit_capacity: float = 60.0
+    rate_limit_refill_per_s: float = 1.0
+
 
 @lru_cache
 def get_settings() -> Settings:
