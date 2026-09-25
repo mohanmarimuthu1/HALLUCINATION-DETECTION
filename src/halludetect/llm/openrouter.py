@@ -60,6 +60,7 @@ class OpenRouterProvider:
             usage=TokenUsage(
                 prompt_tokens=usage.get("prompt_tokens", 0),
                 completion_tokens=usage.get("completion_tokens", 0),
+                cost_usd=_parse_cost(usage.get("cost")),
             ),
         )
 
@@ -75,6 +76,21 @@ def _is_free(pricing: dict) -> bool:
         return float(pricing.get("prompt", 1)) == 0.0 and float(pricing.get("completion", 1)) == 0.0
     except (TypeError, ValueError):
         return False
+
+
+def _parse_cost(raw: object) -> float | None:
+    """OpenRouter reports the actual USD cost of a call directly in
+    `usage.cost` (confirmed live - not documented anywhere obvious).
+    Missing/malformed is None, not 0.0 - a genuinely free model reports
+    `cost: 0`, which is a different, more confident claim than "we don't
+    know", and Phase 5.3's cost estimation treats the two differently.
+    """
+    if raw is None:
+        return None
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        return None
 
 
 def fetch_free_models(api_key: str | None) -> list[str]:

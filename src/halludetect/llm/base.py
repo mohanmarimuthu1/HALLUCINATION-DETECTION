@@ -11,6 +11,11 @@ from typing import Protocol, runtime_checkable
 class TokenUsage:
     prompt_tokens: int
     completion_tokens: int
+    # USD cost for this exact call, when the provider reports it directly
+    # (OpenRouter does, per-request, in its usage payload). None means "not
+    # reported" - Phase 5.3's cost estimation then falls back to a static
+    # per-token rate table instead of assuming zero.
+    cost_usd: float | None = None
 
 
 @dataclass(frozen=True)
