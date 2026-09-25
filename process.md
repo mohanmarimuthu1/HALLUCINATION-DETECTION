@@ -3,9 +3,87 @@
 Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
-## Status: Phase 0, Phase 1, Phase 2, Phase 3 complete. Phase 4 — 4.1-4.4 complete, 4.5 partial (protocol/hook only, not wired).
+## Status: Phase 0, Phase 1, Phase 2, Phase 3 complete. Phase 4 — 4.1-4.4 complete, 4.5 partial (protocol/hook only, not wired). Phase 5 — 5.1 complete, 5.2-5.4 pending.
 
 ## What is done
+
+- **Phase 5.1 — FastAPI `/v1/verify` + `/healthz`**:
+  - `src/halludetect/api/schemas.py` — `VerifyRequestIn`/`ModelPrefsIn`,
+    the API-facing request shapes validated against incoming JSON,
+    mirroring `docs/contract.md` field-for-field. Deliberately separate
+    from `detect/schemas.py` (the pipeline's internal shapes) - this is
+    the boundary where untrusted request bodies get typed.
+  - `src/halludetect/api/resolve.py` — the wiring Phase 4 explicitly left
+    open: `resolve_evidence_source()` implements the `evidence` vs
+    `evidence_source` precedence from `docs/contract.md` (caller-supplied
+    `evidence` always wins; `custom` needs a plugin registered on the
+    deployment via `app.state.custom_evidence_source`, since a Python
+    callable can't be expressed in a JSON body, so an unregistered
+    `custom` request is a 400, never a silent `NoEvidenceSource`
+    fallback; `web`/`none` construct `WebSearchEvidence`/`NoEvidenceSource`
+    directly - `WebSearchEvidence`'s own missing-key check already
+    degrades to the contract's required `none`-equivalent behavior, so no
+    extra logic was needed here). `resolve_provider()` turns `model_prefs`
+    into one resolved `LLMProvider` + `ModelUsed`: `provider: openrouter`
+    (default) goes through `Router.pick_model()` (new method, see below);
+    `gemini`/`openai`/`anthropic`/`custom` are built directly from
+    `model_prefs.user_api_key` (falling back to this deployment's own key)
+    and `model_prefs.pinned_model` (falling back to that provider's
+    default model, or a `ResolutionError` for `custom` which has no sane
+    default). A module-level `HealthTracker` singleton is shared across
+    requests (not created per-request) so the circuit breaker and
+    success-rate ranking actually accumulate signal over the process
+    lifetime.
+  - `src/halludetect/llm/router.py` — added `Router.pick_model()`:
+    resolves which model the router would try first (pinned, else
+    top-ranked available free model) **without making any request**.
+    Added because `detect.pipeline.run()` (Phase 4) takes one
+    already-resolved provider for the whole request, not a `Router` - so
+    Phase 5 has to decide which model that is once, up front, rather than
+    getting per-call failover the way `Router.complete()` provides.
+    `Router.complete()` itself is untouched; `pick_model()` doesn't
+    consult `user_provider` since a non-openrouter `model_prefs.provider`
+    is resolved directly by `api.resolve`, never routed through the free
+    pool.
+  - `src/halludetect/api/main.py` — the FastAPI app: `GET /healthz`
+    returns `{"status": "ok"}`; `POST /v1/verify` parses the request,
+    calls `resolve_evidence_source`/`resolve_provider`, then
+    `pipeline.run()`, and serializes `AnalysisResult` straight back
+    (FastAPI's `response_model` handles that). `ResolutionError` (bad
+    request config, e.g. unregistered `custom` evidence source) maps to
+    400; `LLMError` from provider resolution (e.g. no pinned model and no
+    free models available) maps to 503; `LLMError` raised *during*
+    `pipeline.run()` (a resolved model actually failing mid-request) maps
+    to 502 and is logged as a warning - this is the first real caller of
+    both `resolve_evidence_source`/`resolve_provider` and
+    `detect.pipeline.run()` together. `app.state.custom_evidence_source`
+    is the registration point for an embedding deployment's own
+    retriever; unset by default. Auth (5.2) and rate limiting (5.2) are
+    not implemented yet - there is no `curl` protection on this endpoint
+    today.
+  - Added `fastapi`/`uvicorn` to `pyproject.toml` dependencies; installed
+    into `.venv` (`fastapi` was missing there - `uvicorn` happened to
+    already be present as some other package's dependency).
+  - **Verification**: `tests/test_resolve.py` (13 tests) and
+    `tests/test_api.py` (6 tests), all offline (`OpenRouterProvider.complete`
+    and `fetch_free_models` monkeypatched, no live keys, no network):
+    evidence resolution precedence (direct evidence wins even when
+    `evidence_source` is also set; unregistered `custom` raises; a
+    registered `custom` source is used directly; `web`/`none` resolve to
+    the right concrete class); model resolution (pinned model skips the
+    catalog fetch entirely - asserted by making the fetch raise if
+    called; top-ranked free model is picked; no pinned model + empty free
+    pool raises; named providers use `user_api_key`/`pinned_model` or fall
+    back to the deployment key/default model; `custom` provider requires
+    both `custom_provider_base_url` and `pinned_model`); end-to-end API
+    tests (`/healthz`; a no-evidence request never reaches the LLM at all,
+    same defense-in-depth property Phase 4's own pipeline test asserts,
+    now proven through the HTTP layer; a direct-evidence request runs the
+    full extraction -> verification -> quote-grounding chain through a
+    scripted `OpenRouterProvider`; `custom` evidence source without
+    registration and `custom` model provider without a base URL both
+    return 400; no free models and no pinned model returns 503). Full
+    suite: 125/125 passing.
 
 - **Phase 4 — Detection core (4.1-4.4 complete, 4.5 partial)**:
   - `src/halludetect/detect/schemas.py` — pydantic models for the whole
@@ -375,20 +453,18 @@ file at the end of every work session — do not let it drift from reality.
 ## What is pending
 
 Phases 1, 2, and 3 are complete. Phase 4 is done except 4.5 (optional NLI
-signal, only a protocol/lazy-loader skeleton exists - see above). Phases
-5-8 in `plan.md` are pending. Phase 2's `Router`, health tracker, and
-structured-output probe, and Phase 4's `detect.pipeline.run()`, are all
-still not wired into anything outside their own tests - there is still no
-API. `pipeline.run()` takes one already-resolved `LLMProvider` and an
-`EvidenceSource`; nothing yet constructs a `Router` against real
-`.env`/settings.py and hands its result to `pipeline.run()` for an actual
-request. That wiring - plus request/response (de)serialization against
-`docs/contract.md`, `evidence_source` selection logic (`none`/`web`/
-`custom`), and turning `model_prefs` into an actual `Router` call - is
-Phase 5's job. The current root-level code (`app.py`, `config.py`,
-`detection/`, `rag/`, `knowledge_base/`) is the **legacy v1 app**
-described in `plan.md`'s Context section; it is not yet superseded and
-still runs, but it is not where new work should go.
+signal, only a protocol/lazy-loader skeleton exists - see above). Phase 5
+is done except 5.1 - 5.2 (per-key auth + rate limiting), 5.3 (cost/usage
+tracking), and 5.4 (optional thin demo UI) are pending. `POST /v1/verify`
+today has no auth and no rate limiting: anyone who can reach the process
+can call it. `cost_usd` in the response is currently always whatever
+`pipeline.run()`'s default (`0.0`) is - Phase 5.3 needs to compute a real
+per-request cost from token usage, which `LLMResponse.usage` already
+carries but nothing reads yet. Phases 6-8 in `plan.md` are pending. The
+current root-level code (`app.py`, `config.py`, `detection/`, `rag/`,
+`knowledge_base/`) is the **legacy v1 app** described in `plan.md`'s
+Context section; it is not yet superseded and still runs, but it is not
+where new work should go.
 
 Known outstanding issue not yet fixed in the legacy app: the hardcoded API
 keys committed in prior git history are still exposed in git log/GitHub even
@@ -396,6 +472,31 @@ though `config.py` no longer contains them on disk. They should be treated
 as compromised.
 
 ## How this was done
+
+Phase 5.1: read `pipeline.py`'s and `router.py`'s module docstrings first,
+since both already recorded exactly what Phase 5 was expected to do
+(resolve a single provider up front, not hand the pipeline a `Router`) -
+implemented that literally rather than re-deriving a design: added
+`Router.pick_model()` as a narrow, request-free extension of the existing
+router (no change to `Router.complete()`'s behavior or tests) and a new
+`api.resolve` module that owns the `model_prefs`/`evidence_source` ->
+concrete-object mapping, so `api/main.py` itself stays a thin
+parse -> resolve -> pipeline.run() -> serialize sequence. Deliberately
+did *not* try to make provider resolution lazy (skip it when evidence
+turns out empty) even though that would save a catalog fetch on the
+no-evidence path - `process.md`'s own prior note said Phase 5 should
+resolve the model "once, up front" regardless, and changing Phase 4's
+`pipeline.run()` signature to support lazy resolution wasn't worth
+reopening already-tested code for a minor efficiency gain. Verified with
+an offline `TestClient`-based suite (`OpenRouterProvider.complete` and
+`fetch_free_models` monkeypatched, same pattern as `test_router.py`/
+`test_openrouter_catalog.py`) rather than a live server, confirming both
+the resolution logic in isolation (`test_resolve.py`) and the full
+HTTP-request-to-`AnalysisResult` path (`test_api.py`), including that a
+no-evidence request still never reaches the LLM even through the API
+layer - the same property Phase 4's pipeline test already proved at the
+pipeline level, now proved again at the boundary a real caller actually
+hits.
 
 Phase 4: built `detect/schemas.py` first (same protocol-first pattern as
 Phases 1-3), then `claims.py`/`verify.py`/`quote_check.py`/`fuse.py` as
@@ -505,36 +606,31 @@ are available.
 
 ## Next process
 
-Phase 4 is done except 4.5 (optional, deferred - see above). Start
-**Phase 5 — API & interface** in `plan.md`: FastAPI `/v1/verify` +
-`/healthz` (5.1), per-key auth + token-bucket rate limiting (5.2),
-cost/usage tracking per request (5.3), an optional thin demo UI with zero
-business logic (5.4). This is where `detect.pipeline.run()` gets a real
-caller for the first time: the API layer must (a) parse a request against
-`docs/contract.md`'s schema, (b) turn `evidence`/`evidence_source` into a
-concrete `EvidenceSource` (`DirectEvidence` if `evidence` is non-empty,
-else `WebSearchEvidence`/`NoEvidenceSource`/a registered `custom` plugin
-per `evidence_source`), (c) turn `model_prefs` into a resolved
-`LLMProvider` (construct a `Router` against `settings.py`'s real keys,
-call `.complete`... - actually `pipeline.run()` needs a single bound
-provider, so Phase 5 must resolve *which* model the router would pick
-once, up front, then pass a provider bound to that model into
-`pipeline.run()`, not hand the pipeline a `Router` directly), and (d)
-serialize `AnalysisResult` back out. `plan.md`'s biggest known risk
-section (free models flaking on structured JSON) is already handled at
-the `complete_structured`/`Router` layer built in Phase 2 - Phase 5 just
-has to not bypass it.
+Phase 5.1 is done. Continue **Phase 5 — API & interface** with 5.2
+(per-key auth + token-bucket rate limiting) and 5.3 (cost/usage tracking
+per request), then 5.4 (optional thin demo UI, zero business logic) if
+still in scope. 5.2 needs an actual key store (even a `settings.py`-driven
+static list is enough for v1 - a full user/key management system is out
+of scope) and a `429` path wired ahead of `api/main.py`'s existing
+handlers, not replacing them. 5.3 needs real cost computation:
+`LLMResponse.usage` (`TokenUsage.prompt_tokens`/`completion_tokens`) is
+already returned by every provider call but nothing currently reads it -
+`pipeline.run()` would need to either return usage alongside
+`AnalysisResult` or accept a cost-tracking callback, and per-token USD
+rates need a lookup table per provider/model (free-pool models are
+`0.0` by definition; named providers are not). `plan.md`'s verification
+checklist for Phase 5 (`curl -X POST /v1/verify` succeeds with a valid
+key, 401 without one, 429 over rate limit) can't be run for real until
+5.2 exists - today every request succeeds regardless of any key.
 
 Two things still open from earlier phases, not yet acted on:
 - When real provider keys become available, spot-check each of the four
   1.2 providers, `OpenRouterProvider`, and the free-model catalog fetch
   against their live APIs at least once - the test suites only prove the
   code handles the *shapes* it was told to expect, not real responses.
-- Phase 2's `Router`/`HealthTracker`/`complete_structured` are built and
-  tested in isolation but still not wired to `settings.py` or called from
-  anywhere real - Phase 5 is where that wiring finally has to happen,
-  since it's the API layer that needs to actually issue verification
-  calls end to end.
+  This now also includes an end-to-end live `/v1/verify` call once a real
+  `OPENROUTER_API_KEY` is available - the offline suite proves the wiring,
+  not that a real free model actually answers usefully.
 
 One thing open from this session:
 - Phase 4.5 (NLI cross-encoder second signal) has only a `Protocol` +
