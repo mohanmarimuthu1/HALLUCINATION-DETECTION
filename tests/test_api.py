@@ -12,18 +12,41 @@ from collections import deque
 import pytest
 from fastapi.testclient import TestClient
 
-from halludetect.api import main
+from halludetect.api import main, ratelimit
 from halludetect.api.resolve import _openrouter_health
 from halludetect.llm import openrouter
-from halludetect.settings import Settings
+from halludetect.settings import Settings, get_settings
+
+_VALID_KEY = "test-key"
+_AUTH_HEADERS = {"Authorization": f"Bearer {_VALID_KEY}"}
+
+
+def _settings(**overrides) -> Settings:
+    defaults = {"openrouter_api_key": "key", "client_api_keys": _VALID_KEY}
+    defaults.update(overrides)
+    return Settings(_env_file=None, **defaults)
+
+
+def _use_settings(settings: Settings, monkeypatch) -> None:
+    """`main.py` calls get_settings() directly (a plain module-global lookup,
+    interceptable via monkeypatch); `auth.py`/`ratelimit.py` bind it as a
+    FastAPI `Depends(get_settings)` default, resolved by object identity at
+    request time - that needs FastAPI's own override mechanism instead,
+    since monkeypatching the module attribute doesn't reach a reference
+    already captured inside a `Depends()` marker.
+    """
+    monkeypatch.setattr(main, "get_settings", lambda: settings)
+    main.app.dependency_overrides[get_settings] = lambda: settings
 
 
 @pytest.fixture(autouse=True)
 def _reset_state(monkeypatch):
-    monkeypatch.setattr(main, "get_settings", lambda: Settings(_env_file=None, openrouter_api_key="key"))
+    _use_settings(_settings(), monkeypatch)
     main.app.state.custom_evidence_source = None
     _openrouter_health._health.clear()
+    ratelimit._limiter = None
     yield
+    main.app.dependency_overrides.clear()
 
 
 @pytest.fixture
@@ -65,6 +88,7 @@ def test_verify_with_no_evidence_is_not_verifiable_without_calling_the_model(cli
     response = client.post(
         "/v1/verify",
         json={"answer": "The sky is blue.", "evidence_source": "none"},
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200
     body = response.json()
@@ -101,6 +125,7 @@ def test_verify_with_direct_evidence_runs_full_pipeline(client, monkeypatch):
             "evidence": ["Paris is the capital of France."],
             "evidence_source": "none",
         },
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 200
     body = response.json()
@@ -113,6 +138,7 @@ def test_verify_custom_evidence_source_without_registration_is_400(client):
     response = client.post(
         "/v1/verify",
         json={"answer": "irrelevant", "evidence_source": "custom"},
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 400
 
@@ -125,6 +151,7 @@ def test_verify_custom_model_provider_without_base_url_is_400(client):
             "evidence_source": "none",
             "model_prefs": {"provider": "custom", "pinned_model": "some-model"},
         },
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 400
 
@@ -134,5 +161,69 @@ def test_verify_no_free_models_and_no_pinned_is_503(client, monkeypatch):
     response = client.post(
         "/v1/verify",
         json={"answer": "irrelevant", "evidence_source": "none"},
+        headers=_AUTH_HEADERS,
     )
     assert response.status_code == 503
+
+
+# --- Phase 5.2: auth + rate limiting ----------------------------------------
+
+
+def test_verify_without_authorization_header_is_401(client):
+    response = client.post("/v1/verify", json={"answer": "irrelevant", "evidence_source": "none"})
+    assert response.status_code == 401
+
+
+def test_verify_with_wrong_key_is_401(client):
+    response = client.post(
+        "/v1/verify",
+        json={"answer": "irrelevant", "evidence_source": "none"},
+        headers={"Authorization": "Bearer wrong-key"},
+    )
+    assert response.status_code == 401
+
+
+def test_verify_with_malformed_header_is_401(client):
+    response = client.post(
+        "/v1/verify",
+        json={"answer": "irrelevant", "evidence_source": "none"},
+        headers={"Authorization": _VALID_KEY},
+    )
+    assert response.status_code == 401
+
+
+def test_verify_with_no_keys_configured_rejects_everything(client, monkeypatch):
+    _use_settings(_settings(client_api_keys=None), monkeypatch)
+    response = client.post(
+        "/v1/verify",
+        json={"answer": "irrelevant", "evidence_source": "none"},
+        headers=_AUTH_HEADERS,
+    )
+    assert response.status_code == 401
+
+
+def test_verify_over_rate_limit_is_429(client, monkeypatch):
+    _use_settings(_settings(rate_limit_capacity=1, rate_limit_refill_per_s=0.0), monkeypatch)
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    body = {"answer": "irrelevant", "evidence_source": "none"}
+
+    first = client.post("/v1/verify", json=body, headers=_AUTH_HEADERS)
+    assert first.status_code == 200
+
+    second = client.post("/v1/verify", json=body, headers=_AUTH_HEADERS)
+    assert second.status_code == 429
+
+
+def test_rate_limit_is_tracked_per_key_not_globally(client, monkeypatch):
+    _use_settings(
+        _settings(client_api_keys="key-a,key-b", rate_limit_capacity=1, rate_limit_refill_per_s=0.0),
+        monkeypatch,
+    )
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    body = {"answer": "irrelevant", "evidence_source": "none"}
+
+    first = client.post("/v1/verify", json=body, headers={"Authorization": "Bearer key-a"})
+    assert first.status_code == 200
+
+    second = client.post("/v1/verify", json=body, headers={"Authorization": "Bearer key-b"})
+    assert second.status_code == 200
