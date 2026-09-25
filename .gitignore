@@ -9,9 +9,11 @@
 /ieee_figures
 /ieee_paper
 /implementation_plan.md.resolved
+/walkthrough.md.resolved
 /ppt_content.txt
 /update_remaining_slides.py
 /COLLEGE/
+/project/
 __pycache__/
 *.pyc
 .venv/
@@ -20,8 +22,15 @@ chroma_db/
 config_error.txt
 *.egg-info/
 build/
-/claude.md
+
+# Internal working docs for AI-assisted development - kept locally,
+# not published to GitHub.
+/CLAUDE.md
 /plan.md
 /process.md
 .claude
+
+# Generated/eval output, not source - see data/knowledge_base.txt for the
+# actual knowledge base file, which stays tracked.
+data/*.csv
 
