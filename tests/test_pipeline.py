@@ -3,6 +3,7 @@ import json
 from halludetect.detect import pipeline
 from halludetect.detect.schemas import Label, ModelUsed, Verdict
 from halludetect.evidence.base import Evidence
+from halludetect.llm.base import LLMResponse, TokenUsage
 from halludetect.llm.fake import FakeProvider, fake_response
 
 _MODEL_USED = ModelUsed(provider="fake", model="fake-model")
@@ -174,3 +175,76 @@ def test_only_factual_claims_are_sent_to_verification():
     assert result.claims == []
     assert result.n_verifiable_claims == 0
     assert result.verdict == Verdict.NOT_VERIFIABLE
+
+
+def test_cost_usd_is_computed_from_actual_token_usage_not_hardcoded():
+    """Phase 5.3: cost_usd must reflect real usage across every call the
+    pipeline makes (extraction + verification here), not a caller-supplied
+    constant - the pipeline no longer even accepts one.
+    """
+    evidence = [Evidence(chunk_id="e1", text="The Eiffel Tower is in Paris, France.", source="direct")]
+
+    class _CostReportingProvider:
+        def __init__(self, responses):
+            self._responses = iter(responses)
+            self.call_count = 0
+
+        def complete(self, prompt, *, max_tokens=1024):
+            self.call_count += 1
+            return next(self._responses)
+
+        def supports_json_schema(self):
+            return True
+
+    responses = [
+        LLMResponse(
+            text=json.dumps({"claims": [{"text": "The Eiffel Tower is in Paris.", "claim_type": "FACTUAL"}]}),
+            provider="openrouter",
+            model="free/a",
+            usage=TokenUsage(prompt_tokens=100, completion_tokens=20, cost_usd=0.001),
+        ),
+        LLMResponse(
+            text=json.dumps(
+                {
+                    "claim_verdicts": [
+                        {
+                            "claim_id": "claim-0",
+                            "label": "SUPPORTED",
+                            "confidence": 0.95,
+                            "evidence_chunk_ids": ["e1"],
+                            "quote": "The Eiffel Tower is in Paris, France.",
+                        }
+                    ]
+                }
+            ),
+            provider="openrouter",
+            model="free/a",
+            usage=TokenUsage(prompt_tokens=150, completion_tokens=30, cost_usd=0.002),
+        ),
+    ]
+    provider = _CostReportingProvider(responses)
+
+    result = pipeline.run(
+        answer="The Eiffel Tower is in Paris.",
+        question=None,
+        evidence_source=_StaticEvidenceSource(evidence),
+        provider=provider,
+        request_id="req-6",
+        model_used=ModelUsed(provider="openrouter", model="free/a"),
+    )
+
+    assert provider.call_count == 2
+    assert result.cost_usd == 0.003
+
+
+def test_cost_usd_is_zero_when_no_evidence_and_no_calls_are_made():
+    provider = FakeProvider([fake_response("should never be called")])
+    result = pipeline.run(
+        answer="irrelevant",
+        question=None,
+        evidence_source=_StaticEvidenceSource([]),
+        provider=provider,
+        request_id="req-7",
+        model_used=_MODEL_USED,
+    )
+    assert result.cost_usd == 0.0

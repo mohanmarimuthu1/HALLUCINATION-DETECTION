@@ -41,6 +41,8 @@ from halludetect.detect.schemas import (
 from halludetect.detect.verify import verify_claims
 from halludetect.evidence.base import Evidence, EvidenceSource
 from halludetect.llm.base import LLMProvider
+from halludetect.llm.pricing import estimate_cost_usd
+from halludetect.llm.usage import UsageTrackingProvider
 
 
 def _elapsed_ms(start: float) -> int:
@@ -107,10 +109,14 @@ def run(
     provider: LLMProvider,
     request_id: str,
     model_used: ModelUsed,
-    cost_usd: float = 0.0,
     max_claims: int = DEFAULT_MAX_CLAIMS,
 ) -> AnalysisResult:
     total_start = monotonic()
+    # Wraps `provider` so every complete() call made during this request -
+    # extraction, verification, and any complete_structured repair retries
+    # in between - is counted for cost_usd (Phase 5.3), without claims.py/
+    # verify.py/structured.py needing to know cost tracking exists.
+    tracked_provider = UsageTrackingProvider(provider)
 
     retrieval_start = monotonic()
     evidence = evidence_source.fetch(question or answer)
@@ -123,15 +129,16 @@ def run(
             extraction=0,
             verification=0,
         )
+        cost_usd = estimate_cost_usd(model_used.provider, model_used.model, tracked_provider.usage)
         return _not_verifiable_result(request_id, model_used, cost_usd, timings)
 
     extraction_start = monotonic()
-    claims = extract_claims(provider, answer, question=question, max_claims=max_claims)
+    claims = extract_claims(tracked_provider, answer, question=question, max_claims=max_claims)
     factual_claims = [c for c in claims if c.claim_type == ClaimType.FACTUAL]
     extraction_ms = _elapsed_ms(extraction_start)
 
     verification_start = monotonic()
-    claim_results = _verify_and_ground(provider, factual_claims, evidence)
+    claim_results = _verify_and_ground(tracked_provider, factual_claims, evidence)
     verification_ms = _elapsed_ms(verification_start)
 
     signals = summarize(claim_results)
@@ -143,6 +150,7 @@ def run(
         extraction=extraction_ms,
         verification=verification_ms,
     )
+    cost_usd = estimate_cost_usd(model_used.provider, model_used.model, tracked_provider.usage)
 
     return AnalysisResult(
         request_id=request_id,
