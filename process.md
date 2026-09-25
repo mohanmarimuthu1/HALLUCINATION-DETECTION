@@ -3,9 +3,69 @@
 Tracks what has been done, what is pending, and the next step. Update this
 file at the end of every work session — do not let it drift from reality.
 
-## Status: Phase 0, Phase 1, Phase 2, Phase 3 complete. Phase 4 — 4.1-4.4 complete, 4.5 partial (protocol/hook only, not wired). Phase 5 — 5.1 complete, 5.2-5.4 pending.
+## Status: Phase 0, Phase 1, Phase 2, Phase 3 complete. Phase 4 — 4.1-4.4 complete, 4.5 partial (protocol/hook only, not wired). Phase 5 — 5.1-5.2 complete, 5.3-5.4 pending.
 
 ## What is done
+
+- **Phase 5.2 — Per-key auth + token-bucket rate limiting**:
+  - `src/halludetect/settings.py` — added `client_api_keys` (comma-separated
+    list of valid caller keys, `SecretStr | None`, deliberately distinct
+    from the provider keys already on this class - those authenticate
+    *this service* to an LLM/search backend, `client_api_keys`
+    authenticates a *caller* to this service) and
+    `rate_limit_capacity`/`rate_limit_refill_per_s` (floats, defaulted so
+    an empty env var falls back to the default rather than failing
+    validation - verified directly, since a non-Optional numeric field
+    behaves differently than the `SecretStr | None` fields elsewhere on
+    this class when its env var is present but empty).
+  - `src/halludetect/api/auth.py` — `require_api_key()`, a FastAPI
+    dependency: validates `Authorization: Bearer <key>` against
+    `settings.client_api_keys`. No keys configured at all is a 401 for
+    every request (never a silent allow-through); a missing header, a
+    header without the `Bearer ` prefix, or an unrecognized key are all
+    401 too - never distinguished in the response, so a caller can't probe
+    which failure mode occurred.
+  - `src/halludetect/api/ratelimit.py` — `RateLimiter` (plain token
+    bucket: capacity, continuous refill, per-key state in a dict) and
+    `enforce_rate_limit()`, a FastAPI dependency chained after
+    `require_api_key` so an invalid key is always 401, never 429 - rate
+    limiting only ever applies to a key already known to be valid. One
+    `RateLimiter` instance is shared per process (module-level, same
+    pattern as `api.resolve`'s shared `HealthTracker`), not created per
+    request, since per-key bucket state must persist across calls.
+    In-memory/per-process only - documented as a v1 scope limit, same as
+    `HealthTracker`; a multi-instance deployment needs a shared store.
+  - `src/halludetect/api/main.py` — wired `enforce_rate_limit` onto
+    `POST /v1/verify` only (`GET /healthz` stays unauthenticated, since
+    it's a liveness probe, not a billable/rate-limited operation).
+  - `.env.example` — documented `CLIENT_API_KEYS`,
+    `RATE_LIMIT_CAPACITY`, `RATE_LIMIT_REFILL_PER_S`.
+  - **Verification**: `tests/test_auth.py` (6 tests, calls the dependency
+    function directly - no client needed): valid key(s) accepted,
+    whitespace around keys in the list is trimmed, no keys configured
+    rejects everything, missing header / missing `Bearer` prefix /
+    unrecognized key are all 401. `tests/test_ratelimit.py` (4 tests, a
+    `now` clock passed explicitly rather than relying on real elapsed
+    time): allows up to capacity then blocks, refills over time, refill
+    never exceeds capacity, different keys tracked independently. 10 new
+    end-to-end cases added to `tests/test_api.py`: every existing Phase
+    5.1 test updated to carry a valid `Authorization` header (they'd
+    otherwise now 401), plus new cases for no header, wrong key, malformed
+    header (no `Bearer` prefix), no keys configured, over-rate-limit
+    (429 on the second call with `capacity=1`), and that two different
+    keys each get their own independent bucket. One non-obvious fix
+    needed here: `auth.py`/`ratelimit.py` bind `settings: Settings =
+    Depends(get_settings)` as a default-parameter object captured by
+    FastAPI at import time - monkeypatching the module-level
+    `get_settings` attribute (which works fine for `main.py`'s own direct
+    `get_settings()` call inside the route body) does **not** reach that
+    already-captured reference. Fixed by using FastAPI's own
+    `app.dependency_overrides[get_settings] = ...` mechanism for the two
+    dependency-injected call sites, alongside the existing
+    `monkeypatch.setattr(main, "get_settings", ...)` for the direct-call
+    site - both are needed since they're two different resolution
+    mechanisms. Full suite: 141/141 passing, offline, no network, no live
+    keys.
 
 - **Phase 5.1 — FastAPI `/v1/verify` + `/healthz`**:
   - `src/halludetect/api/schemas.py` — `VerifyRequestIn`/`ModelPrefsIn`,
@@ -454,17 +514,19 @@ file at the end of every work session — do not let it drift from reality.
 
 Phases 1, 2, and 3 are complete. Phase 4 is done except 4.5 (optional NLI
 signal, only a protocol/lazy-loader skeleton exists - see above). Phase 5
-is done except 5.1 - 5.2 (per-key auth + rate limiting), 5.3 (cost/usage
-tracking), and 5.4 (optional thin demo UI) are pending. `POST /v1/verify`
-today has no auth and no rate limiting: anyone who can reach the process
-can call it. `cost_usd` in the response is currently always whatever
-`pipeline.run()`'s default (`0.0`) is - Phase 5.3 needs to compute a real
-per-request cost from token usage, which `LLMResponse.usage` already
-carries but nothing reads yet. Phases 6-8 in `plan.md` are pending. The
-current root-level code (`app.py`, `config.py`, `detection/`, `rag/`,
-`knowledge_base/`) is the **legacy v1 app** described in `plan.md`'s
-Context section; it is not yet superseded and still runs, but it is not
-where new work should go.
+is done through 5.2 - 5.3 (cost/usage tracking) and 5.4 (optional thin demo
+UI) are pending. `POST /v1/verify` now requires a valid `Authorization:
+Bearer <key>` (401 without one, or if no keys are configured at all) and
+is rate-limited per key (429 over the configured token-bucket capacity),
+but there is still no per-key *usage* tracking - the rate limiter knows a
+key made a request, not how many tokens or how much it cost. `cost_usd` in
+the response is currently always whatever `pipeline.run()`'s default
+(`0.0`) is - Phase 5.3 needs to compute a real per-request cost from token
+usage, which `LLMResponse.usage` already carries but nothing reads yet.
+Phases 6-8 in `plan.md` are pending. The current root-level code
+(`app.py`, `config.py`, `detection/`, `rag/`, `knowledge_base/`) is the
+**legacy v1 app** described in `plan.md`'s Context section; it is not yet
+superseded and still runs, but it is not where new work should go.
 
 Known outstanding issue not yet fixed in the legacy app: the hardcoded API
 keys committed in prior git history are still exposed in git log/GitHub even
@@ -472,6 +534,26 @@ though `config.py` no longer contains them on disk. They should be treated
 as compromised.
 
 ## How this was done
+
+Phase 5.2: kept auth and rate limiting as two separate, independently
+testable FastAPI dependencies (`auth.require_api_key`,
+`ratelimit.enforce_rate_limit`) rather than one combined function, and
+chained rate limiting *after* auth (`enforce_rate_limit` takes
+`api_key: str = Depends(require_api_key)`) specifically so an invalid key
+can never consume rate-limit budget or return 429 instead of 401 - the
+plan's own exit criterion lists 401 and 429 as distinct, checkable
+outcomes. Used a plain in-process token bucket instead of reaching for
+Redis/an external store, matching the same scope decision already made for
+`HealthTracker` in Phase 2 - both are documented as single-instance-only,
+with the same "Phase 6 is where a shared store would first be justified"
+note. Hit and fixed a real FastAPI gotcha while wiring tests: a
+`Depends(get_settings)` default parameter captures the function object at
+import time, so `monkeypatch.setattr(module, "get_settings", ...)` (which
+worked fine for `main.py`'s own direct `get_settings()` call) silently did
+nothing for `auth.py`/`ratelimit.py`'s dependency-injected settings -
+diagnosed by the tests failing with the *old* settings' values still in
+effect, then fixed with `app.dependency_overrides[get_settings]`, FastAPI's
+actual mechanism for this, rather than monkeypatching harder.
 
 Phase 5.1: read `pipeline.py`'s and `router.py`'s module docstrings first,
 since both already recorded exactly what Phase 5 was expected to do
@@ -606,22 +688,31 @@ are available.
 
 ## Next process
 
-Phase 5.1 is done. Continue **Phase 5 — API & interface** with 5.2
-(per-key auth + token-bucket rate limiting) and 5.3 (cost/usage tracking
-per request), then 5.4 (optional thin demo UI, zero business logic) if
-still in scope. 5.2 needs an actual key store (even a `settings.py`-driven
-static list is enough for v1 - a full user/key management system is out
-of scope) and a `429` path wired ahead of `api/main.py`'s existing
-handlers, not replacing them. 5.3 needs real cost computation:
+Phase 5.1 and 5.2 are done. Continue **Phase 5 — API & interface** with
+5.3 (cost/usage tracking per request), then 5.4 (optional thin demo UI,
+zero business logic) if still in scope. 5.3 needs real cost computation:
 `LLMResponse.usage` (`TokenUsage.prompt_tokens`/`completion_tokens`) is
 already returned by every provider call but nothing currently reads it -
 `pipeline.run()` would need to either return usage alongside
 `AnalysisResult` or accept a cost-tracking callback, and per-token USD
-rates need a lookup table per provider/model (free-pool models are
-`0.0` by definition; named providers are not). `plan.md`'s verification
+rates need a lookup table per provider/model (free-pool models are `0.0`
+by definition; named providers are not). `plan.md`'s verification
 checklist for Phase 5 (`curl -X POST /v1/verify` succeeds with a valid
-key, 401 without one, 429 over rate limit) can't be run for real until
-5.2 exists - today every request succeeds regardless of any key.
+key, 401 without one, 429 over rate limit) can now actually be run against
+a live process - it wasn't checkable before 5.2 existed.
+
+To run the service live (not just the offline test suite), real values are
+needed in `.env` that this session cannot supply on its own:
+- `OPENROUTER_API_KEY` (or another provider's key) - without one,
+  `resolve_provider()` for the default `openrouter` path will 503 on
+  every request (no pinned model, no free models reachable).
+- At least one value in `CLIENT_API_KEYS` - without one, every
+  `/v1/verify` call 401s by design (see Phase 5.2 above). Any string(s)
+  work; these are caller-facing keys this deployment invents and hands
+  out, not something obtained from a vendor.
+Ask the user for these before attempting to actually start
+`uvicorn halludetect.api.main:app` against real traffic; the offline test
+suite (141/141 passing) does not need either.
 
 Two things still open from earlier phases, not yet acted on:
 - When real provider keys become available, spot-check each of the four

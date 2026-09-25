@@ -159,7 +159,7 @@ docs/contract.md              # the API contract above, versioned
 ## Phase 5 — API & interface (3–4 days)
 
 - [x] 5.1 FastAPI `/v1/verify`, `/healthz`, auto-generated OpenAPI docs (M)
-- [ ] 5.2 Per-key auth + token-bucket rate limiting (S)
+- [x] 5.2 Per-key auth + token-bucket rate limiting (S)
 - [ ] 5.3 Cost/usage tracking per request: tokens, provider, USD (S)
 - [ ] 5.4 Optional thin demo UI calling the API — zero business logic in the UI layer (M)
 
