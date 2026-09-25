@@ -20,9 +20,18 @@ from halludetect.settings import Settings, get_settings
 _VALID_KEY = "test-key"
 _AUTH_HEADERS = {"Authorization": f"Bearer {_VALID_KEY}"}
 
+# Set per-test by _reset_state below, to an isolated tmp_path - the result
+# cache (Phase 6.1) is file-backed and would otherwise persist real state
+# across test runs/tests sharing the same request payload.
+_default_cache_dir: object = None
+
 
 def _settings(**overrides) -> Settings:
-    defaults = {"openrouter_api_key": "key", "client_api_keys": _VALID_KEY}
+    defaults = {
+        "openrouter_api_key": "key",
+        "client_api_keys": _VALID_KEY,
+        "cache_dir": str(_default_cache_dir),
+    }
     defaults.update(overrides)
     return Settings(_env_file=None, **defaults)
 
@@ -40,11 +49,14 @@ def _use_settings(settings: Settings, monkeypatch) -> None:
 
 
 @pytest.fixture(autouse=True)
-def _reset_state(monkeypatch):
+def _reset_state(tmp_path, monkeypatch):
+    global _default_cache_dir
+    _default_cache_dir = tmp_path / "cache"
     _use_settings(_settings(), monkeypatch)
     main.app.state.custom_evidence_source = None
     _openrouter_health._health.clear()
     ratelimit._limiter = None
+    main._cache_store = None
     yield
     main.app.dependency_overrides.clear()
 
@@ -227,3 +239,75 @@ def test_rate_limit_is_tracked_per_key_not_globally(client, monkeypatch):
 
     second = client.post("/v1/verify", json=body, headers={"Authorization": "Bearer key-b"})
     assert second.status_code == 200
+
+
+# --- Phase 6.1: result cache ------------------------------------------------
+
+_CLAIM_RESPONSE = json.dumps({"claims": [{"text": "Paris is the capital of France.", "claim_type": "FACTUAL"}]})
+_VERDICT_RESPONSE = json.dumps(
+    {
+        "claim_verdicts": [
+            {
+                "claim_id": "claim-0",
+                "label": "SUPPORTED",
+                "confidence": 0.9,
+                "evidence_chunk_ids": ["direct-0"],
+                "quote": "Paris is the capital of France.",
+            }
+        ]
+    }
+)
+_CACHE_TEST_BODY = {
+    "answer": "Paris is the capital of France.",
+    "evidence": ["Paris is the capital of France."],
+    "evidence_source": "none",
+}
+
+
+def test_identical_requests_are_served_from_cache(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    # Only two scripted responses for two identical requests - if the second
+    # request weren't served from cache, the third .popleft() call below
+    # would raise IndexError on the empty deque.
+    _script_openrouter_completions(monkeypatch, [_CLAIM_RESPONSE, _VERDICT_RESPONSE])
+
+    first = client.post("/v1/verify", json=_CACHE_TEST_BODY, headers=_AUTH_HEADERS)
+    assert first.status_code == 200
+    first_body = first.json()
+
+    second = client.post("/v1/verify", json=_CACHE_TEST_BODY, headers=_AUTH_HEADERS)
+    assert second.status_code == 200
+    second_body = second.json()
+
+    assert second_body["claims"] == first_body["claims"]
+    assert second_body["verdict"] == first_body["verdict"]
+    assert second_body["request_id"] != first_body["request_id"]
+    assert second_body["timings_ms"]["extraction"] == 0
+    assert second_body["timings_ms"]["verification"] == 0
+
+
+def test_cache_disabled_runs_the_pipeline_every_time(client, monkeypatch):
+    _use_settings(_settings(cache_enabled=False), monkeypatch)
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+
+    responses = deque([_CLAIM_RESPONSE, _VERDICT_RESPONSE, _CLAIM_RESPONSE, _VERDICT_RESPONSE])
+    call_count = {"n": 0}
+
+    def _complete(self, prompt, *, max_tokens=1024):
+        from halludetect.llm.base import LLMResponse, TokenUsage
+
+        call_count["n"] += 1
+        return LLMResponse(
+            text=responses.popleft(),
+            provider="openrouter",
+            model=self._model,
+            usage=TokenUsage(prompt_tokens=1, completion_tokens=1),
+        )
+
+    monkeypatch.setattr(openrouter.OpenRouterProvider, "complete", _complete)
+
+    first = client.post("/v1/verify", json=_CACHE_TEST_BODY, headers=_AUTH_HEADERS)
+    second = client.post("/v1/verify", json=_CACHE_TEST_BODY, headers=_AUTH_HEADERS)
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert call_count["n"] == 4
