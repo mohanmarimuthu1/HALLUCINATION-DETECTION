@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check src/ tests/
+
+      - name: Type check (mypy)
+        run: mypy src/
+
+      - name: Test (pytest)
+        # Fully offline - HTTP is monkeypatched or replaced with FakeProvider
+        # throughout, and no API keys are read from the environment: a green
+        # run here proves nothing, no secrets, is required.
+        run: pytest -v
