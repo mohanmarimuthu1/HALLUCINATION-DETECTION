@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Phase 6.1's result cache is file-backed (diskcache), not a separate
+      # service like Redis - a named volume is what makes it survive a
+      # container restart, matching plan.md's "API + cache" without adding
+      # a second container this project doesn't otherwise need.
+      - halludetect-cache:/app/.cache
+
+volumes:
+  halludetect-cache:
