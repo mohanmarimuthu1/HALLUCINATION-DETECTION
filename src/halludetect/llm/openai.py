@@ -1,7 +1,12 @@
 """OpenAI chat-completions backend."""
 import httpx
 
-from halludetect.llm._http import DEFAULT_TIMEOUT_S, extract_chat_content, raise_for_provider_error, wrap_transport_error
+from halludetect.llm._http import (
+    DEFAULT_TIMEOUT_S,
+    extract_chat_content,
+    raise_for_provider_error,
+    wrap_transport_error,
+)
 from halludetect.llm.base import LLMResponse, TokenUsage
 from halludetect.llm.exceptions import LLMAuthError
 

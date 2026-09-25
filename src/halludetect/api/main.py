@@ -19,7 +19,6 @@ from halludetect.cache.key import compute_cache_key
 from halludetect.cache.store import DiskCacheStore
 from halludetect.detect import pipeline
 from halludetect.detect.schemas import AnalysisResult, Timings
-from halludetect.evidence.base import EvidenceSource
 from halludetect.llm.exceptions import LLMError
 from halludetect.logging import bind_request_id, configure_logging, get_logger
 from halludetect.settings import Settings, get_settings
@@ -34,7 +33,9 @@ app = FastAPI(title="HALLUDETECT API", version="1.0.0")
 # A Python callable can't be expressed in a JSON request body, so "custom"
 # is only usable when a deployment sets this at startup; otherwise a request
 # for it is a 400, never a silent fall-through to NoEvidenceSource.
-app.state.custom_evidence_source: EvidenceSource | None = None
+# Type: EvidenceSource | None (mypy doesn't allow an inline annotation on a
+# non-self attribute assignment, and app.state is an untyped attribute bag).
+app.state.custom_evidence_source = None
 
 # One shared cache store per process (same pattern as api.resolve's shared
 # HealthTracker) - constructed lazily against settings.cache_dir on first

@@ -82,7 +82,7 @@ def _verify_and_ground(
     raw_verdicts = verify_claims(provider, factual_claims, evidence)
 
     results = []
-    for claim, raw in zip(factual_claims, raw_verdicts):
+    for claim, raw in zip(factual_claims, raw_verdicts, strict=True):
         grounded = quote_is_grounded(raw.quote, raw.evidence_chunk_ids, chunks_by_id)
         label = raw.label
         if label == Label.SUPPORTED and not grounded:

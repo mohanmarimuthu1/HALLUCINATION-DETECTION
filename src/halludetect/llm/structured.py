@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import re
+from typing import TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -20,6 +21,8 @@ from halludetect.llm.base import LLMProvider
 from halludetect.llm.exceptions import LLMSchemaValidationError
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL)
+
+_SchemaT = TypeVar("_SchemaT", bound=BaseModel)
 
 
 def _extract_json(text: str) -> object | None:
@@ -39,11 +42,11 @@ def _extract_json(text: str) -> object | None:
 def complete_structured(
     provider: LLMProvider,
     prompt: str,
-    schema: type[BaseModel],
+    schema: type[_SchemaT],
     *,
     max_tokens: int = 1024,
     max_repairs: int = 2,
-) -> tuple[BaseModel, bool]:
+) -> tuple[_SchemaT, bool]:
     """Returns `(instance, honored_on_first_try)`.
 
     `honored_on_first_try` is the probe's real signal: True means this

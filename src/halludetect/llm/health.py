@@ -8,7 +8,7 @@ breaker rule (Phase 2.5) is defined in exactly one place.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 FAILURE_THRESHOLD = 3
 COOLDOWN_S = 5 * 60

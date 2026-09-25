@@ -16,7 +16,12 @@ from dataclasses import dataclass, field
 
 import httpx
 
-from halludetect.llm._http import DEFAULT_TIMEOUT_S, extract_chat_content, raise_for_provider_error, wrap_transport_error
+from halludetect.llm._http import (
+    DEFAULT_TIMEOUT_S,
+    extract_chat_content,
+    raise_for_provider_error,
+    wrap_transport_error,
+)
 from halludetect.llm.base import LLMResponse, TokenUsage
 from halludetect.llm.exceptions import LLMAuthError
 
@@ -85,7 +90,7 @@ def _parse_cost(raw: object) -> float | None:
     `cost: 0`, which is a different, more confident claim than "we don't
     know", and Phase 5.3's cost estimation treats the two differently.
     """
-    if raw is None:
+    if not isinstance(raw, (str, int, float)):
         return None
     try:
         return float(raw)

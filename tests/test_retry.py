@@ -12,11 +12,11 @@ from halludetect.llm.retry import RetryingProvider
 
 def _retrying(provider, **overrides):
     recorded_sleeps = []
-    defaults = dict(
-        provider=provider,
-        sleep=lambda s: recorded_sleeps.append(s),
-        jitter=lambda lo, hi: hi,  # deterministic: always the upper bound
-    )
+    defaults = {
+        "provider": provider,
+        "sleep": lambda s: recorded_sleeps.append(s),
+        "jitter": lambda lo, hi: hi,  # deterministic: always the upper bound
+    }
     defaults.update(overrides)
     return RetryingProvider(**defaults), recorded_sleeps
 

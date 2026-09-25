@@ -3,16 +3,16 @@ from halludetect.cache.key import compute_cache_key
 
 
 def _key(**overrides) -> str:
-    defaults = dict(
-        answer="The Eiffel Tower is in Paris.",
-        question=None,
-        evidence=["The Eiffel Tower is in Paris, France."],
-        evidence_source="none",
-        model_provider="openrouter",
-        allow_free_pool=True,
-        pinned_model=None,
-        user_api_key=None,
-    )
+    defaults = {
+        "answer": "The Eiffel Tower is in Paris.",
+        "question": None,
+        "evidence": ["The Eiffel Tower is in Paris, France."],
+        "evidence_source": "none",
+        "model_provider": "openrouter",
+        "allow_free_pool": True,
+        "pinned_model": None,
+        "user_api_key": None,
+    }
     defaults.update(overrides)
     return compute_cache_key(**defaults)
 

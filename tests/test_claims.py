@@ -48,4 +48,4 @@ def test_claim_ids_never_collide_across_multiple_claims():
 
     claims = extract_claims(provider, "irrelevant")
 
-    assert len(set(c.claim_id for c in claims)) == len(claims)
+    assert len({c.claim_id for c in claims}) == len(claims)
