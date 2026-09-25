@@ -29,6 +29,7 @@ from halludetect.llm.health import HealthTracker
 from halludetect.llm.openai import DEFAULT_MODEL as OPENAI_DEFAULT_MODEL
 from halludetect.llm.openai import OpenAIProvider
 from halludetect.llm.openrouter import FreeModelCatalog, OpenRouterProvider
+from halludetect.llm.retry import RetryingProvider
 from halludetect.llm.router import Router
 from halludetect.settings import Settings
 
@@ -95,6 +96,19 @@ def resolve_evidence_source(
     return NoEvidenceSource()
 
 
+def _with_retry(provider: LLMProvider, settings: Settings) -> LLMProvider:
+    """Wraps every resolved provider in jittered-backoff retry (Phase 6.2)
+    - applied here, once, so it's uniform across every `model_prefs.provider`
+    branch below rather than each branch remembering to add it itself.
+    """
+    return RetryingProvider(
+        provider,
+        max_attempts=settings.retry_max_attempts,
+        base_delay_s=settings.retry_base_delay_s,
+        max_delay_s=settings.retry_max_delay_s,
+    )
+
+
 def resolve_provider(model_prefs: ModelPrefsIn, settings: Settings) -> tuple[LLMProvider, ModelUsed]:
     """Resolves `model_prefs` to a single bound `LLMProvider` + `ModelUsed`.
 
@@ -104,7 +118,9 @@ def resolve_provider(model_prefs: ModelPrefsIn, settings: Settings) -> tuple[LLM
     plan.md's differentiator. Any other named provider is built directly
     from `model_prefs.user_api_key` (falling back to this deployment's own
     key if the caller didn't supply one) and `model_prefs.pinned_model`
-    (falling back to that provider's default model).
+    (falling back to that provider's default model). Every branch's
+    provider is wrapped in `RetryingProvider` (Phase 6.2) before being
+    returned.
     """
     if model_prefs.provider == ModelProvider.OPENROUTER:
         api_key = _secret(settings.openrouter_api_key)
@@ -116,7 +132,7 @@ def resolve_provider(model_prefs: ModelPrefsIn, settings: Settings) -> tuple[LLM
             pinned_model=model_prefs.pinned_model,
         )
         model, provider = router.pick_model()
-        return provider, ModelUsed(provider="openrouter", model=model)
+        return _with_retry(provider, settings), ModelUsed(provider="openrouter", model=model)
 
     if model_prefs.provider == ModelProvider.CUSTOM:
         if not settings.custom_provider_base_url:
@@ -131,10 +147,10 @@ def resolve_provider(model_prefs: ModelPrefsIn, settings: Settings) -> tuple[LLM
             model=model_prefs.pinned_model,
             api_key=api_key,
         )
-        return provider, ModelUsed(provider="custom", model=model_prefs.pinned_model)
+        return _with_retry(provider, settings), ModelUsed(provider="custom", model=model_prefs.pinned_model)
 
     named = _NAMED_PROVIDERS[model_prefs.provider]
     api_key = model_prefs.user_api_key or _secret(getattr(settings, named.settings_key))
     model = model_prefs.pinned_model or named.default_model
     provider = named.provider_cls(api_key, model)
-    return provider, ModelUsed(provider=model_prefs.provider.value, model=model)
+    return _with_retry(provider, settings), ModelUsed(provider=model_prefs.provider.value, model=model)

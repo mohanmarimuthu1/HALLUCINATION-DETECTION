@@ -52,6 +52,12 @@ class Settings(BaseSettings):
     cache_dir: str = ".cache/halludetect"
     cache_ttl_s: float = 3600.0
 
+    # Jittered backoff retry on transient provider failures (Phase 6.2):
+    # LLMTimeoutError/LLMRateLimitError only - see llm/retry.py.
+    retry_max_attempts: int = 3
+    retry_base_delay_s: float = 0.5
+    retry_max_delay_s: float = 8.0
+
 
 @lru_cache
 def get_settings() -> Settings:

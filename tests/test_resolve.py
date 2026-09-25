@@ -16,6 +16,7 @@ from halludetect.evidence.web_search import WebSearchEvidence
 from halludetect.llm import openrouter
 from halludetect.llm.exceptions import LLMResponseError
 from halludetect.llm.gemini import GeminiProvider
+from halludetect.llm.retry import RetryingProvider
 from halludetect.settings import Settings
 
 
@@ -80,7 +81,8 @@ def test_openrouter_pinned_model_bypasses_free_pool(monkeypatch):
     provider, model_used = resolve_provider(prefs, _settings(openrouter_api_key="key"))
     assert model_used.provider == "openrouter"
     assert model_used.model == "openrouter/pinned"
-    assert isinstance(provider, openrouter.OpenRouterProvider)
+    assert isinstance(provider, RetryingProvider)
+    assert isinstance(provider.provider, openrouter.OpenRouterProvider)
 
 
 def test_openrouter_picks_top_ranked_free_model(monkeypatch):
@@ -88,7 +90,8 @@ def test_openrouter_picks_top_ranked_free_model(monkeypatch):
     prefs = ModelPrefsIn(provider=ModelProvider.OPENROUTER)
     provider, model_used = resolve_provider(prefs, _settings(openrouter_api_key="key"))
     assert model_used == type(model_used)(provider="openrouter", model="free/a")
-    assert isinstance(provider, openrouter.OpenRouterProvider)
+    assert isinstance(provider, RetryingProvider)
+    assert isinstance(provider.provider, openrouter.OpenRouterProvider)
 
 
 def test_openrouter_no_pinned_and_no_free_models_raises(monkeypatch):
@@ -101,7 +104,8 @@ def test_openrouter_no_pinned_and_no_free_models_raises(monkeypatch):
 def test_named_provider_uses_user_api_key_and_pinned_model():
     prefs = ModelPrefsIn(provider=ModelProvider.GEMINI, user_api_key="user-key", pinned_model="gemini-custom")
     provider, model_used = resolve_provider(prefs, _settings())
-    assert isinstance(provider, GeminiProvider)
+    assert isinstance(provider, RetryingProvider)
+    assert isinstance(provider.provider, GeminiProvider)
     assert model_used.provider == "gemini"
     assert model_used.model == "gemini-custom"
 
@@ -109,7 +113,8 @@ def test_named_provider_uses_user_api_key_and_pinned_model():
 def test_named_provider_falls_back_to_deployment_key_and_default_model():
     prefs = ModelPrefsIn(provider=ModelProvider.GEMINI)
     provider, model_used = resolve_provider(prefs, _settings(gemini_api_key="deployment-key"))
-    assert isinstance(provider, GeminiProvider)
+    assert isinstance(provider, RetryingProvider)
+    assert isinstance(provider.provider, GeminiProvider)
     assert model_used.model  # default model id, non-empty
 
 
