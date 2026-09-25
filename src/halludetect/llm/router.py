@@ -63,6 +63,35 @@ class Router:
         reason = "; ".join(errors) if errors else "no pinned model, free pool, or user key configured"
         raise LLMResponseError(f"router: exhausted all options - {reason}")
 
+    def pick_model(self) -> tuple[str, LLMProvider]:
+        """Resolve which model this router would try first, without making
+        any request.
+
+        Phase 5's API layer needs a single provider bound up front rather
+        than per-call failover: `detect.pipeline.run()` takes one already-
+        resolved `LLMProvider` for the whole request (see pipeline.py's
+        module docstring) so `model_used` in the response is attributable
+        to one actual model, even though extraction and verification are
+        two separate calls. This does not consult `user_provider` - a
+        non-openrouter `model_prefs.provider` is resolved directly by the
+        caller (`halludetect.api.resolve`), never routed through the free
+        pool.
+        """
+        if self.pinned_model:
+            return self.pinned_model, self.provider_factory(self.pinned_model)
+
+        try:
+            free_models = self.catalog.get_models()
+        except LLMError as exc:
+            raise LLMResponseError(f"router: free-model catalog fetch failed: {exc}") from exc
+
+        ranked = self.health.rank_available(free_models)
+        if ranked:
+            model = ranked[0]
+            return model, self.provider_factory(model)
+
+        raise LLMResponseError("router: no pinned model and no free models currently available")
+
     def _try_model(self, model: str, prompt: str, max_tokens: int, errors: list[str]) -> LLMResponse | None:
         provider = self.provider_factory(model)
         start = monotonic()
