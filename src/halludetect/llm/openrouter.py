@@ -16,9 +16,9 @@ from dataclasses import dataclass, field
 
 import httpx
 
-from halludetect.llm._http import DEFAULT_TIMEOUT_S, raise_for_provider_error, wrap_transport_error
+from halludetect.llm._http import DEFAULT_TIMEOUT_S, extract_chat_content, raise_for_provider_error, wrap_transport_error
 from halludetect.llm.base import LLMResponse, TokenUsage
-from halludetect.llm.exceptions import LLMAuthError, LLMResponseError
+from halludetect.llm.exceptions import LLMAuthError
 
 BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = "openrouter/auto"
@@ -51,10 +51,7 @@ class OpenRouterProvider:
 
         raise_for_provider_error(response, "openrouter")
         data = response.json()
-        choices = data.get("choices") or []
-        if not choices:
-            raise LLMResponseError(f"openrouter: no choices in response for model {self._model}")
-        text = choices[0]["message"]["content"]
+        text = extract_chat_content(data, "openrouter", self._model)
         usage = data.get("usage", {})
         return LLMResponse(
             text=text,

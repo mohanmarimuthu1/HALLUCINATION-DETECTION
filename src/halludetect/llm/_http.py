@@ -30,3 +30,31 @@ def wrap_transport_error(exc: httpx.HTTPError, provider: str) -> LLMError:
     if isinstance(exc, httpx.TimeoutException):
         return LLMTimeoutError(f"{provider}: request timed out")
     return LLMResponseError(f"{provider}: transport error: {exc}")
+
+
+def extract_chat_content(data: dict, provider: str, model: str) -> str:
+    """Pulls `choices[0].message.content` out of an OpenAI-shaped chat
+    completion response (openrouter.py, openai.py,
+    custom_openai_compat.py all use this exact response shape).
+
+    A free/reasoning model can return HTTP 200 with `content: null` when it
+    exhausts `max_tokens` while still "thinking" (`finish_reason: length`,
+    the actual answer never written) - confirmed live against a real
+    OpenRouter free model, not a hypothetical. Raising here instead of
+    returning `None` as `LLMResponse.text` matters because
+    `complete_structured` calls `.strip()` on that text unconditionally;
+    without this check, that failure mode surfaces as a confusing
+    `AttributeError` deep in JSON parsing instead of the
+    `LLMResponseError` every other provider failure already produces.
+    """
+    choices = data.get("choices") or []
+    if not choices:
+        raise LLMResponseError(f"{provider}: no choices in response for model {model}")
+
+    content = choices[0].get("message", {}).get("content")
+    if not isinstance(content, str):
+        finish_reason = choices[0].get("finish_reason", "unknown")
+        raise LLMResponseError(
+            f"{provider}: no content in response for model {model} (finish_reason={finish_reason})"
+        )
+    return content

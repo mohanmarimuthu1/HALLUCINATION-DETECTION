@@ -5,7 +5,7 @@ no sane default for either.
 """
 import httpx
 
-from halludetect.llm._http import DEFAULT_TIMEOUT_S, raise_for_provider_error, wrap_transport_error
+from halludetect.llm._http import DEFAULT_TIMEOUT_S, extract_chat_content, raise_for_provider_error, wrap_transport_error
 from halludetect.llm.base import LLMResponse, TokenUsage
 
 
@@ -41,10 +41,10 @@ class CustomOpenAICompatProvider:
 
         raise_for_provider_error(response, "custom_openai_compat")
         data = response.json()
-        choice = data["choices"][0]["message"]["content"]
+        text = extract_chat_content(data, "custom_openai_compat", self._model)
         usage = data.get("usage", {})
         return LLMResponse(
-            text=choice,
+            text=text,
             provider="custom_openai_compat",
             model=self._model,
             usage=TokenUsage(
