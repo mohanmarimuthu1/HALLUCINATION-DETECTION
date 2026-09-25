@@ -1,14 +1,16 @@
-"""FastAPI app: `POST /v1/verify`, `GET /healthz` (Phase 5.1).
+"""FastAPI app: `POST /v1/verify`, `GET /healthz` (Phase 5.1), per-key auth
+and token-bucket rate limiting on `/v1/verify` (Phase 5.2).
 
-This is `detect.pipeline.run()`'s first real external caller. Per-key auth
-and rate limiting (5.2) and cost/usage tracking (5.3) are separate,
-not-yet-built concerns - this module only does request parsing, resolution
-(`api.resolve`), and response serialization against `docs/contract.md`.
+This is `detect.pipeline.run()`'s first real external caller. Cost/usage
+tracking (5.3) is a separate, not-yet-built concern - this module does
+request parsing, auth/rate-limit enforcement, resolution (`api.resolve`),
+and response serialization against `docs/contract.md`.
 """
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 
+from halludetect.api.ratelimit import enforce_rate_limit
 from halludetect.api.resolve import ResolutionError, resolve_evidence_source, resolve_provider
 from halludetect.api.schemas import VerifyRequestIn
 from halludetect.detect import pipeline
@@ -37,7 +39,7 @@ def healthz() -> dict:
 
 
 @app.post("/v1/verify", response_model=AnalysisResult)
-def verify(request: VerifyRequestIn) -> AnalysisResult:
+def verify(request: VerifyRequestIn, api_key: str = Depends(enforce_rate_limit)) -> AnalysisResult:
     request_id = bind_request_id()
     settings = get_settings()
 
