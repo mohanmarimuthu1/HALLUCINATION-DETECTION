@@ -1,186 +1,103 @@
-# Hallucination Detection System
+# Hallucination Detection
 
-A complete system for detecting hallucinations in Large Language Model (LLM) responses using Retrieval-Augmented Generation (RAG).
+This repo is mid-migration. The active project is **HALLUDETECT v2**
+(`src/halludetect/`), a standalone hallucination-verification API service.
+It supersedes the original Streamlit self-RAG demo at the repo root
+(`app.py`, `detection/`, `rag/`, `knowledge_base/`), which is kept for
+reference until the migration finishes but is not where new work happens.
 
-## 🎯 Project Overview
+See `docs/contract.md` for the frozen API contract this service implements.
 
-This system detects when an LLM generates information that is not supported by or contradicts the knowledge base. It uses:
+## HALLUDETECT v2
 
-1. **RAG (Retrieval-Augmented Generation)** - Retrieves relevant documents to ground LLM responses
-2. **Claim Extraction** - Extracts factual claims from LLM responses
-3. **Fact Verification** - Verifies each claim against retrieved evidence
-4. **Hallucination Scoring** - Provides a score and classification for response reliability
+Verifies whether a given answer is grounded in supplied or fetched
+evidence. It never lets a verifier fall back on an LLM's own world
+knowledge and call that "supported" - no evidence available always means
+`NOT_VERIFIABLE`, never a guess. See `docs/contract.md` for the full,
+versioned request/response contract.
 
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    User Query                                │
-└─────────────────────┬───────────────────────────────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│              RAG Pipeline                                    │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │  Embeddings │─▶│  ChromaDB   │─▶│  Relevant Context   │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-└─────────────────────┬───────────────────────────────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│              LLM Generation (Google Gemini)                  │
-│              Generates response with context                 │
-└─────────────────────┬───────────────────────────────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Hallucination Detection                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │   Extract   │─▶│   Verify    │─▶│   Score & Report    │  │
-│  │   Claims    │  │   Claims    │  │                     │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## 📁 Project Structure
-
-```
-HALLUCINATION DETECTION/
-├── app.py                      # Streamlit web application
-├── config.py                   # Configuration settings
-├── init_legacy_app.py          # Setup and initialization script
-├── requirements.txt            # Project dependencies
-├── README.md                   # This file
-│
-├── data/
-│   └── knowledge_base.txt      # Knowledge base documents
-│
-├── knowledge_base/
-│   ├── __init__.py
-│   ├── document_loader.py      # Document loading and chunking
-│   ├── embeddings.py           # Embedding model wrapper
-│   └── vector_store.py         # ChromaDB vector storage
-│
-├── rag/
-│   ├── __init__.py
-│   ├── retriever.py            # Document retrieval
-│   └── generator.py            # LLM-based generation
-│
-└── detection/
-    ├── __init__.py
-    ├── claim_extractor.py      # Extract claims from responses
-    ├── fact_verifier.py        # Verify claims against evidence
-    └── hallucination_detector.py # Main detection pipeline
-```
-
-## 🚀 Quick Start
-
-### 1. Install Dependencies
+### Setup
 
 ```bash
-cd "e:\HALLUCINATION DETECTION"
+python -m venv .venv
+.venv/Scripts/activate        # or `source .venv/bin/activate` on Linux/Mac
+pip install -e ".[dev]"
+cp .env.example .env
+```
+
+Fill in `.env`:
+- `OPENROUTER_API_KEY` - the default backend is OpenRouter's free-model
+  pool; without a key, every request that needs an LLM call fails.
+- `CLIENT_API_KEYS` - one or more caller-facing keys you invent yourself
+  (not from a vendor), comma-separated. Without at least one, every
+  `/v1/verify` request is rejected with 401.
+
+Everything else in `.env.example` is optional and degrades gracefully if
+left blank (a missing web-search key just disables `evidence_source: web`,
+for example - it never crashes a request).
+
+### Run the tests
+
+```bash
+pytest
+```
+
+The full suite runs offline - no network access and no live API keys
+required.
+
+### Run the service
+
+```bash
+uvicorn halludetect.api.main:app --reload
+```
+
+```bash
+curl -X POST http://localhost:8000/v1/verify \
+  -H "Authorization: Bearer <one of your CLIENT_API_KEYS>" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "answer": "The Eiffel Tower is in Paris.",
+        "evidence": ["The Eiffel Tower is located in Paris, France."],
+        "evidence_source": "none"
+      }'
+```
+
+`GET /healthz` is unauthenticated (liveness probe). `POST /v1/verify`
+requires a valid `Authorization: Bearer <key>` and is rate-limited per key.
+
+### Layout
+
+```
+src/halludetect/
+  settings.py     pydantic-settings, SecretStr per provider/client key
+  logging.py      structlog JSON logging, per-request request_id
+  llm/            LLMProvider per backend (OpenRouter free pool, Gemini,
+                  OpenAI, Anthropic, generic OpenAI-compatible), router
+                  with health tracking + circuit breaker
+  evidence/       EvidenceSource per mode (caller-supplied, web search,
+                  none, a caller's own retriever)
+  detect/         claim extraction, verification, quote-grounding,
+                  calibrated fusion - the pipeline itself
+  api/            FastAPI app: /v1/verify, /healthz, auth, rate limiting
+docs/
+  contract.md     the frozen API contract (source of truth)
+  openapi.yaml    machine-readable mirror of the same contract
+tests/            fully offline - monkeypatched HTTP, no live keys
+```
+
+## Legacy v1 app (reference only)
+
+The original Streamlit demo: RAG over a local knowledge base with a
+claim-extraction/fact-verification pass on top. Superseded by v2 above -
+its detector had structural defects (substring-matched verdicts, no quote
+grounding, a self-learning loop that fed hallucinated answers back into
+its own knowledge base) that v2's design specifically avoids.
+
+```bash
 pip install -r requirements.txt
+python init_legacy_app.py   # first-time setup: builds the vector store
+streamlit run app.py        # http://localhost:8501
 ```
 
-### 2. Run Setup (First Time Only)
-
-```bash
-python init_legacy_app.py
-```
-
-This will:
-- Load the embedding model
-- Build the vector database
-- Test all components
-
-### 3. Run the Web Application
-
-```bash
-streamlit run app.py
-```
-
-The app will open at http://localhost:8501
-
-## 🔧 Configuration
-
-Edit `config.py` to customize:
-
-- `GOOGLE_API_KEY` - Your Google Gemini API key
-- `LLM_MODEL` - Gemini model to use
-- `EMBEDDING_MODEL` - Sentence transformer model
-- `CHUNK_SIZE` - Document chunk size
-- `TOP_K_DOCUMENTS` - Number of documents to retrieve
-
-## 📊 How It Works
-
-### 1. Document Processing
-- Documents are loaded from `data/knowledge_base.txt`
-- Text is split into chunks using RecursiveCharacterTextSplitter
-- Chunks are embedded using sentence-transformers
-- Embeddings are stored in ChromaDB
-
-### 2. Query Processing
-- User submits a query
-- Relevant documents are retrieved using semantic search
-- Retrieved context is passed to the LLM along with the query
-
-### 3. Response Generation
-- LLM generates a response grounded in the retrieved context
-- Prompt instructs the LLM to only use information from context
-
-### 4. Hallucination Detection
-- Claims are extracted from the response
-- Each claim is verified against the context
-- Claims are classified as: SUPPORTED, CONTRADICTED, or NOT_ENOUGH_INFO
-- Overall hallucination score is calculated
-
-### 5. Results Display
-- Response is shown with hallucination score
-- Each claim is highlighted with its verification status
-- Risk level is displayed (LOW, MEDIUM, HIGH)
-
-## 🎨 Web Interface Features
-
-- **Beautiful gradient UI** with modern styling
-- **Real-time analysis** of LLM responses
-- **Interactive claim verification** display
-- **Visual score cards** with color-coded risk levels
-- **Expandable context view** showing retrieved documents
-- **Example queries** for quick testing
-
-## 📈 Understanding Results
-
-### Hallucination Score (0-100%)
-- **0-30%**: LOW risk - Response is well-grounded in evidence
-- **30-70%**: MEDIUM risk - Some claims may lack support
-- **70-100%**: HIGH risk - Response contains unsupported claims
-
-### Claim Verdicts
-- ✅ **SUPPORTED**: Claim is verified by the knowledge base
-- ❌ **CONTRADICTED**: Claim conflicts with the knowledge base
-- ❓ **NOT_ENOUGH_INFO**: Knowledge base doesn't cover this claim
-
-## 📚 Adding Your Own Knowledge Base
-
-1. Add text files to the `data/` directory
-2. Run the setup script again to rebuild the vector store
-3. Or click "Rebuild Knowledge Base" in the web app sidebar
-
-## 🛠️ Technology Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Language | Python 3.10+ |
-| LLM | Google Gemini API |
-| Embeddings | sentence-transformers |
-| Vector Database | ChromaDB |
-| Web Framework | Streamlit |
-| Text Processing | LangChain |
-
-## 📝 License
-
-This project is for educational purposes (Final Year Project).
-
-## 🙏 Acknowledgments
-
-- Google Gemini for the LLM API
-- Hugging Face for sentence-transformers
-- ChromaDB for vector storage
-- Streamlit for the web framework
+Configuration lives in `config.py` / `.env` (`GOOGLE_API_KEY`,
+`OPENROUTER_API_KEY_1`, `OPENROUTER_API_KEY_2`).
