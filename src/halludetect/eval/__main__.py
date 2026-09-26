@@ -1,5 +1,5 @@
 """CLI entry point (Phase 7.4): `python -m halludetect.eval --suite golden
-[--record] [--out report.json]`.
+[--record [--force-record]] [--out report.json]`.
 
 First `python -m` module CLI in this codebase - no prior `argparse` or
 `[project.scripts]` precedent existed to follow, so this establishes the
@@ -43,7 +43,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--record",
         action="store_true",
-        help="Call the real pipeline and refresh the replay file instead of replaying it.",
+        help="Call the real pipeline for any golden item missing from the replay file (resumable).",
+    )
+    parser.add_argument(
+        "--force-record",
+        action="store_true",
+        help="With --record, also re-call already-recorded items instead of reusing them.",
     )
     parser.add_argument("--out", default="eval_report.json", help="Where to write the full metrics report JSON.")
     args = parser.parse_args(argv)
@@ -51,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
     golden_path, replay_path = suites[args.suite]
 
     try:
-        outcomes = run_suite(golden_path, replay_path, record=args.record)
+        outcomes = run_suite(golden_path, replay_path, record=args.record, force_record=args.force_record)
     except MissingReplayError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

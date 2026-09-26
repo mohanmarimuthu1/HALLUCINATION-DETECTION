@@ -66,3 +66,69 @@ def test_replay_mode_returns_the_recorded_result(tmp_path):
     first = next(o for o in outcomes if o.item.id == "golden-a-001")
     assert first.result.request_id == "golden-a-001"
     assert first.result.verdict == Verdict.GROUNDED
+
+
+def test_record_mode_never_touches_a_provider_when_everything_is_already_recorded(tmp_path, monkeypatch):
+    def _boom(*args, **kwargs):
+        raise AssertionError("resolve_provider must not be called when every item is already recorded")
+
+    monkeypatch.setattr("halludetect.eval.runner.resolve_provider", _boom)
+
+    replay_path = _prefilled_replay_path(tmp_path)
+    outcomes = run_suite(_GOLDEN_PATH, replay_path, record=True)
+
+    items = load_golden_set(_GOLDEN_PATH)
+    assert len(outcomes) == len(items)
+    first = next(o for o in outcomes if o.item.id == "golden-a-001")
+    assert first.result.verdict == Verdict.GROUNDED
+
+
+def test_record_mode_only_calls_the_provider_for_missing_items(tmp_path, monkeypatch):
+    replay_path = tmp_path / "partial.json"
+    items = load_golden_set(_GOLDEN_PATH)
+    store = EvalReplayStore(replay_path)
+    # Pre-fill every item except the very first one.
+    for item in items[1:]:
+        store.set(_cache_key_for(item), _stub_result(item.id))
+    store.save()
+
+    calls: list[str] = []
+
+    def _fake_resolve(model_prefs, settings):
+        calls.append("resolved")
+        return object(), ModelUsed(provider="openrouter", model="free/b")
+
+    def _fake_pipeline_run(**kwargs):
+        return _stub_result(kwargs["request_id"])
+
+    monkeypatch.setattr("halludetect.eval.runner.resolve_provider", _fake_resolve)
+    monkeypatch.setattr("halludetect.eval.runner.pipeline.run", _fake_pipeline_run)
+
+    outcomes = run_suite(_GOLDEN_PATH, replay_path, record=True, sleep=lambda _s: None)
+
+    assert len(calls) == 1  # resolved lazily, exactly once, for the one missing item
+    assert len(outcomes) == len(items)
+    reloaded = EvalReplayStore(replay_path)
+    assert reloaded.get(_cache_key_for(items[0])) is not None
+
+
+def test_force_record_recalls_already_recorded_items(tmp_path, monkeypatch):
+    replay_path = _prefilled_replay_path(tmp_path)
+
+    def _fake_resolve(model_prefs, settings):
+        return object(), ModelUsed(provider="openrouter", model="free/b")
+
+    calls: list[str] = []
+
+    def _fake_pipeline_run(**kwargs):
+        calls.append(kwargs["request_id"])
+        return _stub_result(kwargs["request_id"])
+
+    monkeypatch.setattr("halludetect.eval.runner.resolve_provider", _fake_resolve)
+    monkeypatch.setattr("halludetect.eval.runner.pipeline.run", _fake_pipeline_run)
+
+    items = load_golden_set(_GOLDEN_PATH)
+    outcomes = run_suite(_GOLDEN_PATH, replay_path, record=True, force_record=True, sleep=lambda _s: None)
+
+    assert len(calls) == len(items)  # every item was re-called, not just missing ones
+    assert len(outcomes) == len(items)
