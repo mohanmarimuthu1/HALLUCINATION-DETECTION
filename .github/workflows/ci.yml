@@ -29,3 +29,12 @@ jobs:
         # throughout, and no API keys are read from the environment: a green
         # run here proves nothing, no secrets, is required.
         run: pytest -v
+
+      - name: Eval gate (golden set A)
+        # Also fully offline (Phase 7.4): replays committed responses from
+        # tests/data/golden/eval_set_a.replay.json, recorded once against a
+        # real free OpenRouter model - no network call, no API key, here.
+        # Fails if a golden item's cache key is missing from that file, or
+        # if the abstention-recall / quote-verification-rate invariants
+        # regress (see eval/__main__.py's module docstring).
+        run: python -m halludetect.eval --suite golden

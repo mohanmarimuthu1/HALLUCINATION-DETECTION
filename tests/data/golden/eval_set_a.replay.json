@@ -1,0 +1,1921 @@
+{
+  "019117da420ae88752ae347c49e021d46ea28dd3f6e6a6c81d7094ca2c04b559": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The startup raised $8 million in its Series A funding round."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-018",
+    "timings_ms": {
+      "extraction": 1343,
+      "retrieval": 0,
+      "total": 2843,
+      "verification": 1500
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "21cfe352bb86f5f704c9ef3637ed62958f873ede24134652a60c0bbc6453381b": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The company's quarterly revenue grew by 12 percent."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-016",
+    "timings_ms": {
+      "extraction": 1750,
+      "retrieval": 0,
+      "total": 3139,
+      "verification": 1389
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "28295f8dea070b36bd170f7493e5b4cba707eaa4c5f264816b78409193c1b11e": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Apollo 11 was the first crewed mission to land on the Moon."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Apollo 11 landed in 1969."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Neil Armstrong was the mission commander."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Buzz Aldrin was the lunar module pilot."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-022",
+    "timings_ms": {
+      "extraction": 2765,
+      "retrieval": 0,
+      "total": 5952,
+      "verification": 3186
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "2a90a9ba88f887fca8cada8c0beabbd476dc1ef203d9530103c9af20e5a611b3": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Great Wall of China was built and rebuilt over roughly two thousand years across multiple dynasties.",
+        "quote_verified": true,
+        "text": "The Great Wall of China was built over many centuries."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "In total, the various sections of the Great Wall stretch for thousands of kilometers across northern China.",
+        "quote_verified": true,
+        "text": "The Great Wall of China stretches for thousands of kilometers."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.97,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Builders used materials including stone, brick, tamped earth, and wood depending on the region.",
+        "quote_verified": true,
+        "text": "Portions of the Great Wall were built using stone, brick, and rammed earth."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "A primary purpose of the wall was to protect Chinese states and empires from raids and invasions by northern nomadic groups.",
+        "quote_verified": true,
+        "text": "The Great Wall was constructed primarily to defend against invasions from the north."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-002",
+    "timings_ms": {
+      "extraction": 2718,
+      "retrieval": 0,
+      "total": 13859,
+      "verification": 11140
+    },
+    "verdict": "GROUNDED"
+  },
+  "2c49af68f99e642edc48b044d670c7241041d7f5e099d9f65b3d7b751433e7a7": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The water cycle, or hydrologic cycle, describes the continuous movement of water within the Earth and atmosphere.",
+        "quote_verified": true,
+        "text": "The water cycle describes the movement of water through Earth's systems."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Evaporation is the process by which liquid water is converted into water vapor, often driven by heat from the sun.",
+        "quote_verified": true,
+        "text": "Evaporation converts liquid water into vapor."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Condensation occurs when water vapor cools and forms clouds.",
+        "quote_verified": true,
+        "text": "Condensation forms clouds from water vapor."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Precipitation is the process by which water returns to the Earth's surface in forms such as rain, snow, or hail.",
+        "quote_verified": true,
+        "text": "Precipitation returns water to the surface as rain or snow."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-010",
+    "timings_ms": {
+      "extraction": 2140,
+      "retrieval": 0,
+      "total": 4125,
+      "verification": 1984
+    },
+    "verdict": "GROUNDED"
+  },
+  "32f18099476d032485204fcf73340b21795bda506a5592e3fbe67cf3d2d46028": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The human genome contains approximately 3 billion base pairs of DNA.",
+        "quote_verified": true,
+        "text": "The human genome contains about 3 billion base pairs."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Human Genome Project was the international effort that sequenced the human genome.",
+        "quote_verified": true,
+        "text": "It was fully sequenced by the Human Genome Project."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Human Genome Project was completed in 2003.",
+        "quote_verified": true,
+        "text": "The project was completed in 2003."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Humans have 20 pairs of chromosomes in each somatic cell.",
+        "quote_verified": true,
+        "text": "Humans have 23 pairs of chromosomes."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "inclusionai/ling-3.0-flash-fin:free",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-029",
+    "timings_ms": {
+      "extraction": 1577,
+      "retrieval": 0,
+      "total": 9031,
+      "verification": 7453
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "36bcc36b5cbad532530650d634bce2dc236bf12cd1f37295597915464ced9f02": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Eiffel Tower is located in Paris, France."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Eiffel Tower was completed in 1889."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Eiffel Tower was designed by engineers working for Gustave Eiffel's engineering company."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Eiffel Tower stands approximately 330 meters tall."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-001",
+    "timings_ms": {
+      "extraction": 2890,
+      "retrieval": 0,
+      "total": 4984,
+      "verification": 2093
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "421f99811808c7f20b20da951293a3aae3528aa2438d7ca1194688eba3cb734a": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Titan has a thick atmosphere."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Titan's atmosphere is nitrogen-rich."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Titan has lakes of liquid methane on its surface."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Titan has lakes of liquid ethane on its surface."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 0.98,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Titan is the second-largest moon in the solar system."
+      },
+      {
+        "claim_id": "claim-5",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Scientists believe Titan's surface conditions resemble early Earth in some ways."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.3903430336530645
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 6,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-013",
+    "timings_ms": {
+      "extraction": 3765,
+      "retrieval": 0,
+      "total": 8640,
+      "verification": 4875
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "424d7afd7e3b9b263243a0daff730168827fa69ce190460478676c1d42b86b95": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Romeo and Juliet was written by Christopher Marlowe.",
+        "quote_verified": true,
+        "text": "Romeo and Juliet was written by William Shakespeare."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The play was written in the late 16th century.",
+        "quote_verified": true,
+        "text": "Romeo and Juliet was written in the late 16th century."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Romeo and Juliet is classified as a tragedy.",
+        "quote_verified": true,
+        "text": "Romeo and Juliet is a tragedy."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The play is set in the Italian city of Verona.",
+        "quote_verified": true,
+        "text": "Romeo and Juliet is set in Verona, an Italian city."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-025",
+    "timings_ms": {
+      "extraction": 1672,
+      "retrieval": 0,
+      "total": 7735,
+      "verification": 6063
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "4d1c6fb909cf69163c4c831016f23909e0277af14f0fe5355e8d6926095a0035": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The new bridge downtown cost $45 million to build."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-012",
+    "timings_ms": {
+      "extraction": 1781,
+      "retrieval": 0,
+      "total": 4015,
+      "verification": 2234
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "751089779fba3feedb5a9dca0465d0aef31db6b2e5f8181b96539b2fee829a18": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Axolotls can regenerate entire limbs."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Axolotls retain juvenile features throughout their adult life."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Axolotls are native to lakes near Mexico City."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Axolotls are considered critically endangered in the wild."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-019",
+    "timings_ms": {
+      "extraction": 4984,
+      "retrieval": 0,
+      "total": 8671,
+      "verification": 3686
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "774a89a1f7c31923f090275a122fdc4a4b01a733c473017eaf5ca9067fa24a39": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The human heart is a four-chambered muscular organ consisting of two atria and two ventricles.",
+        "quote_verified": true,
+        "text": "The human heart has four chambers."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.95,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The heart's primary function is to pump blood through the circulatory system to deliver oxygen and nutrients.",
+        "quote_verified": true,
+        "text": "The human heart pumps blood throughout the body."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The heart is located in the middle of the chest, slightly tilted toward the left side.",
+        "quote_verified": true,
+        "text": "The human heart is located slightly left of the center of the chest."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "A normal resting adult heart rate ranges from about 60 to 100 beats per minute.",
+        "quote_verified": true,
+        "text": "An adult human heart beats around 60 to 100 times per minute at rest."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-007",
+    "timings_ms": {
+      "extraction": 2156,
+      "retrieval": 0,
+      "total": 6469,
+      "verification": 4313
+    },
+    "verdict": "GROUNDED"
+  },
+  "8b853d066b051cbdbb9a1ceec0bbc9dd1b1dcef40310e951dd92281f5f67e573": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Berlin Wall divided East and West Berlin for decades during the Cold War.",
+        "quote_verified": true,
+        "text": "The Berlin Wall divided East and West Berlin."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Construction of the Berlin Wall began in 1961.",
+        "quote_verified": true,
+        "text": "It was built in 1961."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The Berlin Wall fell in 1979, a decade earlier than most historical accounts state.",
+        "quote_verified": true,
+        "text": "The wall fell in 1989."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The wall stretched approximately 155 kilometers in total length.",
+        "quote_verified": true,
+        "text": "It stretched for about 155 kilometers."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "inclusionai/ling-3.0-flash-fin:free",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-028",
+    "timings_ms": {
+      "extraction": 2578,
+      "retrieval": 0,
+      "total": 6672,
+      "verification": 4093
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "9404f247d7d53303aa0f266fe158d814fa201445e10254c31fb3bb3643449cc6": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Rhodium is one of the rarest precious metals."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Rhodium is highly resistant to corrosion."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Rhodium is commonly used in catalytic converters."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Rhodium's price often exceeds the price of gold."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Rhodium's price often exceeds the price of platinum."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.43449149475208104
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-015",
+    "timings_ms": {
+      "extraction": 2875,
+      "retrieval": 0,
+      "total": 6343,
+      "verification": 3468
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "958d35cea5ca2ba297a910da49bcb79006f4defee2f78959f8b966e9d633dc1e": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The speed of light in a vacuum is approximately 150,000 kilometers per second.",
+        "quote_verified": true,
+        "text": "The speed of light in a vacuum is about 300,000 kilometers per second."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The speed of light is conventionally denoted by the symbol c.",
+        "quote_verified": true,
+        "text": "It is denoted by the symbol c."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "According to relativity, nothing with mass can accelerate to or beyond the speed of light.",
+        "quote_verified": true,
+        "text": "Nothing with mass can travel faster than light."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Light takes roughly 8 minutes to travel from the Sun to Earth.",
+        "quote_verified": true,
+        "text": "Light takes about 8 minutes to travel from the Sun to Earth."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "inclusionai/ling-3.0-flash-fin:free",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-027",
+    "timings_ms": {
+      "extraction": 1500,
+      "retrieval": 0,
+      "total": 3436,
+      "verification": 1936
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "961969fd944b04c270e57c42ef299c1de00593900904f42847202f6920be65fe": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Mount Everest is Earth's highest mountain above sea level, located in the Mahalangur Himal sub-range of the Himalayas.",
+        "quote_verified": true,
+        "text": "Mount Everest is the tallest mountain above sea level on Earth."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Mount Everest is Earth's highest mountain above sea level, located in the Mahalangur Himal sub-range of the Himalayas.",
+        "quote_verified": true,
+        "text": "Mount Everest is located in the Himalayas."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The mountain's summit sits on the international border between Nepal and the Tibet Autonomous Region of China.",
+        "quote_verified": true,
+        "text": "Mount Everest sits on the border between Nepal and Tibet."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The first confirmed ascent to the summit was made in 1953 by Edmund Hillary and Tenzing Norgay.",
+        "quote_verified": true,
+        "text": "Mount Everest was first summited in 1953."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-005",
+    "timings_ms": {
+      "extraction": 2265,
+      "retrieval": 0,
+      "total": 6547,
+      "verification": 4281
+    },
+    "verdict": "GROUNDED"
+  },
+  "96a3606fc9f4419382c774f46ea1e404badb688267af970bb547f8b17cca55e3": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Amazon rainforest is the largest tropical rainforest on Earth by area.",
+        "quote_verified": true,
+        "text": "The Amazon rainforest is the largest tropical rainforest in the world."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The rainforest spans across nine South American countries including Brazil, Peru, and Colombia.",
+        "quote_verified": true,
+        "text": "The Amazon rainforest spans across multiple South American countries."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Amazon plays a significant role in global carbon cycling, absorbing large amounts of carbon dioxide.",
+        "quote_verified": true,
+        "text": "The Amazon rainforest plays a major role in absorbing carbon dioxide."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Brazil contains roughly 60 percent of the Amazon rainforest, the largest share of any single country.",
+        "quote_verified": true,
+        "text": "Brazil contains the largest portion of the Amazon rainforest."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-006",
+    "timings_ms": {
+      "extraction": 2265,
+      "retrieval": 0,
+      "total": 4968,
+      "verification": 2702
+    },
+    "verdict": "GROUNDED"
+  },
+  "9860aa6603472c17d98d05ffabebc456a0d84d506f35eb49560ebff82ee8b368": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Mount Kilimanjaro is the tallest mountain in Africa.",
+        "quote_verified": true,
+        "text": "Mount Kilimanjaro is the tallest mountain in Africa."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Mount Kilimanjaro is located in Kenya.",
+        "quote_verified": true,
+        "text": "Mount Kilimanjaro is located in Tanzania."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The mountain's highest summit is named Uhuru Peak.",
+        "quote_verified": true,
+        "text": "The summit of Mount Kilimanjaro is called Uhuru Peak."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Mount Kilimanjaro is a dormant volcanic mountain.",
+        "quote_verified": true,
+        "text": "Mount Kilimanjaro is a dormant volcano."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-026",
+    "timings_ms": {
+      "extraction": 4514,
+      "retrieval": 0,
+      "total": 7625,
+      "verification": 3110
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "a29a3cbba2331eeaa359d1cbd138ef0ff8f060cfb1efdb81fa6f67d2aaddcd07": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "At sea level, water boils at 90 degrees Celsius under standard atmospheric pressure.",
+        "quote_verified": true,
+        "text": "Water boils at 100 degrees Celsius at sea level."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "100 degrees Celsius is equivalent to 212 degrees Fahrenheit.",
+        "quote_verified": true,
+        "text": "100 degrees Celsius is equivalent to 212 degrees Fahrenheit."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Water's boiling point decreases as altitude increases and atmospheric pressure drops.",
+        "quote_verified": true,
+        "text": "The boiling point of water decreases at higher altitudes."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Water freezes at 0 degrees Celsius under standard atmospheric pressure.",
+        "quote_verified": true,
+        "text": "Water freezes at 0 degrees Celsius."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-024",
+    "timings_ms": {
+      "extraction": 3280,
+      "retrieval": 0,
+      "total": 7764,
+      "verification": 4484
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "a5521d5e9a6a572be1db7db09a555d829293976fdd011064a8cc95ce7294de5d": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Photosynthesis is a process used by plants to convert light energy into chemical energy stored in glucose.",
+        "quote_verified": true,
+        "text": "Photosynthesis is the process by which plants convert light energy into chemical energy."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "In plant cells, photosynthesis takes place primarily in organelles called chloroplasts.",
+        "quote_verified": true,
+        "text": "Photosynthesis primarily takes place in the chloroplasts of plant cells."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Oxygen is released as a byproduct of the photosynthetic process.",
+        "quote_verified": true,
+        "text": "Photosynthesis produces oxygen as a byproduct."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The main inputs to photosynthesis are carbon dioxide and water, along with light energy.",
+        "quote_verified": true,
+        "text": "Carbon dioxide is a main input of photosynthesis."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The main inputs to photosynthesis are carbon dioxide and water, along with light energy.",
+        "quote_verified": true,
+        "text": "Water is a main input of photosynthesis."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.565508505247919,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-004",
+    "timings_ms": {
+      "extraction": 8110,
+      "retrieval": 0,
+      "total": 10875,
+      "verification": 2764
+    },
+    "verdict": "GROUNDED"
+  },
+  "bf81d5e182b16f99c62a7c046adeb08c8df56e0a96ceb43a3595bfd126fba577": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Springfield has a population of about 200,000 people."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-011",
+    "timings_ms": {
+      "extraction": 1750,
+      "retrieval": 0,
+      "total": 6484,
+      "verification": 4734
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "c04b3dbabd1fa8ae2a8692e7e34e27adcedf442e08497705757233f20253ba2e": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "DNA molecules have a double helix structure, resembling a twisted ladder.",
+        "quote_verified": true,
+        "text": "DNA has a double-helix structure."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The double helix structure of DNA was described by James Watson and Francis Crick in 1953, based partly on data from Rosalind Franklin.",
+        "quote_verified": true,
+        "text": "The double-helix structure of DNA was described by Watson and Crick."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "DNA is composed of building blocks called nucleotides.",
+        "quote_verified": true,
+        "text": "DNA is composed of nucleotides."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Each nucleotide consists of a sugar molecule, a phosphate group, and one of four nitrogenous bases.",
+        "quote_verified": true,
+        "text": "Each DNA nucleotide contains a sugar."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Each nucleotide consists of a sugar molecule, a phosphate group, and one of four nitrogenous bases.",
+        "quote_verified": true,
+        "text": "Each DNA nucleotide contains a phosphate group."
+      },
+      {
+        "claim_id": "claim-5",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Each nucleotide consists of a sugar molecule, a phosphate group, and one of four nitrogenous bases.",
+        "quote_verified": true,
+        "text": "Each DNA nucleotide contains a nitrogenous base."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.6096569663469354,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 6,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-009",
+    "timings_ms": {
+      "extraction": 2890,
+      "retrieval": 0,
+      "total": 6859,
+      "verification": 3968
+    },
+    "verdict": "GROUNDED"
+  },
+  "c2b6ea08541cfb27a2fdd728cdb23a851e6151e35cba8920733b99987600aa83": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The museum's new wing added 15,000 square feet of gallery space."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-020",
+    "timings_ms": {
+      "extraction": 1469,
+      "retrieval": 0,
+      "total": 3078,
+      "verification": 1609
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "cb1f196a2ade45fc3b5fb948fff3c50f03f23c8442509f569df6bf162f234cd3": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Python is a high-level, general-purpose programming language.",
+        "quote_verified": true,
+        "text": "Python is a high-level programming language."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Python was created by Guido van Rossum and first released in 1991.",
+        "quote_verified": true,
+        "text": "Python was created by Guido van Rossum."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Python's design philosophy emphasizes code readability, notably through the use of significant indentation.",
+        "quote_verified": true,
+        "text": "Python emphasizes code readability."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Python was created by Guido van Rossum and first released in 1991.",
+        "quote_verified": true,
+        "text": "Python was first released in 1991."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-003",
+    "timings_ms": {
+      "extraction": 2781,
+      "retrieval": 0,
+      "total": 9968,
+      "verification": 7186
+    },
+    "verdict": "GROUNDED"
+  },
+  "d0b1c9f14c3b81393b882216c7ea151405acb1cbf1b68e8ca46c8c6a034fe81c": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Eiffel Tower is located in Paris, France.",
+        "quote_verified": true,
+        "text": "The Eiffel Tower is located in Paris, France."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The Eiffel Tower was completed in 1887, two years earlier than commonly believed.",
+        "quote_verified": true,
+        "text": "The Eiffel Tower was completed in 1889."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The tower was designed by Gustave Eiffel's engineering firm.",
+        "quote_verified": true,
+        "text": "The Eiffel Tower was designed by Gustave Eiffel's engineering firm."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The tower stands approximately 330 meters tall.",
+        "quote_verified": true,
+        "text": "The Eiffel Tower is about 330 meters tall."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-021",
+    "timings_ms": {
+      "extraction": 2031,
+      "retrieval": 0,
+      "total": 4593,
+      "verification": 2561
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "d3fb8f269beed17f01b3e4faa5a30901df2ae68c4bb3bb3c4b43da0321ff743c": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The largest ocean on Earth by area is the Atlantic Ocean.",
+        "quote_verified": true,
+        "text": "The Pacific Ocean is the largest ocean on Earth."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Pacific Ocean covers more surface area than all of Earth's landmasses combined.",
+        "quote_verified": true,
+        "text": "It covers more area than all of Earth's landmass combined."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The deepest known point of the Pacific Ocean is the Mariana Trench.",
+        "quote_verified": true,
+        "text": "Its deepest point is the Mariana Trench."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Pacific Ocean borders Asia, Australia, and the Americas.",
+        "quote_verified": true,
+        "text": "The ocean borders Asia, Australia, and the Americas."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "inclusionai/ling-3.0-flash-fin:free",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-030",
+    "timings_ms": {
+      "extraction": 1671,
+      "retrieval": 0,
+      "total": 4000,
+      "verification": 2328
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "e5a5337cc9e7473bfd5e9bdce10b92d6e1209926e9f64682bf45bedb6fb79c40": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Voynich Manuscript is written in an unknown script."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Voynich Manuscript contains illustrations of unidentified plants."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Nobody has definitively deciphered the Voynich Manuscript's text."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Voynich Manuscript is currently held at Yale University."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-017",
+    "timings_ms": {
+      "extraction": 2500,
+      "retrieval": 0,
+      "total": 5110,
+      "verification": 2610
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "f33bdfc7c3b03603fb905d7f8c9fcbe4fcac29bc0982bcbf14a4bb586891e2af": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Orville and Wilbur Wright were American aviation pioneers credited with inventing and building the first successful airplane.",
+        "quote_verified": true,
+        "text": "The Wright brothers were American aviation pioneers."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Wright brothers achieved the first sustained, controlled, powered flight of a heavier-than-air aircraft on December 17, 1903.",
+        "quote_verified": true,
+        "text": "They achieved the first powered flight in 1903."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The historic flight took place near Kitty Hawk, North Carolina.",
+        "quote_verified": true,
+        "text": "The flight took place at Kitty Hawk, North Carolina."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Their aircraft, which made the first flight, was known as the Wright Flyer.",
+        "quote_verified": true,
+        "text": "Their aircraft was called the Wright Flyer."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-008",
+    "timings_ms": {
+      "extraction": 1796,
+      "retrieval": 0,
+      "total": 10561,
+      "verification": 8765
+    },
+    "verdict": "GROUNDED"
+  },
+  "f5ed71dd3210e25e29aaf4c0bcd174b592bb2ea8f8a87dd61fc20a9d6416b122": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Clara Schumann was a pianist."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Clara Schumann was a composer."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Clara Schumann toured extensively across Europe."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Clara Schumann composed several piano concertos."
+      },
+      {
+        "claim_id": "claim-5",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Clara Schumann was married to Robert Schumann."
+      },
+      {
+        "claim_id": "claim-6",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Robert Schumann was a composer."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.3903430336530645
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 6,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-014",
+    "timings_ms": {
+      "extraction": 9484,
+      "retrieval": 0,
+      "total": 12938,
+      "verification": 3453
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "f7b37f0198f736c6dd9e9f8d0cbfa5fc81f9db9a95605d93a3075fa7b7e5aec2": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Titanic sank in 1912 after striking an iceberg in the North Atlantic Ocean.",
+        "quote_verified": true,
+        "text": "The Titanic sank in 1912."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Titanic sank in 1912 after striking an iceberg in the North Atlantic Ocean.",
+        "quote_verified": true,
+        "text": "The Titanic struck an iceberg in the North Atlantic."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Approximately 700 people died when the Titanic sank.",
+        "quote_verified": true,
+        "text": "Over 1,500 people died in the sinking."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Titanic was owned and operated by the White Star Line.",
+        "quote_verified": true,
+        "text": "The Titanic was owned by the White Star Line."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-023",
+    "timings_ms": {
+      "extraction": 1422,
+      "retrieval": 0,
+      "total": 3891,
+      "verification": 2469
+    },
+    "verdict": "CONTRADICTED"
+  }
+}

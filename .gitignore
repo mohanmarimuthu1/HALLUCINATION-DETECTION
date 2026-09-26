@@ -37,3 +37,8 @@ data/*.csv
 # Result cache (Phase 6.1) - runtime data, not source.
 /.cache/
 
+# Eval run output (Phase 7.4) - a run artifact, not source. The recorded
+# golden-set replay fixture (tests/data/golden/eval_set_a.replay.json) is
+# committed on purpose; this is the metrics report a run writes out.
+/eval_report.json
+
