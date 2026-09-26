@@ -1,0 +1,436 @@
+# Golden Set A (Phase 7.1) - evidence-provided items for the eval gate.
+#
+# Three categories, per plan.md:
+#   answerable_in_evidence   - evidence directly supports every claim -> GROUNDED
+#   unanswerable_in_evidence - evidence present but doesn't address the
+#                              claims (or there are too few claims to score
+#                              at all) -> NOT_ENOUGH_INFO or NOT_VERIFIABLE
+#   injected_contradiction   - evidence contains one deliberately altered
+#                              fact that contradicts the answer -> CONTRADICTED
+#
+# expected_verdict is the ground-truth label eval/metrics.py scores actual
+# pipeline output against - not an assertion the pipeline is expected to
+# repeat verbatim on every run (that's what the metrics report measures).
+
+- id: golden-a-001
+  category: answerable_in_evidence
+  question: "What do you know about the Eiffel Tower?"
+  answer: >
+    The Eiffel Tower is located in Paris, France. It was completed in 1889.
+    The tower was designed by engineers working for Gustave Eiffel's
+    engineering company. It stands approximately 330 meters tall.
+  evidence:
+    - "The Eiffel Tower is a wrought-iron lattice tower located in Paris, France, on the Champ de Mars."
+    - "Construction of the tower was completed in 1889 as the entrance arch for that year's World's Fair."
+    - "The tower was designed by engineers working for Gustave Eiffel's engineering company."
+    - "The Eiffel Tower stands approximately 330 meters (1,083 ft) tall, including antennas."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported by its own evidence chunk."
+
+- id: golden-a-002
+  category: answerable_in_evidence
+  question: "Tell me about the Great Wall of China."
+  answer: >
+    The Great Wall of China was built over many centuries. It stretches for
+    thousands of kilometers. Portions were built using stone, brick, and
+    rammed earth. The wall was constructed primarily to defend against
+    invasions from the north.
+  evidence:
+    - "The Great Wall of China was built and rebuilt over roughly two thousand years across multiple dynasties."
+    - "In total, the various sections of the Great Wall stretch for thousands of kilometers across northern China."
+    - "Builders used materials including stone, brick, tamped earth, and wood depending on the region."
+    - "A primary purpose of the wall was to protect Chinese states and empires from raids and invasions by northern nomadic groups."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-003
+  category: answerable_in_evidence
+  question: "What is Python?"
+  answer: >
+    Python is a high-level programming language. It was created by Guido
+    van Rossum. Python emphasizes code readability. The language was first
+    released in 1991.
+  evidence:
+    - "Python is a high-level, general-purpose programming language."
+    - "Python was created by Guido van Rossum and first released in 1991."
+    - "Python's design philosophy emphasizes code readability, notably through the use of significant indentation."
+  expected_verdict: GROUNDED
+  notes: "Three claims, all supported (one evidence chunk covers two claims)."
+
+- id: golden-a-004
+  category: answerable_in_evidence
+  question: "Explain photosynthesis."
+  answer: >
+    Photosynthesis is the process by which plants convert light energy
+    into chemical energy. It primarily takes place in the chloroplasts of
+    plant cells. The process produces oxygen as a byproduct. Carbon
+    dioxide and water are the main inputs.
+  evidence:
+    - "Photosynthesis is a process used by plants to convert light energy into chemical energy stored in glucose."
+    - "In plant cells, photosynthesis takes place primarily in organelles called chloroplasts."
+    - "Oxygen is released as a byproduct of the photosynthetic process."
+    - "The main inputs to photosynthesis are carbon dioxide and water, along with light energy."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-005
+  category: answerable_in_evidence
+  question: "What is Mount Everest?"
+  answer: >
+    Mount Everest is the tallest mountain above sea level on Earth. It is
+    located in the Himalayas. The mountain sits on the border between
+    Nepal and Tibet. It was first summited in 1953.
+  evidence:
+    - "Mount Everest is Earth's highest mountain above sea level, located in the Mahalangur Himal sub-range of the Himalayas."
+    - "The mountain's summit sits on the international border between Nepal and the Tibet Autonomous Region of China."
+    - "The first confirmed ascent to the summit was made in 1953 by Edmund Hillary and Tenzing Norgay."
+  expected_verdict: GROUNDED
+  notes: "Three claims, all supported."
+
+- id: golden-a-006
+  category: answerable_in_evidence
+  question: "Tell me about the Amazon rainforest."
+  answer: >
+    The Amazon rainforest is the largest tropical rainforest in the world.
+    It spans across multiple South American countries. The forest plays a
+    major role in absorbing carbon dioxide. Brazil contains the largest
+    portion of the Amazon.
+  evidence:
+    - "The Amazon rainforest is the largest tropical rainforest on Earth by area."
+    - "The rainforest spans across nine South American countries including Brazil, Peru, and Colombia."
+    - "The Amazon plays a significant role in global carbon cycling, absorbing large amounts of carbon dioxide."
+    - "Brazil contains roughly 60 percent of the Amazon rainforest, the largest share of any single country."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-007
+  category: answerable_in_evidence
+  question: "What do you know about the human heart?"
+  answer: >
+    The human heart has four chambers. It pumps blood throughout the body.
+    The heart is located slightly left of the center of the chest. An
+    adult heart beats around 60 to 100 times per minute at rest.
+  evidence:
+    - "The human heart is a four-chambered muscular organ consisting of two atria and two ventricles."
+    - "The heart's primary function is to pump blood through the circulatory system to deliver oxygen and nutrients."
+    - "The heart is located in the middle of the chest, slightly tilted toward the left side."
+    - "A normal resting adult heart rate ranges from about 60 to 100 beats per minute."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-008
+  category: answerable_in_evidence
+  question: "Tell me about the Wright brothers."
+  answer: >
+    The Wright brothers were American aviation pioneers. They achieved the
+    first powered flight in 1903. The flight took place at Kitty Hawk,
+    North Carolina. Their aircraft was called the Wright Flyer.
+  evidence:
+    - "Orville and Wilbur Wright were American aviation pioneers credited with inventing and building the first successful airplane."
+    - "The Wright brothers achieved the first sustained, controlled, powered flight of a heavier-than-air aircraft on December 17, 1903."
+    - "The historic flight took place near Kitty Hawk, North Carolina."
+    - "Their aircraft, which made the first flight, was known as the Wright Flyer."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-009
+  category: answerable_in_evidence
+  question: "What do you know about the structure of DNA?"
+  answer: >
+    DNA has a double helix structure. It was described by Watson and
+    Crick. DNA is composed of nucleotides. Each nucleotide contains a
+    sugar, a phosphate group, and a nitrogenous base.
+  evidence:
+    - "DNA molecules have a double helix structure, resembling a twisted ladder."
+    - "The double helix structure of DNA was described by James Watson and Francis Crick in 1953, based partly on data from Rosalind Franklin."
+    - "DNA is composed of building blocks called nucleotides."
+    - "Each nucleotide consists of a sugar molecule, a phosphate group, and one of four nitrogenous bases."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-010
+  category: answerable_in_evidence
+  question: "Explain the water cycle."
+  answer: >
+    The water cycle describes the movement of water through Earth's
+    systems. Evaporation converts liquid water into vapor. Condensation
+    forms clouds from water vapor. Precipitation returns water to the
+    surface as rain or snow.
+  evidence:
+    - "The water cycle, or hydrologic cycle, describes the continuous movement of water within the Earth and atmosphere."
+    - "Evaporation is the process by which liquid water is converted into water vapor, often driven by heat from the sun."
+    - "Condensation occurs when water vapor cools and forms clouds."
+    - "Precipitation is the process by which water returns to the Earth's surface in forms such as rain, snow, or hail."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-011
+  category: unanswerable_in_evidence
+  question: "What's the population of Springfield?"
+  answer: "Springfield has a population of about 200,000 people."
+  evidence:
+    - "Springfield is a common city name used in many U.S. states, including Illinois, Missouri, and Massachusetts."
+    - "The exact population of a city named Springfield depends on which specific Springfield is being referenced."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 verifiable-claims rule regardless of evidence relevance."
+
+- id: golden-a-012
+  category: unanswerable_in_evidence
+  question: "What did the new downtown bridge cost to build?"
+  answer: "The new bridge downtown cost $45 million to build."
+  evidence:
+    - "City infrastructure projects are typically funded through a mix of municipal bonds, state grants, and federal transportation funding."
+    - "Bridge construction costs vary widely depending on length, materials, and site conditions."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-013
+  category: unanswerable_in_evidence
+  question: "What do you know about Saturn's moon Titan?"
+  answer: >
+    Titan has a thick nitrogen-rich atmosphere. It has lakes of liquid
+    methane and ethane on its surface. Titan is the second-largest moon in
+    the solar system. Scientists believe Titan's surface conditions
+    resemble early Earth in some ways.
+  evidence:
+    - "Saturn is the sixth planet from the Sun and is known for its prominent ring system."
+    - "Saturn has dozens of confirmed moons, with Titan being the largest."
+    - "Saturn's rings are made mostly of ice particles with a smaller amount of rocky debris."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence is about Saturn generally, not Titan's atmosphere/lakes/size/surface conditions - none of the four claims are actually addressed."
+
+- id: golden-a-014
+  category: unanswerable_in_evidence
+  question: "Tell me about the composer Clara Schumann."
+  answer: >
+    Clara Schumann was a renowned pianist and composer. She toured
+    extensively across Europe. She composed several piano concertos. She
+    was married to fellow composer Robert Schumann.
+  evidence:
+    - "The Romantic era in music spanned roughly the 19th century."
+    - "Many Romantic-era composers were also skilled performers, particularly on piano and violin."
+    - "Concert touring became increasingly common for musicians during the 19th century as rail travel expanded."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses the Romantic era generally but never mentions Clara Schumann - none of her claims are directly addressed."
+
+- id: golden-a-015
+  category: unanswerable_in_evidence
+  question: "What is special about the element rhodium?"
+  answer: >
+    Rhodium is one of the rarest precious metals. It is highly resistant
+    to corrosion. Rhodium is commonly used in catalytic converters. Its
+    price often exceeds that of gold and platinum.
+  evidence:
+    - "Precious metals are valued for their rarity, resistance to corrosion, and industrial uses."
+    - "Catalytic converters use precious metal catalysts to reduce harmful vehicle emissions."
+    - "Commodity metal prices fluctuate based on supply, demand, and industrial usage."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence is generic (precious metals / catalytic converters), never confirming any claim specific to rhodium."
+
+- id: golden-a-016
+  category: unanswerable_in_evidence
+  question: "How much did the company's quarterly revenue grow?"
+  answer: "The company's quarterly revenue grew by 12 percent."
+  evidence:
+    - "Quarterly financial reports typically include revenue, net income, and cash flow figures."
+    - "Analysts compare quarterly results against both the prior quarter and the same quarter a year earlier."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-017
+  category: unanswerable_in_evidence
+  question: "What do you know about the Voynich Manuscript?"
+  answer: >
+    The Voynich Manuscript is written in an unknown script. It contains
+    illustrations of unidentified plants. Nobody has definitively
+    deciphered its text. The manuscript is currently held at Yale
+    University.
+  evidence:
+    - "Historical manuscripts are often studied using paleography and radiocarbon dating to determine their age and origin."
+    - "Illustrated manuscripts from the medieval period often depicted botanical, astronomical, or religious subjects."
+    - "Many university libraries maintain special collections of rare historical documents."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence is generic manuscript-studies background, never confirming any Voynich-specific claim."
+
+- id: golden-a-018
+  category: unanswerable_in_evidence
+  question: "How much did the startup raise in its Series A round?"
+  answer: "The startup raised $8 million in its Series A funding round."
+  evidence:
+    - "Series A funding rounds typically follow seed funding and are used to scale operations."
+    - "Venture capital investment in early-stage startups varies significantly by industry and region."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-019
+  category: unanswerable_in_evidence
+  question: "What is unique about the axolotl?"
+  answer: >
+    Axolotls can regenerate entire limbs. They retain juvenile features
+    throughout their adult life. Axolotls are native to lakes near Mexico
+    City. They are considered critically endangered in the wild.
+  evidence:
+    - "Amphibians as a class exhibit a wide range of regenerative abilities compared to mammals."
+    - "Many salamander species undergo a process called neoteny in certain conditions."
+    - "Habitat loss and pollution are common threats to freshwater amphibian populations worldwide."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses amphibians/salamanders generally, never confirming axolotl-specific claims."
+
+- id: golden-a-020
+  category: unanswerable_in_evidence
+  question: "How much gallery space did the museum's new wing add?"
+  answer: "The museum's new wing added 15,000 square feet of gallery space."
+  evidence:
+    - "Museum expansion projects often take several years from planning to completion."
+    - "Gallery space is typically measured to help plan exhibit layouts and visitor flow."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-021
+  category: injected_contradiction
+  question: "When was the Eiffel Tower completed?"
+  answer: >
+    The Eiffel Tower is located in Paris, France. It was completed in
+    1889. It was designed by Gustave Eiffel's engineering firm. The tower
+    is about 330 meters tall.
+  evidence:
+    - "The Eiffel Tower is located in Paris, France."
+    - "The Eiffel Tower was completed in 1887, two years earlier than commonly believed."
+    - "The tower was designed by Gustave Eiffel's engineering firm."
+    - "The tower stands approximately 330 meters tall."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1887) contradicts the answer's correct year (1889); other three claims are accurately supported."
+
+- id: golden-a-022
+  category: injected_contradiction
+  question: "Tell me about the first Moon landing."
+  answer: >
+    Apollo 11 was the first crewed mission to land on the Moon. It landed
+    in 1969. Neil Armstrong was the mission commander. Buzz Aldrin was the
+    lunar module pilot.
+  evidence:
+    - "Apollo 11 was the first crewed mission to land humans on the Moon."
+    - "The Apollo 11 mission landed on the Moon in 1971."
+    - "Neil Armstrong served as the mission commander of Apollo 11."
+    - "Buzz Aldrin served as the lunar module pilot on Apollo 11."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1971) contradicts the answer's correct year (1969)."
+
+- id: golden-a-023
+  category: injected_contradiction
+  question: "What do you know about the Titanic?"
+  answer: >
+    The Titanic sank in 1912. It struck an iceberg in the North Atlantic.
+    Over 1,500 people died in the sinking. The ship was owned by the White
+    Star Line.
+  evidence:
+    - "The Titanic sank in 1912 after striking an iceberg in the North Atlantic Ocean."
+    - "Approximately 700 people died when the Titanic sank."
+    - "The Titanic was owned and operated by the White Star Line."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's death toll (~700) contradicts the answer's historically accurate figure (over 1,500)."
+
+- id: golden-a-024
+  category: injected_contradiction
+  question: "What is the boiling point of water at sea level?"
+  answer: >
+    Water boils at 100 degrees Celsius at sea level. This is equivalent to
+    212 degrees Fahrenheit. The boiling point decreases at higher
+    altitudes. Water freezes at 0 degrees Celsius.
+  evidence:
+    - "At sea level, water boils at 90 degrees Celsius under standard atmospheric pressure."
+    - "100 degrees Celsius is equivalent to 212 degrees Fahrenheit."
+    - "Water's boiling point decreases as altitude increases and atmospheric pressure drops."
+    - "Water freezes at 0 degrees Celsius under standard atmospheric pressure."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's boiling point (90C) contradicts the well-known, answer-stated value (100C)."
+
+- id: golden-a-025
+  category: injected_contradiction
+  question: "Who wrote Romeo and Juliet?"
+  answer: >
+    Romeo and Juliet was written by William Shakespeare. It was written in
+    the late 16th century. The play is a tragedy. It is set in the
+    Italian city of Verona.
+  evidence:
+    - "Romeo and Juliet was written by Christopher Marlowe."
+    - "The play was written in the late 16th century."
+    - "Romeo and Juliet is classified as a tragedy."
+    - "The play is set in the Italian city of Verona."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's stated author (Christopher Marlowe) contradicts the answer's correct author (William Shakespeare)."
+
+- id: golden-a-026
+  category: injected_contradiction
+  question: "What do you know about Mount Kilimanjaro?"
+  answer: >
+    Mount Kilimanjaro is the tallest mountain in Africa. It is located in
+    Tanzania. Its summit is called Uhuru Peak. The mountain is a dormant
+    volcano.
+  evidence:
+    - "Mount Kilimanjaro is the tallest mountain in Africa."
+    - "Mount Kilimanjaro is located in Kenya."
+    - "The mountain's highest summit is named Uhuru Peak."
+    - "Mount Kilimanjaro is a dormant volcanic mountain."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's country (Kenya) contradicts the answer's correct location (Tanzania)."
+
+- id: golden-a-027
+  category: injected_contradiction
+  question: "What is the speed of light in a vacuum?"
+  answer: >
+    The speed of light in a vacuum is about 300,000 kilometers per second.
+    It is denoted by the symbol c. Nothing with mass can travel faster
+    than light. Light takes about 8 minutes to travel from the Sun to
+    Earth.
+  evidence:
+    - "The speed of light in a vacuum is approximately 150,000 kilometers per second."
+    - "The speed of light is conventionally denoted by the symbol c."
+    - "According to relativity, nothing with mass can accelerate to or beyond the speed of light."
+    - "Light takes roughly 8 minutes to travel from the Sun to Earth."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's speed figure (150,000 km/s) is half the correct, answer-stated value (300,000 km/s)."
+
+- id: golden-a-028
+  category: injected_contradiction
+  question: "Tell me about the Berlin Wall."
+  answer: >
+    The Berlin Wall divided East and West Berlin. It was built in 1961.
+    The wall fell in 1989. It stretched for about 155 kilometers.
+  evidence:
+    - "The Berlin Wall divided East and West Berlin for decades during the Cold War."
+    - "Construction of the Berlin Wall began in 1961."
+    - "The Berlin Wall fell in 1979, a decade earlier than most historical accounts state."
+    - "The wall stretched approximately 155 kilometers in total length."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's fall year (1979) contradicts the well-documented, answer-stated year (1989)."
+
+- id: golden-a-029
+  category: injected_contradiction
+  question: "What do you know about the human genome?"
+  answer: >
+    The human genome contains about 3 billion base pairs. It was fully
+    sequenced by the Human Genome Project. The project was completed in
+    2003. Humans have 23 pairs of chromosomes.
+  evidence:
+    - "The human genome contains approximately 3 billion base pairs of DNA."
+    - "The Human Genome Project was the international effort that sequenced the human genome."
+    - "The Human Genome Project was completed in 2003."
+    - "Humans have 20 pairs of chromosomes in each somatic cell."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's chromosome-pair count (20) contradicts the correct, answer-stated figure (23)."
+
+- id: golden-a-030
+  category: injected_contradiction
+  question: "What is the largest ocean on Earth?"
+  answer: >
+    The Pacific Ocean is the largest ocean on Earth. It covers more area
+    than all of Earth's landmass combined. Its deepest point is the
+    Mariana Trench. The ocean borders Asia, Australia, and the Americas.
+  evidence:
+    - "The largest ocean on Earth by area is the Atlantic Ocean."
+    - "The Pacific Ocean covers more surface area than all of Earth's landmasses combined."
+    - "The deepest known point of the Pacific Ocean is the Mariana Trench."
+    - "The Pacific Ocean borders Asia, Australia, and the Americas."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's named largest ocean (Atlantic) contradicts the answer's correct claim (Pacific)."
