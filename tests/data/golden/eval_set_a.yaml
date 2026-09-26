@@ -434,3 +434,857 @@
     - "The Pacific Ocean borders Asia, Australia, and the Americas."
   expected_verdict: CONTRADICTED
   notes: "Evidence's named largest ocean (Atlantic) contradicts the answer's correct claim (Pacific)."
+
+# Items 031-090 added in a follow-up pass, growing golden set A toward
+# plan.md's 80-100 target now that the eval infra (datasets.py/replay.py/
+# metrics.py/runner.py/CI gate) is proven end-to-end - this batch is
+# content authoring against already-working plumbing, not new
+# architecture. New items are appended after the original 30 rather than
+# interleaved/renumbered - cache keys (and therefore existing replay
+# entries) depend only on answer/question/evidence/model_prefs, never on
+# `id` or file position, so nothing about the original 30's recordings is
+# disturbed by appending here.
+
+- id: golden-a-031
+  category: answerable_in_evidence
+  question: "Tell me about the Great Barrier Reef."
+  answer: >
+    The Great Barrier Reef is the world's largest coral reef system. It is
+    located off the coast of Queensland, Australia. The reef is composed
+    of thousands of individual reefs. It can be seen from outer space.
+  evidence:
+    - "The Great Barrier Reef is the world's largest coral reef system, made up of thousands of individual reefs."
+    - "The reef is located in the Coral Sea, off the coast of Queensland, Australia."
+    - "Because of its immense size, the Great Barrier Reef is visible from outer space."
+  expected_verdict: GROUNDED
+  notes: "Three claims, each directly supported."
+
+- id: golden-a-032
+  category: answerable_in_evidence
+  question: "What do you know about the Sahara Desert?"
+  answer: >
+    The Sahara is the largest hot desert in the world. It spans much of
+    North Africa. The desert covers portions of more than ten countries.
+    Parts of the Sahara receive less than an inch of rain per year.
+  evidence:
+    - "The Sahara is the largest hot desert in the world, covering much of North Africa."
+    - "The Sahara spans portions of more than ten countries, including Algeria, Libya, and Egypt."
+    - "Some parts of the Sahara receive less than one inch of rainfall per year."
+  expected_verdict: GROUNDED
+  notes: "Three claims, each directly supported (one chunk covers two claims)."
+
+- id: golden-a-033
+  category: answerable_in_evidence
+  question: "What do you know about Albert Einstein?"
+  answer: >
+    Albert Einstein developed the theory of relativity. He was born in
+    Germany. Einstein won the Nobel Prize in Physics in 1921. He worked
+    at Princeton University later in his career.
+  evidence:
+    - "Albert Einstein developed the theory of relativity, one of the two pillars of modern physics."
+    - "Einstein was born in Ulm, in the German Empire, in 1879."
+    - "Einstein was awarded the Nobel Prize in Physics in 1921."
+    - "Later in his career, Einstein worked at the Institute for Advanced Study in Princeton."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-034
+  category: answerable_in_evidence
+  question: "Tell me about the Colosseum."
+  answer: >
+    The Colosseum is located in Rome, Italy. It is an ancient amphitheater.
+    Construction was completed around 80 AD. It could hold tens of
+    thousands of spectators.
+  evidence:
+    - "The Colosseum is an ancient amphitheater located in the center of Rome, Italy."
+    - "Construction of the Colosseum was completed around 80 AD, under Emperor Titus."
+    - "The Colosseum could hold an estimated 50,000 to 80,000 spectators."
+  expected_verdict: GROUNDED
+  notes: "Three claims, each directly supported."
+
+- id: golden-a-035
+  category: answerable_in_evidence
+  question: "Why are honeybees important to agriculture?"
+  answer: >
+    Honeybees pollinate many food crops. They live in organized colonies.
+    A colony typically has one queen bee. Honeybees produce honey as a
+    food store for winter.
+  evidence:
+    - "Honeybees are important pollinators of many food crops grown around the world."
+    - "Honeybees live in highly organized colonies with a clear division of labor."
+    - "A typical honeybee colony has a single queen bee responsible for laying eggs."
+    - "Honeybees produce and store honey as a food source to survive the winter."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-036
+  category: answerable_in_evidence
+  question: "What do you know about the Statue of Liberty?"
+  answer: >
+    The Statue of Liberty is located in New York Harbor. It was a gift
+    from France. The statue was dedicated in 1886. It depicts a robed
+    female figure holding a torch.
+  evidence:
+    - "The Statue of Liberty is located on Liberty Island in New York Harbor."
+    - "The statue was a gift from the people of France to the United States."
+    - "The Statue of Liberty was dedicated on October 28, 1886."
+    - "The statue depicts a robed female figure holding a torch above her head."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-037
+  category: answerable_in_evidence
+  question: "What do you know about Marie Curie?"
+  answer: >
+    Marie Curie conducted pioneering research on radioactivity. She was
+    born in Poland. Curie won Nobel Prizes in two different sciences. She
+    was the first woman to win a Nobel Prize.
+  evidence:
+    - "Marie Curie conducted pioneering research on radioactivity, a term she coined."
+    - "Marie Curie was born in Warsaw, Poland, in 1867."
+    - "Curie won Nobel Prizes in both Physics and Chemistry, in two different scientific fields."
+    - "Marie Curie was the first woman ever to win a Nobel Prize."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-038
+  category: answerable_in_evidence
+  question: "Tell me about the Nile River."
+  answer: >
+    The Nile is one of the longest rivers in the world. It flows through
+    northeastern Africa. The river flows into the Mediterranean Sea.
+    Ancient Egyptian civilization developed along its banks.
+  evidence:
+    - "The Nile is widely considered one of the longest rivers in the world."
+    - "The Nile flows through northeastern Africa, passing through countries including Egypt and Sudan."
+    - "The Nile empties into the Mediterranean Sea."
+    - "Ancient Egyptian civilization developed and flourished along the banks of the Nile."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-039
+  category: answerable_in_evidence
+  question: "What was significant about the printing press?"
+  answer: >
+    The printing press was invented by Johannes Gutenberg. It used movable
+    metal type. The invention made books cheaper to produce. It
+    significantly increased the spread of literacy in Europe.
+  evidence:
+    - "The printing press was invented by Johannes Gutenberg in the 15th century."
+    - "Gutenberg's press used movable metal type, which could be rearranged and reused."
+    - "The printing press made books far cheaper and faster to produce than hand-copying."
+    - "The spread of the printing press significantly increased literacy across Europe."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-040
+  category: answerable_in_evidence
+  question: "What do you know about the planet Jupiter?"
+  answer: >
+    Jupiter is the largest planet in the solar system. It is a gas giant.
+    Jupiter has a prominent storm called the Great Red Spot. The planet
+    has dozens of known moons.
+  evidence:
+    - "Jupiter is the largest planet in the solar system by both mass and volume."
+    - "Jupiter is classified as a gas giant, composed mostly of hydrogen and helium."
+    - "Jupiter's Great Red Spot is a giant storm that has persisted for centuries."
+    - "Jupiter has dozens of known moons, including the four large Galilean moons."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-041
+  category: answerable_in_evidence
+  question: "What do you know about the human skeleton?"
+  answer: >
+    The adult human skeleton has 206 bones. It provides structural support
+    for the body. Bones also produce blood cells. The skeleton protects
+    vital organs such as the heart and lungs.
+  evidence:
+    - "The adult human skeleton is made up of 206 bones."
+    - "The skeleton provides structural support that allows the body to stand and move."
+    - "Bone marrow inside certain bones produces blood cells."
+    - "The rib cage and skull are part of the skeleton's role in protecting vital organs like the heart, lungs, and brain."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-042
+  category: answerable_in_evidence
+  question: "Tell me about the Panama Canal."
+  answer: >
+    The Panama Canal connects the Atlantic and Pacific Oceans. It runs
+    through the country of Panama. The canal opened in 1914. It uses a
+    system of locks to raise and lower ships.
+  evidence:
+    - "The Panama Canal is an artificial waterway that connects the Atlantic Ocean and the Pacific Ocean."
+    - "The canal runs through the isthmus of Panama."
+    - "The Panama Canal officially opened to traffic in 1914."
+    - "The canal uses a system of locks to raise and lower ships between different water levels."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-043
+  category: answerable_in_evidence
+  question: "What do you know about Vincent van Gogh?"
+  answer: >
+    Vincent van Gogh was a Dutch painter. He created around 2,100
+    artworks. Van Gogh sold very few paintings during his lifetime. He
+    painted The Starry Night.
+  evidence:
+    - "Vincent van Gogh was a Dutch post-impressionist painter."
+    - "Van Gogh created around 2,100 artworks over the course of roughly a decade."
+    - "Van Gogh sold only a small number of paintings while he was alive."
+    - "Van Gogh painted The Starry Night in 1889."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-044
+  category: answerable_in_evidence
+  question: "Tell me about the Sydney Opera House."
+  answer: >
+    The Sydney Opera House is located in Sydney, Australia. It was
+    designed by architect Jorn Utzon. The building opened in 1973. It is
+    recognized as a UNESCO World Heritage Site.
+  evidence:
+    - "The Sydney Opera House is a performing arts center located in Sydney, Australia."
+    - "The Sydney Opera House was designed by Danish architect Jorn Utzon."
+    - "The Sydney Opera House officially opened in October 1973."
+    - "The Sydney Opera House was inscribed as a UNESCO World Heritage Site in 2007."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-045
+  category: answerable_in_evidence
+  question: "What do you know about Antarctica?"
+  answer: >
+    Antarctica is the coldest continent on Earth. It is covered almost
+    entirely by ice. No country owns Antarctica. The continent has no
+    permanent human residents.
+  evidence:
+    - "Antarctica is the coldest continent on Earth."
+    - "Antarctica is covered by an ice sheet that holds the vast majority of the world's fresh water."
+    - "No single country owns Antarctica; it is governed by an international treaty system."
+    - "Antarctica has no permanent human residents, only rotating research station staff."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-046
+  category: answerable_in_evidence
+  question: "What do you know about the origins of the Internet?"
+  answer: >
+    The Internet has its roots in a project called ARPANET. It was
+    originally funded by the U.S. Department of Defense. ARPANET sent its
+    first message in 1969. The modern Internet grew out of that early
+    network research.
+  evidence:
+    - "The Internet has its technical origins in a research project called ARPANET."
+    - "ARPANET was originally funded by the U.S. Department of Defense."
+    - "ARPANET sent its first message between two computers in 1969."
+    - "The modern Internet evolved from the research and protocols developed for ARPANET."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-047
+  category: answerable_in_evidence
+  question: "What causes volcanic eruptions?"
+  answer: >
+    Volcanic eruptions are caused by molten rock rising to the surface.
+    This molten rock is called magma. Eruptions can release ash, gas, and
+    lava. Volcanoes often form near tectonic plate boundaries.
+  evidence:
+    - "Volcanic eruptions occur when molten rock rises through the Earth's crust to the surface."
+    - "Molten rock beneath the surface is called magma; once it reaches the surface it is called lava."
+    - "Volcanic eruptions can release ash, volcanic gases, and lava."
+    - "Most volcanoes form near boundaries between tectonic plates."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-048
+  category: answerable_in_evidence
+  question: "What is the significance of the Rosetta Stone?"
+  answer: >
+    The Rosetta Stone is inscribed with the same text in three scripts. It
+    helped researchers decipher Egyptian hieroglyphs. The stone was
+    discovered in 1799. It is currently held in the British Museum.
+  evidence:
+    - "The Rosetta Stone is inscribed with the same decree written in three different scripts."
+    - "The Rosetta Stone was the key artifact that allowed researchers to decipher Egyptian hieroglyphs."
+    - "The Rosetta Stone was discovered in 1799 near the town of Rosetta in Egypt."
+    - "The Rosetta Stone is currently held and displayed in the British Museum."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-049
+  category: answerable_in_evidence
+  question: "What did Charles Darwin propose?"
+  answer: >
+    Charles Darwin proposed the theory of evolution by natural selection.
+    He traveled aboard the HMS Beagle. Darwin published On the Origin of
+    Species in 1859. His work was controversial at the time.
+  evidence:
+    - "Charles Darwin proposed the theory of evolution by means of natural selection."
+    - "Darwin's ideas were shaped in part by his voyage aboard the HMS Beagle."
+    - "Darwin published On the Origin of Species in 1859."
+    - "Darwin's theory was highly controversial when it was first published."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-050
+  category: answerable_in_evidence
+  question: "Tell me about the Suez Canal."
+  answer: >
+    The Suez Canal connects the Mediterranean Sea and the Red Sea. It is
+    located in Egypt. The canal opened in 1869. It allows ships to avoid
+    sailing around Africa.
+  evidence:
+    - "The Suez Canal is an artificial waterway connecting the Mediterranean Sea and the Red Sea."
+    - "The Suez Canal is located in Egypt."
+    - "The Suez Canal opened for navigation in 1869."
+    - "The canal allows ships to travel between Europe and Asia without sailing around the African continent."
+  expected_verdict: GROUNDED
+  notes: "Four claims, each directly supported."
+
+- id: golden-a-051
+  category: unanswerable_in_evidence
+  question: "What is the local library's annual budget?"
+  answer: "The local library's annual budget is $2.3 million."
+  evidence:
+    - "Public library funding typically comes from a mix of municipal taxes, state aid, and private donations."
+    - "Library budgets are usually reviewed and approved on an annual basis by a local board."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-052
+  category: unanswerable_in_evidence
+  question: "How many fans can the new stadium seat?"
+  answer: "The new stadium can seat 68,000 fans."
+  evidence:
+    - "Stadium capacity is often designed around a combination of seating, standing areas, and safety regulations."
+    - "Large stadium construction projects can take several years to complete."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-053
+  category: unanswerable_in_evidence
+  question: "How many employees were laid off last quarter?"
+  answer: "The company laid off 340 employees last quarter."
+  evidence:
+    - "Companies may adjust staffing levels in response to changes in revenue or strategy."
+    - "Layoff announcements are often reported to regulators depending on the size of the workforce reduction."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-054
+  category: unanswerable_in_evidence
+  question: "How many copies did the novel sell in its first year?"
+  answer: "The novel sold 1.2 million copies in its first year."
+  evidence:
+    - "Book sales figures are often tracked by industry data providers using retailer point-of-sale data."
+    - "A novel's first-year sales can be influenced by reviews, awards, and marketing."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-055
+  category: unanswerable_in_evidence
+  question: "How long is this year's marathon route?"
+  answer: "The marathon route is 26.4 miles long this year."
+  evidence:
+    - "Marathon routes are typically certified by an athletics governing body before race day."
+    - "Course design for a marathon often depends on road closures and city permitting."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-056
+  category: unanswerable_in_evidence
+  question: "How long does it take the satellite to complete one orbit?"
+  answer: "The satellite completed its orbit in 92 minutes."
+  evidence:
+    - "Satellite orbital period depends on altitude, with lower orbits generally completing faster."
+    - "Ground control stations track satellites to confirm they remain in their intended orbit."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-057
+  category: unanswerable_in_evidence
+  question: "How many participants were enrolled in the vaccine trial?"
+  answer: "The vaccine trial enrolled 4,500 participants."
+  evidence:
+    - "Clinical trials are typically conducted in phases, each with different enrollment sizes."
+    - "Trial participants are usually monitored for both safety and efficacy outcomes."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-058
+  category: unanswerable_in_evidence
+  question: "How long will the renovation project take?"
+  answer: "The renovation project will take 18 months."
+  evidence:
+    - "Renovation timelines depend on permitting, materials availability, and contractor scheduling."
+    - "Large renovation projects often include contingency time for unexpected delays."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-059
+  category: unanswerable_in_evidence
+  question: "How many times has the app been downloaded?"
+  answer: "The app has been downloaded 50 million times."
+  evidence:
+    - "App download counts are tracked by app store platforms and may be reported in broad ranges."
+    - "Download counts do not necessarily reflect the number of active users."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-060
+  category: unanswerable_in_evidence
+  question: "How many acres did the wildfire burn through?"
+  answer: "The wildfire burned through 12,000 acres."
+  evidence:
+    - "Wildfire size estimates are typically produced using satellite imagery and aerial surveys."
+    - "Firefighting resource allocation often depends on terrain, weather, and fire behavior."
+  expected_verdict: NOT_VERIFIABLE
+  notes: "Single factual claim - forces NOT_VERIFIABLE via the <3 rule."
+
+- id: golden-a-061
+  category: unanswerable_in_evidence
+  question: "What do you know about the physicist Chien-Shiung Wu?"
+  answer: >
+    Chien-Shiung Wu conducted an experiment that disproved the law of
+    parity conservation. She worked on the Manhattan Project. Wu was
+    sometimes called the "First Lady of Physics." She taught at Columbia
+    University for much of her career.
+  evidence:
+    - "Twentieth-century experimental physics relied heavily on large collaborative research teams."
+    - "Many physicists during this era worked on government-funded research projects."
+    - "Columbia University has long been a major center for physics research in the United States."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence is generic physics-history background, never confirming any Wu-specific claim."
+
+- id: golden-a-062
+  category: unanswerable_in_evidence
+  question: "Tell me about the author Zora Neale Hurston."
+  answer: >
+    Zora Neale Hurston was a novelist and anthropologist. She wrote Their
+    Eyes Were Watching God. Hurston was a key figure in the Harlem
+    Renaissance. She also studied folklore in the American South.
+  evidence:
+    - "The Harlem Renaissance was a flourishing of African American literature, art, and music in the 1920s."
+    - "Many writers of the Harlem Renaissance drew on folklore and oral tradition in their work."
+    - "The movement was centered in the Harlem neighborhood of New York City."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses the Harlem Renaissance generally, never mentioning Hurston specifically."
+
+- id: golden-a-063
+  category: unanswerable_in_evidence
+  question: "What is special about the narwhal?"
+  answer: >
+    Narwhals have a long, spiral tusk. The tusk is actually an elongated
+    tooth. Narwhals live in Arctic waters. They are sometimes called the
+    "unicorns of the sea."
+  evidence:
+    - "Arctic marine mammals have adapted to survive in extremely cold water and seasonal sea ice."
+    - "Many Arctic marine species migrate seasonally in response to ice coverage."
+    - "Marine mammal researchers use tagging to study movement patterns in polar regions."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses Arctic marine mammals generally, never confirming any narwhal-specific claim."
+
+- id: golden-a-064
+  category: unanswerable_in_evidence
+  question: "Tell me about the Antikythera mechanism."
+  answer: >
+    The Antikythera mechanism is an ancient astronomical calculator. It
+    was recovered from a shipwreck. The device is believed to date to
+    around the 2nd century BC. It could predict astronomical positions
+    and eclipses.
+  evidence:
+    - "Ancient Greek engineers developed a range of mechanical devices for practical and scientific use."
+    - "Shipwrecks from antiquity have provided archaeologists with valuable artifacts."
+    - "Astronomy played an important role in ancient Greek science and philosophy."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses ancient Greek technology/science generally, never confirming any claim specific to the mechanism itself."
+
+- id: golden-a-065
+  category: unanswerable_in_evidence
+  question: "What do you know about the mathematician Srinivasa Ramanujan?"
+  answer: >
+    Srinivasa Ramanujan made major contributions to number theory. He had
+    little formal training in mathematics. Ramanujan collaborated with
+    G. H. Hardy at Cambridge. He died at a young age.
+  evidence:
+    - "Number theory is a branch of mathematics concerned with the properties of integers."
+    - "Cambridge University has historically been home to many influential mathematicians."
+    - "Self-taught mathematicians have occasionally made significant contributions to the field."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence is generic (number theory / Cambridge), never confirming any claim specific to Ramanujan."
+
+- id: golden-a-066
+  category: unanswerable_in_evidence
+  question: "What do you know about the star Betelgeuse?"
+  answer: >
+    Betelgeuse is a red supergiant star. It is located in the constellation
+    Orion. The star is expected to eventually explode as a supernova.
+    Betelgeuse is one of the largest stars known.
+  evidence:
+    - "Red giant and supergiant stars represent a late stage in the life cycle of certain stars."
+    - "Massive stars eventually end their lives in dramatic supernova explosions."
+    - "Astronomers use telescopes to monitor changes in the brightness of distant stars."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses red giant stars/supernovae generally, never confirming any claim specific to Betelgeuse."
+
+- id: golden-a-067
+  category: unanswerable_in_evidence
+  question: "What is unique about the mantis shrimp?"
+  answer: >
+    The mantis shrimp has an extremely powerful punching strike. It has
+    one of the most complex visual systems in the animal kingdom. Some
+    species can see polarized light. Their strike can generate cavitation
+    bubbles underwater.
+  evidence:
+    - "Crustaceans exhibit an enormous range of body forms and specialized appendages."
+    - "Many marine invertebrates have visual systems adapted to their specific underwater environment."
+    - "Underwater predators have evolved a wide variety of hunting strategies."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses crustaceans/marine invertebrates generally, never confirming any claim specific to the mantis shrimp."
+
+- id: golden-a-068
+  category: unanswerable_in_evidence
+  question: "Tell me about the explorer Ibn Battuta."
+  answer: >
+    Ibn Battuta was a medieval Muslim scholar and explorer. He traveled
+    across most of the known Islamic world. His journeys lasted around 30
+    years. He documented his travels in a book called the Rihla.
+  evidence:
+    - "Medieval trade routes connected regions across Africa, the Middle East, and Asia."
+    - "Many medieval scholars traveled extensively for religious pilgrimage and education."
+    - "Written travel accounts from this period are valuable sources for historians."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses medieval trade/travel generally, never confirming any claim specific to Ibn Battuta."
+
+- id: golden-a-069
+  category: unanswerable_in_evidence
+  question: "What do you know about the board game Go?"
+  answer: >
+    Go originated in ancient China. The game is played on a grid of
+    intersecting lines. Players use black and white stones. Go is
+    considered one of the most complex board games in terms of possible
+    positions.
+  evidence:
+    - "Board games have been played across many cultures for thousands of years."
+    - "Strategy games often involve balancing offensive and defensive positioning."
+    - "Some traditional board games have been studied extensively by artificial intelligence researchers."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses board games generally, never confirming any claim specific to Go."
+
+- id: golden-a-070
+  category: unanswerable_in_evidence
+  question: "Tell me about the Larsen C ice shelf in Antarctica."
+  answer: >
+    Larsen C is one of the largest ice shelves in Antarctica. A massive
+    iceberg calved from it in 2017. The ice shelf is located on the
+    Antarctic Peninsula. Scientists monitor it for signs of further
+    instability.
+  evidence:
+    - "Climate change has been linked to changes in polar ice conditions worldwide."
+    - "Satellite imagery is commonly used to monitor large-scale changes in ice coverage."
+    - "Research stations in Antarctica support a range of ongoing scientific studies."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "Evidence discusses climate change/ice monitoring generally, never confirming any claim specific to Larsen C."
+
+- id: golden-a-071
+  category: injected_contradiction
+  question: "When did Alexander Graham Bell make the first telephone call?"
+  answer: >
+    Alexander Graham Bell is credited with inventing the telephone. He
+    made the first successful telephone call in 1876. Bell's assistant was
+    named Thomas Watson. Bell was born in Scotland.
+  evidence:
+    - "Alexander Graham Bell is widely credited with inventing the telephone."
+    - "Bell made the first successful telephone call in 1889."
+    - "Bell's assistant during the famous first call was named Thomas Watson."
+    - "Alexander Graham Bell was born in Scotland."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1889) contradicts the answer's correct year (1876)."
+
+- id: golden-a-072
+  category: injected_contradiction
+  question: "Where is the Leaning Tower of Pisa located?"
+  answer: >
+    The Leaning Tower of Pisa is located in Pisa, Italy. It is a freestanding
+    bell tower. The tower's tilt is due to unstable ground. Construction
+    began in the 12th century.
+  evidence:
+    - "The Leaning Tower of Pisa is located in Florence, Italy."
+    - "The tower is a freestanding bell tower, or campanile."
+    - "The tower's famous tilt is the result of unstable, soft ground beneath its foundation."
+    - "Construction of the tower began in the 12th century."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's city (Florence) contradicts the answer's correct city (Pisa)."
+
+- id: golden-a-073
+  category: injected_contradiction
+  question: "Who is credited with inventing the practical light bulb?"
+  answer: >
+    Thomas Edison is credited with developing a practical incandescent
+    light bulb. He achieved this in 1879. Edison's lab was located in Menlo
+    Park, New Jersey. Earlier inventors had also experimented with
+    incandescent lighting.
+  evidence:
+    - "Thomas Edison is widely credited with developing a commercially practical incandescent light bulb."
+    - "Edison achieved a long-lasting incandescent bulb design in 1869."
+    - "Edison's laboratory was located in Menlo Park, New Jersey."
+    - "Several earlier inventors had experimented with incandescent lighting before Edison."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1869) contradicts the answer's correct year (1879)."
+
+- id: golden-a-074
+  category: injected_contradiction
+  question: "When was the city of Rome traditionally founded?"
+  answer: >
+    Rome is traditionally said to have been founded in 753 BC. According
+    to legend, it was founded by Romulus. The legend involves Romulus and
+    his brother Remus. Rome eventually grew into a vast empire.
+  evidence:
+    - "Rome is traditionally said to have been founded in 653 BC."
+    - "According to Roman legend, the city was founded by Romulus."
+    - "The founding legend involves twin brothers Romulus and Remus."
+    - "Rome eventually grew from a small city-state into a vast empire."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's founding year (653 BC) contradicts the traditional, answer-stated year (753 BC)."
+
+- id: golden-a-075
+  category: injected_contradiction
+  question: "When did the Chernobyl nuclear disaster occur?"
+  answer: >
+    The Chernobyl nuclear disaster occurred in 1986. It took place in the
+    Soviet Union, in present-day Ukraine. The accident happened during a
+    safety test. A large exclusion zone was established afterward.
+  evidence:
+    - "The Chernobyl nuclear disaster occurred in 1984."
+    - "The disaster took place in the Soviet Union, in what is now Ukraine."
+    - "The accident occurred during a safety test at the plant."
+    - "A large exclusion zone was established around the plant after the disaster."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1984) contradicts the well-documented, answer-stated year (1986)."
+
+- id: golden-a-076
+  category: injected_contradiction
+  question: "When did Edward Jenner develop the smallpox vaccine?"
+  answer: >
+    Edward Jenner developed an early smallpox vaccine. He did this in
+    1796. Jenner used material from cowpox lesions. His work laid the
+    foundation for the field of immunology.
+  evidence:
+    - "Edward Jenner developed an early smallpox vaccine in 1756."
+    - "Jenner used material taken from cowpox lesions in his experiments."
+    - "Jenner's work is considered foundational to the field of immunology."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1756) contradicts the answer's correct, well-documented year (1796)."
+
+- id: golden-a-077
+  category: injected_contradiction
+  question: "Where is the Hoover Dam located?"
+  answer: >
+    The Hoover Dam is located on the Colorado River. It sits on the border
+    between Nevada and Arizona. Construction was completed in 1936. The
+    dam provides hydroelectric power to several states.
+  evidence:
+    - "The Hoover Dam is located on the Colorado River."
+    - "The dam sits on the border between California and Arizona."
+    - "Construction of the Hoover Dam was completed in 1936."
+    - "The dam provides hydroelectric power to several southwestern states."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's border states (California/Arizona) contradict the answer's correct states (Nevada/Arizona)."
+
+- id: golden-a-078
+  category: injected_contradiction
+  question: "Who discovered penicillin, and when?"
+  answer: >
+    Alexander Fleming discovered penicillin. This happened in 1928.
+    Fleming noticed mold contaminating a bacterial culture. Penicillin
+    later became one of the first widely used antibiotics.
+  evidence:
+    - "Alexander Fleming discovered penicillin in 1918."
+    - "Fleming noticed that mold had contaminated one of his bacterial culture plates."
+    - "Penicillin later became one of the first widely used antibiotics."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1918) contradicts the answer's correct, well-documented year (1928)."
+
+- id: golden-a-079
+  category: injected_contradiction
+  question: "Where and when was Archduke Franz Ferdinand assassinated?"
+  answer: >
+    Archduke Franz Ferdinand was assassinated in Sarajevo. This occurred
+    in 1914. His assassination is considered a key trigger of World War I.
+    He was heir to the Austro-Hungarian throne.
+  evidence:
+    - "Archduke Franz Ferdinand was assassinated in Sarajevo."
+    - "The assassination occurred in 1904."
+    - "The assassination is widely considered a key trigger of the outbreak of World War I."
+    - "Franz Ferdinand was heir to the Austro-Hungarian throne at the time of his death."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1904) contradicts the historically accurate, answer-stated year (1914)."
+
+- id: golden-a-080
+  category: injected_contradiction
+  question: "When was the Magna Carta signed?"
+  answer: >
+    The Magna Carta was signed in 1215. It was signed by King John of
+    England. The document limited the power of the English monarchy. It
+    influenced later constitutional law.
+  evidence:
+    - "The Magna Carta was signed in 1265."
+    - "The Magna Carta was signed by King John of England."
+    - "The document placed limits on the power of the English monarchy."
+    - "The Magna Carta influenced the later development of constitutional law."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1265) contradicts the well-documented, answer-stated year (1215)."
+
+- id: golden-a-081
+  category: injected_contradiction
+  question: "Who performed the first human heart transplant, and where?"
+  answer: >
+    Christiaan Barnard performed the first human heart transplant. He
+    performed it in South Africa. The operation took place in 1967. The
+    patient survived for 18 days after the surgery.
+  evidence:
+    - "Christiaan Barnard performed the first human heart transplant."
+    - "The transplant took place in the Netherlands."
+    - "The operation took place in 1967."
+    - "The patient survived for 18 days after the surgery."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's country (Netherlands) contradicts the answer's correct country (South Africa)."
+
+- id: golden-a-082
+  category: injected_contradiction
+  question: "How long ago did the Chicxulub asteroid impact occur?"
+  answer: >
+    The Chicxulub impact is linked to the extinction of the dinosaurs. It
+    occurred about 66 million years ago. The impact site is located near
+    Mexico. It created a massive crater.
+  evidence:
+    - "The Chicxulub impact is widely linked to the mass extinction that ended the age of dinosaurs."
+    - "The impact occurred about 6 million years ago."
+    - "The impact site is located near the Yucatan Peninsula in Mexico."
+    - "The impact created a massive crater more than 150 kilometers wide."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's timeframe (6 million years ago) contradicts the scientifically accepted, answer-stated figure (66 million years ago)."
+
+- id: golden-a-083
+  category: injected_contradiction
+  question: "Where was the main laboratory of the Manhattan Project located?"
+  answer: >
+    The Manhattan Project developed the first nuclear weapons. Its main
+    laboratory was located in Los Alamos, New Mexico. The project was run
+    by the United States during World War II. J. Robert Oppenheimer led
+    the laboratory's scientific work.
+  evidence:
+    - "The Manhattan Project developed the first nuclear weapons."
+    - "The project's main laboratory was located in Los Alamos, Nevada."
+    - "The Manhattan Project was run by the United States during World War II."
+    - "J. Robert Oppenheimer led the scientific work at the project's main laboratory."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's state (Nevada) contradicts the answer's correct state (New Mexico)."
+
+- id: golden-a-084
+  category: injected_contradiction
+  question: "When did Tim Berners-Lee invent the World Wide Web?"
+  answer: >
+    Tim Berners-Lee invented the World Wide Web. He did this in 1989. He
+    was working at CERN at the time. The web became publicly available a
+    few years later.
+  evidence:
+    - "Tim Berners-Lee invented the World Wide Web."
+    - "Berners-Lee's invention dates to 1999."
+    - "Berners-Lee was working at CERN at the time of the invention."
+    - "The World Wide Web became publicly available a few years after its invention."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1999) contradicts the well-documented, answer-stated year (1989)."
+
+- id: golden-a-085
+  category: injected_contradiction
+  question: "When and where did the Hindenburg disaster occur?"
+  answer: >
+    The Hindenburg disaster occurred in 1937. It happened in New Jersey,
+    in the United States. The Hindenburg was a passenger airship. The
+    disaster ended the era of passenger airship travel.
+  evidence:
+    - "The Hindenburg disaster occurred in 1947."
+    - "The disaster happened in New Jersey, in the United States."
+    - "The Hindenburg was a passenger airship."
+    - "The disaster effectively ended the era of passenger airship travel."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1947) contradicts the well-documented, answer-stated year (1937)."
+
+- id: golden-a-086
+  category: injected_contradiction
+  question: "When was K2 first successfully climbed?"
+  answer: >
+    K2 is the second-highest mountain on Earth. It was first successfully
+    climbed in 1954. The successful expedition was Italian. K2 is
+    considered more difficult to climb than Mount Everest.
+  evidence:
+    - "K2 is the second-highest mountain on Earth."
+    - "K2 was first successfully climbed in 1964."
+    - "The successful expedition that first climbed K2 was Italian."
+    - "K2 is widely considered more technically difficult to climb than Mount Everest."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1964) contradicts the answer's correct year (1954)."
+
+- id: golden-a-087
+  category: injected_contradiction
+  question: "Where is the Louvre Museum located?"
+  answer: >
+    The Louvre Museum is located in Paris, France. It is one of the
+    largest art museums in the world. The museum is home to the Mona
+    Lisa. A glass pyramid stands at its entrance.
+  evidence:
+    - "The Louvre Museum is located in Brussels, Belgium."
+    - "The Louvre is one of the largest art museums in the world."
+    - "The Louvre is home to the Mona Lisa."
+    - "A large glass pyramid stands at the entrance of the Louvre."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's city/country (Brussels, Belgium) contradicts the answer's correct location (Paris, France)."
+
+- id: golden-a-088
+  category: injected_contradiction
+  question: "When was the Battle of Hastings fought?"
+  answer: >
+    The Battle of Hastings was fought in 1066. It was fought between
+    Norman and English forces. William the Conqueror led the Norman
+    forces. The battle led to Norman control of England.
+  evidence:
+    - "The Battle of Hastings was fought in 1166."
+    - "The battle was fought between Norman and English forces."
+    - "William the Conqueror led the Norman forces at the battle."
+    - "The battle led to Norman control over England."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1166) contradicts the well-documented, answer-stated year (1066)."
+
+- id: golden-a-089
+  category: injected_contradiction
+  question: "When did the Apollo 13 mission take place?"
+  answer: >
+    Apollo 13 was a crewed Moon mission launched in 1970. The mission was
+    aborted after an oxygen tank explosion. The crew looped around the
+    Moon and returned safely to Earth. The mission is often called a
+    "successful failure."
+  evidence:
+    - "Apollo 13 was a crewed Moon mission launched in 1975."
+    - "The mission was aborted after an oxygen tank explosion."
+    - "The crew looped around the Moon and returned safely to Earth."
+    - "The mission is often described as a successful failure."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1975) contradicts the answer's correct year (1970)."
+
+- id: golden-a-090
+  category: injected_contradiction
+  question: "When did the Britannic, the Titanic's sister ship, sink?"
+  answer: >
+    The Britannic was the Titanic's sister ship. It sank in 1916. The
+    ship was serving as a hospital ship at the time. It sank after
+    striking a mine or torpedo in the Aegean Sea.
+  evidence:
+    - "The Britannic was the Titanic's sister ship."
+    - "The Britannic sank in 1926."
+    - "The ship was serving as a hospital ship at the time it sank."
+    - "The Britannic sank after striking a mine or torpedo in the Aegean Sea."
+  expected_verdict: CONTRADICTED
+  notes: "Evidence's year (1926) contradicts the historically accurate, answer-stated year (1916)."

@@ -1,4 +1,73 @@
 {
+  "00caa8b5ee263553b58caf456cdc1a7aa20dcd5d37fff2e9545540f24285aa64": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Edward Jenner developed an early smallpox vaccine in 1756.",
+        "quote_verified": true,
+        "text": "Edward Jenner developed an early smallpox vaccine."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Edward Jenner developed an early smallpox vaccine in 1756.",
+        "quote_verified": true,
+        "text": "Edward Jenner developed the vaccine in 1796."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Jenner used material taken from cowpox lesions in his experiments.",
+        "quote_verified": true,
+        "text": "Jenner used material from cowpox lesions."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Jenner's work is considered foundational to the field of immunology.",
+        "quote_verified": true,
+        "text": "Jenner's work laid the foundation for the field of immunology."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-076",
+    "timings_ms": {
+      "extraction": 2905,
+      "retrieval": 0,
+      "total": 5530,
+      "verification": 2625
+    },
+    "verdict": "CONTRADICTED"
+  },
   "019117da420ae88752ae347c49e021d46ea28dd3f6e6a6c81d7094ca2c04b559": {
     "calibration_version": "heuristic-v0",
     "claims": [
@@ -33,6 +102,205 @@
     },
     "verdict": "NOT_VERIFIABLE"
   },
+  "0285d9e2ec5a935c4c0ab08c4aad724092d917629c5fae2dbe4c5d36bd56c836": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The Louvre Museum is located in Brussels, Belgium.",
+        "quote_verified": true,
+        "text": "The Louvre Museum is located in Paris, France."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Louvre is one of the largest art museums in the world.",
+        "quote_verified": true,
+        "text": "The Louvre Museum is one of the largest art museums in the world."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Louvre is home to the Mona Lisa.",
+        "quote_verified": true,
+        "text": "The museum is home to the Mona Lisa."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "A large glass pyramid stands at the entrance of the Louvre.",
+        "quote_verified": true,
+        "text": "A glass pyramid stands at its entrance."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-087",
+    "timings_ms": {
+      "extraction": 1609,
+      "retrieval": 0,
+      "total": 4484,
+      "verification": 2875
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "083b4e5ebf9bee4286b0f4407ee237551a24b6d19a611dc6bbaec044a45141b2": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Christiaan Barnard performed the first human heart transplant.",
+        "quote_verified": true,
+        "text": "Christiaan Barnard performed the first human heart transplant."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The transplant took place in the Netherlands.",
+        "quote_verified": true,
+        "text": "He performed the transplant in South Africa."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The operation took place in 1967.",
+        "quote_verified": true,
+        "text": "The operation took place in 1967."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The patient survived for 18 days after the surgery.",
+        "quote_verified": true,
+        "text": "The patient survived for 18 days after the surgery."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-081",
+    "timings_ms": {
+      "extraction": 1438,
+      "retrieval": 0,
+      "total": 4125,
+      "verification": 2686
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "186c402be703fefda3896ffc6a251db59b292c1e559f1dc5c0975ebfe0e5e3c4": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Larsen C is one of the largest ice shelves in Antarctica."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "A massive iceberg calved from Larsen C in 2017."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Larsen C is located on the Antarctic Peninsula."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Scientists monitor Larsen C for signs of further instability."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-070",
+    "timings_ms": {
+      "extraction": 3250,
+      "retrieval": 0,
+      "total": 5889,
+      "verification": 2639
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
   "21cfe352bb86f5f704c9ef3637ed62958f873ede24134652a60c0bbc6453381b": {
     "calibration_version": "heuristic-v0",
     "claims": [
@@ -66,6 +334,144 @@
       "verification": 1389
     },
     "verdict": "NOT_VERIFIABLE"
+  },
+  "22a7994b304938281b77a7e2f454eb9967108f7adb3c6e78c4fdb94c31057c60": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The printing press was invented by Johannes Gutenberg in the 15th century.",
+        "quote_verified": true,
+        "text": "The printing press was invented by Johannes Gutenberg."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Gutenberg's press used movable metal type, which could be rearranged and reused.",
+        "quote_verified": true,
+        "text": "The printing press used movable metal type."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The printing press made books far cheaper and faster to produce than hand-copying.",
+        "quote_verified": true,
+        "text": "The invention of the printing press made books cheaper to produce."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The spread of the printing press significantly increased literacy across Europe.",
+        "quote_verified": true,
+        "text": "The invention of the printing press significantly increased the spread of literacy in Europe."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-039",
+    "timings_ms": {
+      "extraction": 2219,
+      "retrieval": 0,
+      "total": 6125,
+      "verification": 3905
+    },
+    "verdict": "GROUNDED"
+  },
+  "246586ee7ed016dca7ab10f9602aead3bf8b3bfca02bf4755ddfd69133ff3608": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Hoover Dam is located on the Colorado River.",
+        "quote_verified": true,
+        "text": "The Hoover Dam is located on the Colorado River."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The dam sits on the border between California and Arizona.",
+        "quote_verified": true,
+        "text": "The Hoover Dam sits on the border between Nevada and Arizona."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Construction of the Hoover Dam was completed in 1936.",
+        "quote_verified": true,
+        "text": "Construction of the Hoover Dam was completed in 1936."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The dam provides hydroelectric power to several southwestern states.",
+        "quote_verified": true,
+        "text": "The Hoover Dam provides hydroelectric power to several states."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-077",
+    "timings_ms": {
+      "extraction": 2125,
+      "retrieval": 0,
+      "total": 6234,
+      "verification": 4109
+    },
+    "verdict": "CONTRADICTED"
   },
   "28295f8dea070b36bd170f7493e5b4cba707eaa4c5f264816b78409193c1b11e": {
     "calibration_version": "heuristic-v0",
@@ -128,6 +534,67 @@
     },
     "verdict": "NOT_ENOUGH_INFO"
   },
+  "287c1d8c3bfbc3faec664760e32183443c344d269b374ea610901df6cea82a90": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Vincent van Gogh was a Dutch painter."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Vincent van Gogh created around 2,100 artworks."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Vincent van Gogh sold very few paintings during his lifetime."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Vincent van Gogh painted The Starry Night."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-043",
+    "timings_ms": {
+      "extraction": 1796,
+      "retrieval": 0,
+      "total": 4436,
+      "verification": 2639
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
   "2a90a9ba88f887fca8cada8c0beabbd476dc1ef203d9530103c9af20e5a611b3": {
     "calibration_version": "heuristic-v0",
     "claims": [
@@ -144,7 +611,7 @@
       },
       {
         "claim_id": "claim-1",
-        "confidence": 0.99,
+        "confidence": 1.0,
         "evidence_chunk_ids": [
           "direct-1"
         ],
@@ -155,17 +622,39 @@
       },
       {
         "claim_id": "claim-2",
-        "confidence": 0.97,
+        "confidence": 1.0,
         "evidence_chunk_ids": [
           "direct-2"
         ],
         "label": "SUPPORTED",
         "quote": "Builders used materials including stone, brick, tamped earth, and wood depending on the region.",
         "quote_verified": true,
-        "text": "Portions of the Great Wall were built using stone, brick, and rammed earth."
+        "text": "Portions of the Great Wall were built using stone."
       },
       {
         "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Builders used materials including stone, brick, tamped earth, and wood depending on the region.",
+        "quote_verified": true,
+        "text": "Portions of the Great Wall were built using brick."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 0.98,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Builders used materials including stone, brick, tamped earth, and wood depending on the region.",
+        "quote_verified": true,
+        "text": "Portions of the Great Wall were built using rammed earth."
+      },
+      {
+        "claim_id": "claim-5",
         "confidence": 0.99,
         "evidence_chunk_ids": [
           "direct-3"
@@ -179,21 +668,21 @@
     "cost_usd": 0.0,
     "groundedness": 1.0,
     "groundedness_ci": [
-      0.5100999795960008,
+      0.6096569663469354,
       1.0
     ],
     "model_used": {
       "model": "stealth/space-bunny-alpha",
       "provider": "openrouter"
     },
-    "n_verifiable_claims": 4,
+    "n_verifiable_claims": 6,
     "p_hallucinated": 0.0,
     "request_id": "golden-a-002",
     "timings_ms": {
-      "extraction": 2718,
+      "extraction": 7110,
       "retrieval": 0,
-      "total": 13859,
-      "verification": 11140
+      "total": 12094,
+      "verification": 4984
     },
     "verdict": "GROUNDED"
   },
@@ -202,14 +691,75 @@
     "claims": [
       {
         "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The water cycle describes the movement of water through Earth's systems."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Evaporation converts liquid water into vapor."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Condensation forms clouds from water vapor."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Precipitation returns water to the surface as rain or snow."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-010",
+    "timings_ms": {
+      "extraction": 3110,
+      "retrieval": 0,
+      "total": 6063,
+      "verification": 2953
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "2cd6ac9ef7250f2a70a3d9196696413ba00935399c613bc960d65f120cd21397": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
         "confidence": 1.0,
         "evidence_chunk_ids": [
           "direct-0"
         ],
-        "label": "SUPPORTED",
-        "quote": "The water cycle, or hydrologic cycle, describes the continuous movement of water within the Earth and atmosphere.",
+        "label": "CONTRADICTED",
+        "quote": "The Battle of Hastings was fought in 1166.",
         "quote_verified": true,
-        "text": "The water cycle describes the movement of water through Earth's systems."
+        "text": "The Battle of Hastings was fought in 1066."
       },
       {
         "claim_id": "claim-1",
@@ -218,9 +768,9 @@
           "direct-1"
         ],
         "label": "SUPPORTED",
-        "quote": "Evaporation is the process by which liquid water is converted into water vapor, often driven by heat from the sun.",
+        "quote": "The battle was fought between Norman and English forces.",
         "quote_verified": true,
-        "text": "Evaporation converts liquid water into vapor."
+        "text": "It was fought between Norman and English forces."
       },
       {
         "claim_id": "claim-2",
@@ -229,9 +779,9 @@
           "direct-2"
         ],
         "label": "SUPPORTED",
-        "quote": "Condensation occurs when water vapor cools and forms clouds.",
+        "quote": "William the Conqueror led the Norman forces at the battle.",
         "quote_verified": true,
-        "text": "Condensation forms clouds from water vapor."
+        "text": "William the Conqueror led the Norman forces."
       },
       {
         "claim_id": "claim-3",
@@ -240,31 +790,99 @@
           "direct-3"
         ],
         "label": "SUPPORTED",
-        "quote": "Precipitation is the process by which water returns to the Earth's surface in forms such as rain, snow, or hail.",
+        "quote": "The battle led to Norman control over England.",
         "quote_verified": true,
-        "text": "Precipitation returns water to the surface as rain or snow."
+        "text": "The battle led to Norman control of England."
       }
     ],
     "cost_usd": 0.0,
-    "groundedness": 1.0,
+    "groundedness": 0.75,
     "groundedness_ci": [
-      0.5100999795960008,
-      1.0
+      0.30063605244263664,
+      0.9544139373553638
     ],
     "model_used": {
       "model": "stealth/space-bunny-alpha",
       "provider": "openrouter"
     },
     "n_verifiable_claims": 4,
-    "p_hallucinated": 0.0,
-    "request_id": "golden-a-010",
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-088",
     "timings_ms": {
-      "extraction": 2140,
+      "extraction": 2030,
       "retrieval": 0,
-      "total": 4125,
-      "verification": 1984
+      "total": 3796,
+      "verification": 1765
     },
-    "verdict": "GROUNDED"
+    "verdict": "CONTRADICTED"
+  },
+  "2e9809aae9c2892552cbb7140e55bf3bfb1ec2af78ff38c863cf0e8715f6ce18": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The renovation project will take 18 months."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-058",
+    "timings_ms": {
+      "extraction": 1454,
+      "retrieval": 0,
+      "total": 4235,
+      "verification": 2780
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "32e9a972626e5235aaf115181df359efa4c78b9b3d5b7050ae35d336cecf8af7": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The company laid off 340 employees last quarter."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-053",
+    "timings_ms": {
+      "extraction": 1704,
+      "retrieval": 0,
+      "total": 3532,
+      "verification": 1828
+    },
+    "verdict": "NOT_VERIFIABLE"
   },
   "32f18099476d032485204fcf73340b21795bda506a5592e3fbe67cf3d2d46028": {
     "calibration_version": "heuristic-v0",
@@ -389,12 +1007,241 @@
     "p_hallucinated": 1.0,
     "request_id": "golden-a-001",
     "timings_ms": {
-      "extraction": 2890,
+      "extraction": 3875,
       "retrieval": 0,
-      "total": 4984,
-      "verification": 2093
+      "total": 6484,
+      "verification": 2609
     },
     "verdict": "NOT_ENOUGH_INFO"
+  },
+  "3cfa6b3888dc815ea1bb9bc566f9844c4c965270027aaa659e04010aa847a9cc": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Great Barrier Reef is the world's largest coral reef system, made up of thousands of individual reefs.",
+        "quote_verified": true,
+        "text": "The Great Barrier Reef is the world's largest coral reef system."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The reef is located in the Coral Sea, off the coast of Queensland, Australia.",
+        "quote_verified": true,
+        "text": "It is located off the coast of Queensland, Australia."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Great Barrier Reef is the world's largest coral reef system, made up of thousands of individual reefs.",
+        "quote_verified": true,
+        "text": "The reef is composed of thousands of individual reefs."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Because of its immense size, the Great Barrier Reef is visible from outer space.",
+        "quote_verified": true,
+        "text": "It can be seen from outer space."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-031",
+    "timings_ms": {
+      "extraction": 2703,
+      "retrieval": 0,
+      "total": 5828,
+      "verification": 3125
+    },
+    "verdict": "GROUNDED"
+  },
+  "3fa07f757bbfb7ae9bab76a0952c580d564fa2691f70aa2b854a507a0b6fab8d": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Alexander Fleming discovered penicillin in 1918.",
+        "quote_verified": true,
+        "text": "Alexander Fleming discovered penicillin."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Alexander Fleming discovered penicillin in 1918.",
+        "quote_verified": true,
+        "text": "Alexander Fleming discovered penicillin in 1928."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Fleming noticed that mold had contaminated one of his bacterial culture plates.",
+        "quote_verified": true,
+        "text": "Fleming noticed mold contaminating a bacterial culture."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Penicillin later became one of the first widely used antibiotics.",
+        "quote_verified": true,
+        "text": "Penicillin later became one of the first widely used antibiotics."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-078",
+    "timings_ms": {
+      "extraction": 2344,
+      "retrieval": 0,
+      "total": 4984,
+      "verification": 2639
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "414e467cce88eb87580413999921bbda019b5c43a372ab712a61815ab7069537": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Apollo 13 was a crewed Moon mission launched in 1975.",
+        "quote_verified": true,
+        "text": "Apollo 13 was a crewed Moon mission."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Apollo 13 was a crewed Moon mission launched in 1975.",
+        "quote_verified": true,
+        "text": "Apollo 13 was launched in 1970."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The mission was aborted after an oxygen tank explosion.",
+        "quote_verified": true,
+        "text": "The mission was aborted after an oxygen tank explosion."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The crew looped around the Moon and returned safely to Earth.",
+        "quote_verified": true,
+        "text": "The crew looped around the Moon."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The crew looped around the Moon and returned safely to Earth.",
+        "quote_verified": true,
+        "text": "The crew returned safely to Earth."
+      },
+      {
+        "claim_id": "claim-5",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The mission is often described as a successful failure.",
+        "quote_verified": true,
+        "text": "The mission is often called a \"successful failure.\""
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.8333333333333334,
+    "groundedness_ci": [
+      0.4364905634363539,
+      0.9699474141282696
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 6,
+    "p_hallucinated": 0.16666666666666666,
+    "request_id": "golden-a-089",
+    "timings_ms": {
+      "extraction": 4234,
+      "retrieval": 0,
+      "total": 7578,
+      "verification": 3344
+    },
+    "verdict": "CONTRADICTED"
   },
   "421f99811808c7f20b20da951293a3aae3528aa2438d7ca1194688eba3cb734a": {
     "calibration_version": "heuristic-v0",
@@ -437,41 +1284,32 @@
       },
       {
         "claim_id": "claim-4",
-        "confidence": 0.98,
-        "evidence_chunk_ids": [],
-        "label": "NOT_ENOUGH_INFO",
-        "quote": "",
-        "quote_verified": false,
-        "text": "Titan is the second-largest moon in the solar system."
-      },
-      {
-        "claim_id": "claim-5",
         "confidence": 0.99,
         "evidence_chunk_ids": [],
         "label": "NOT_ENOUGH_INFO",
         "quote": "",
         "quote_verified": false,
-        "text": "Scientists believe Titan's surface conditions resemble early Earth in some ways."
+        "text": "Titan is the second-largest moon in the solar system."
       }
     ],
     "cost_usd": 0.0,
     "groundedness": 0.0,
     "groundedness_ci": [
       0.0,
-      0.3903430336530645
+      0.43449149475208104
     ],
     "model_used": {
       "model": "stealth/space-bunny-alpha",
       "provider": "openrouter"
     },
-    "n_verifiable_claims": 6,
+    "n_verifiable_claims": 5,
     "p_hallucinated": 1.0,
     "request_id": "golden-a-013",
     "timings_ms": {
-      "extraction": 3765,
+      "extraction": 34030,
       "retrieval": 0,
-      "total": 8640,
-      "verification": 4875
+      "total": 45655,
+      "verification": 11625
     },
     "verdict": "NOT_ENOUGH_INFO"
   },
@@ -544,6 +1382,281 @@
     },
     "verdict": "CONTRADICTED"
   },
+  "440c6f0edde7159d355db5387271b18bd53fb6b3d9327bdeec6463ebc0ca0c01": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Colosseum is an ancient amphitheater located in the center of Rome, Italy.",
+        "quote_verified": true,
+        "text": "The Colosseum is located in Rome, Italy."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Colosseum is an ancient amphitheater located in the center of Rome, Italy.",
+        "quote_verified": true,
+        "text": "The Colosseum is an ancient amphitheater."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Construction of the Colosseum was completed around 80 AD, under Emperor Titus.",
+        "quote_verified": true,
+        "text": "Construction of the Colosseum was completed around 80 AD."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Colosseum could hold an estimated 50,000 to 80,000 spectators.",
+        "quote_verified": true,
+        "text": "The Colosseum could hold tens of thousands of spectators."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-034",
+    "timings_ms": {
+      "extraction": 1891,
+      "retrieval": 0,
+      "total": 4250,
+      "verification": 2358
+    },
+    "verdict": "GROUNDED"
+  },
+  "48e622024a3744f3032344f78cdcc3b673c65b59dd1a35b4e7dee9b012d642d5": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The local library's annual budget is $2.3 million."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-051",
+    "timings_ms": {
+      "extraction": 1437,
+      "retrieval": 0,
+      "total": 3077,
+      "verification": 1639
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "49e5cdcdcce9ff22e4b6f45fd20ade588e6766e98a8d0a3e69f8a47656db06f8": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The satellite completed its orbit in 92 minutes."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-056",
+    "timings_ms": {
+      "extraction": 3217,
+      "retrieval": 0,
+      "total": 9000,
+      "verification": 5782
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "4a3e03e4a2b2e8fcc6747358d1bc55b69431db7ce7c24a9756c73824ad39653a": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Jupiter is the largest planet in the solar system by both mass and volume.",
+        "quote_verified": true,
+        "text": "Jupiter is the largest planet in the solar system."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Jupiter is classified as a gas giant, composed mostly of hydrogen and helium.",
+        "quote_verified": true,
+        "text": "Jupiter is a gas giant."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Jupiter's Great Red Spot is a giant storm that has persisted for centuries.",
+        "quote_verified": true,
+        "text": "Jupiter has a prominent storm called the Great Red Spot."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Jupiter has dozens of known moons, including the four large Galilean moons.",
+        "quote_verified": true,
+        "text": "Jupiter has dozens of known moons."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-040",
+    "timings_ms": {
+      "extraction": 1671,
+      "retrieval": 0,
+      "total": 3812,
+      "verification": 2140
+    },
+    "verdict": "GROUNDED"
+  },
+  "4c26e5ccc81810c0e2e24e1978e6858a3f06233b94715da4cf071ce6b701802c": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Rosetta Stone is inscribed with the same decree written in three different scripts.",
+        "quote_verified": true,
+        "text": "The Rosetta Stone is inscribed with the same text in three scripts."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Rosetta Stone was the key artifact that allowed researchers to decipher Egyptian hieroglyphs.",
+        "quote_verified": true,
+        "text": "It helped researchers decipher Egyptian hieroglyphs."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Rosetta Stone was discovered in 1799 near the town of Rosetta in Egypt.",
+        "quote_verified": true,
+        "text": "The stone was discovered in 1799."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Rosetta Stone is currently held and displayed in the British Museum.",
+        "quote_verified": true,
+        "text": "It is currently held in the British Museum."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-048",
+    "timings_ms": {
+      "extraction": 2953,
+      "retrieval": 0,
+      "total": 5625,
+      "verification": 2671
+    },
+    "verdict": "GROUNDED"
+  },
   "4d1c6fb909cf69163c4c831016f23909e0277af14f0fe5355e8d6926095a0035": {
     "calibration_version": "heuristic-v0",
     "claims": [
@@ -571,12 +1684,631 @@
     "p_hallucinated": 1.0,
     "request_id": "golden-a-012",
     "timings_ms": {
-      "extraction": 1781,
+      "extraction": 4922,
       "retrieval": 0,
-      "total": 4015,
-      "verification": 2234
+      "total": 11969,
+      "verification": 7046
     },
     "verdict": "NOT_VERIFIABLE"
+  },
+  "5862f4eb6cc745e584eb32761901a168e1b5242322a436e55df42ad887cfc86a": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The Hindenburg disaster occurred in 1947.",
+        "quote_verified": true,
+        "text": "The Hindenburg disaster occurred in 1937."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The disaster happened in New Jersey, in the United States.",
+        "quote_verified": true,
+        "text": "The Hindenburg disaster occurred in New Jersey."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The disaster happened in New Jersey, in the United States.",
+        "quote_verified": true,
+        "text": "The Hindenburg disaster occurred in the United States."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Hindenburg was a passenger airship.",
+        "quote_verified": true,
+        "text": "The Hindenburg was a passenger airship."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 0.98,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The disaster effectively ended the era of passenger airship travel.",
+        "quote_verified": true,
+        "text": "The Hindenburg disaster ended the era of passenger airship travel."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.8,
+    "groundedness_ci": [
+      0.37552826411853885,
+      0.9637768390302125
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 0.2,
+    "request_id": "golden-a-085",
+    "timings_ms": {
+      "extraction": 5030,
+      "retrieval": 0,
+      "total": 10359,
+      "verification": 5328
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "5a0f79723e5683b86347dcffc0960a871c326e453e17fc7d2720782920ea4d43": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The novel sold 1.2 million copies in its first year."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-054",
+    "timings_ms": {
+      "extraction": 1360,
+      "retrieval": 0,
+      "total": 3656,
+      "verification": 2296
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "5b40437d9a0718524b39eeefe73f7691c691b8193be813cca2ba20a305df90b8": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Alexander Graham Bell is widely credited with inventing the telephone.",
+        "quote_verified": true,
+        "text": "Alexander Graham Bell is credited with inventing the telephone."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Bell made the first successful telephone call in 1889.",
+        "quote_verified": true,
+        "text": "Alexander Graham Bell made the first successful telephone call in 1876."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Bell's assistant during the famous first call was named Thomas Watson.",
+        "quote_verified": true,
+        "text": "Alexander Graham Bell's assistant was named Thomas Watson."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Alexander Graham Bell was born in Scotland.",
+        "quote_verified": true,
+        "text": "Alexander Graham Bell was born in Scotland."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-071",
+    "timings_ms": {
+      "extraction": 2437,
+      "retrieval": 0,
+      "total": 5077,
+      "verification": 2639
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "5da066c1666e5b22dae07c1710dd886d8e5c4e2577a614d4aae9eedaf6cd75dd": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Honeybees are important pollinators of many food crops grown around the world.",
+        "quote_verified": true,
+        "text": "Honeybees pollinate many food crops."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Honeybees live in highly organized colonies with a clear division of labor.",
+        "quote_verified": true,
+        "text": "Honeybees live in organized colonies."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "A typical honeybee colony has a single queen bee responsible for laying eggs.",
+        "quote_verified": true,
+        "text": "A colony typically has one queen bee."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Honeybees produce and store honey as a food source to survive the winter.",
+        "quote_verified": true,
+        "text": "Honeybees produce honey as a food store for winter."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-035",
+    "timings_ms": {
+      "extraction": 1608,
+      "retrieval": 0,
+      "total": 4250,
+      "verification": 2641
+    },
+    "verdict": "GROUNDED"
+  },
+  "6134ae1da51d8a25c6955a09a2f3833509e9d56b5ca603e32539ed1fc65a1d3e": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Antikythera mechanism is ancient."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Antikythera mechanism is an astronomical calculator."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Antikythera mechanism was recovered from a shipwreck."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Antikythera mechanism is believed to date to around the 2nd century BC."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Antikythera mechanism could predict astronomical positions."
+      },
+      {
+        "claim_id": "claim-5",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Antikythera mechanism could predict eclipses."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.3903430336530645
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 6,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-064",
+    "timings_ms": {
+      "extraction": 4858,
+      "retrieval": 0,
+      "total": 7375,
+      "verification": 2516
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "6d0b303c7cf8afe3c2f52b2de20de3f582f34e4ed806a4dc91d75df2934193b2": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Marie Curie conducted pioneering research on radioactivity, a term she coined.",
+        "quote_verified": true,
+        "text": "Marie Curie conducted research on radioactivity."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Marie Curie was born in Warsaw, Poland, in 1867.",
+        "quote_verified": true,
+        "text": "Marie Curie was born in Poland."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Curie won Nobel Prizes in both Physics and Chemistry, in two different scientific fields.",
+        "quote_verified": true,
+        "text": "Marie Curie won Nobel Prizes in two different sciences."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Marie Curie was the first woman ever to win a Nobel Prize.",
+        "quote_verified": true,
+        "text": "Marie Curie was the first woman to win a Nobel Prize."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-037",
+    "timings_ms": {
+      "extraction": 5827,
+      "retrieval": 0,
+      "total": 9500,
+      "verification": 3672
+    },
+    "verdict": "GROUNDED"
+  },
+  "7062e73447793cada6b7cecbbdbb0d8ea69d5d0ebbc259a22914923d0e84b83a": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Sydney Opera House is a performing arts center located in Sydney, Australia.",
+        "quote_verified": true,
+        "text": "The Sydney Opera House is located in Sydney, Australia."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Sydney Opera House was designed by Danish architect Jorn Utzon.",
+        "quote_verified": true,
+        "text": "The Sydney Opera House was designed by architect Jorn Utzon."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Sydney Opera House officially opened in October 1973.",
+        "quote_verified": true,
+        "text": "The Sydney Opera House building opened in 1973."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Sydney Opera House was inscribed as a UNESCO World Heritage Site in 2007.",
+        "quote_verified": true,
+        "text": "The Sydney Opera House is recognized as a UNESCO World Heritage Site."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-044",
+    "timings_ms": {
+      "extraction": 1782,
+      "retrieval": 0,
+      "total": 4829,
+      "verification": 3046
+    },
+    "verdict": "GROUNDED"
+  },
+  "7275b4be29cf8700574edfedc470bd8d788d961f30cc3c4dea560e89ad1383f7": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Zora Neale Hurston was a novelist."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Zora Neale Hurston was an anthropologist."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Zora Neale Hurston wrote Their Eyes Were Watching God."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Zora Neale Hurston was a key figure in the Harlem Renaissance."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Zora Neale Hurston studied folklore in the American South."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.43449149475208104
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-062",
+    "timings_ms": {
+      "extraction": 2109,
+      "retrieval": 0,
+      "total": 4750,
+      "verification": 2640
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "735d2e6179abb9e6b4309e24e78bc99f075fb78b544f623058509e9b084e06bf": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The adult human skeleton is made up of 206 bones.",
+        "quote_verified": true,
+        "text": "The adult human skeleton has 206 bones."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The skeleton provides structural support that allows the body to stand and move.",
+        "quote_verified": true,
+        "text": "The adult human skeleton provides structural support for the body."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.98,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Bone marrow inside certain bones produces blood cells.",
+        "quote_verified": true,
+        "text": "Bones produce blood cells."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The rib cage and skull are part of the skeleton's role in protecting vital organs like the heart, lungs, and brain.",
+        "quote_verified": true,
+        "text": "The skeleton protects the heart."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The rib cage and skull are part of the skeleton's role in protecting vital organs like the heart, lungs, and brain.",
+        "quote_verified": true,
+        "text": "The skeleton protects the lungs."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.565508505247919,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-041",
+    "timings_ms": {
+      "extraction": 3844,
+      "retrieval": 0,
+      "total": 8063,
+      "verification": 4219
+    },
+    "verdict": "GROUNDED"
   },
   "751089779fba3feedb5a9dca0465d0aef31db6b2e5f8181b96539b2fee829a18": {
     "calibration_version": "heuristic-v0",
@@ -655,7 +2387,7 @@
       },
       {
         "claim_id": "claim-1",
-        "confidence": 0.95,
+        "confidence": 0.99,
         "evidence_chunk_ids": [
           "direct-1"
         ],
@@ -701,12 +2433,344 @@
     "p_hallucinated": 0.0,
     "request_id": "golden-a-007",
     "timings_ms": {
-      "extraction": 2156,
+      "extraction": 2344,
       "retrieval": 0,
-      "total": 6469,
-      "verification": 4313
+      "total": 5639,
+      "verification": 3295
     },
     "verdict": "GROUNDED"
+  },
+  "79fad2b4bd36687e2bd72cc990b1b168f88eed6711a21ed81b5b0f5593034081": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Nile is widely considered one of the longest rivers in the world.",
+        "quote_verified": true,
+        "text": "The Nile is one of the longest rivers in the world."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Nile flows through northeastern Africa, passing through countries including Egypt and Sudan.",
+        "quote_verified": true,
+        "text": "The Nile flows through northeastern Africa."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Nile empties into the Mediterranean Sea.",
+        "quote_verified": true,
+        "text": "The Nile flows into the Mediterranean Sea."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Ancient Egyptian civilization developed and flourished along the banks of the Nile.",
+        "quote_verified": true,
+        "text": "Ancient Egyptian civilization developed along the Nile's banks."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-038",
+    "timings_ms": {
+      "extraction": 4639,
+      "retrieval": 0,
+      "total": 7014,
+      "verification": 2375
+    },
+    "verdict": "GROUNDED"
+  },
+  "7ca46966fa243098c3e42c94f30c1fd2087aa5f3232cf969792fb1436ff6d6b7": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Britannic was the Titanic's sister ship.",
+        "quote_verified": true,
+        "text": "The Britannic was the Titanic's sister ship."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The Britannic sank in 1926.",
+        "quote_verified": true,
+        "text": "The Britannic sank in 1916."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The ship was serving as a hospital ship at the time it sank.",
+        "quote_verified": true,
+        "text": "The Britannic was serving as a hospital ship when it sank."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Britannic sank after striking a mine or torpedo in the Aegean Sea.",
+        "quote_verified": true,
+        "text": "The Britannic sank after striking a mine or torpedo."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Britannic sank after striking a mine or torpedo in the Aegean Sea.",
+        "quote_verified": true,
+        "text": "The Britannic sank in the Aegean Sea."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.8,
+    "groundedness_ci": [
+      0.37552826411853885,
+      0.9637768390302125
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 0.2,
+    "request_id": "golden-a-090",
+    "timings_ms": {
+      "extraction": 4327,
+      "retrieval": 0,
+      "total": 7187,
+      "verification": 2860
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "7ddd2aec2c0932dfd783d92fe69b167728f8c9bea350ce0f5004e0afd4df9fbe": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Panama Canal connects the Atlantic and Pacific Oceans."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Panama Canal runs through the country of Panama."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Panama Canal opened in 1914."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The Panama Canal uses a system of locks to raise and lower ships."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-042",
+    "timings_ms": {
+      "extraction": 1843,
+      "retrieval": 0,
+      "total": 4093,
+      "verification": 2250
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "87a5b8bd3c599574e096314a37efcb940ba1eeb9aec5608e74aeed1b05f75e16": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Betelgeuse is a red supergiant star."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Betelgeuse is located in the constellation Orion."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Betelgeuse is expected to eventually explode as a supernova."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Betelgeuse is one of the largest stars known."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-066",
+    "timings_ms": {
+      "extraction": 2032,
+      "retrieval": 0,
+      "total": 4891,
+      "verification": 2859
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "8817443c1dda801805fc9e96a36cefe3d67d5d6afc2a23b41230623e40c09e09": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Tim Berners-Lee invented the World Wide Web."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Tim Berners-Lee invented the World Wide Web in 1989."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Tim Berners-Lee was working at CERN in 1989."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The World Wide Web became publicly available a few years after 1989."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-084",
+    "timings_ms": {
+      "extraction": 2515,
+      "retrieval": 0,
+      "total": 7750,
+      "verification": 5234
+    },
+    "verdict": "NOT_ENOUGH_INFO"
   },
   "8b853d066b051cbdbb9a1ceec0bbc9dd1b1dcef40310e951dd92281f5f67e573": {
     "calibration_version": "heuristic-v0",
@@ -776,6 +2840,40 @@
       "verification": 4093
     },
     "verdict": "CONTRADICTED"
+  },
+  "8ee09e94c4870c5e3ae7be596aa24860c4f4a7c6782ba8cd574e7f538b46f036": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The vaccine trial enrolled 4,500 participants."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-057",
+    "timings_ms": {
+      "extraction": 5921,
+      "retrieval": 0,
+      "total": 10921,
+      "verification": 5000
+    },
+    "verdict": "NOT_VERIFIABLE"
   },
   "9404f247d7d53303aa0f266fe158d814fa201445e10254c31fb3bb3643449cc6": {
     "calibration_version": "heuristic-v0",
@@ -921,69 +3019,61 @@
     "claims": [
       {
         "claim_id": "claim-0",
-        "confidence": 1.0,
-        "evidence_chunk_ids": [
-          "direct-0"
-        ],
-        "label": "SUPPORTED",
-        "quote": "Mount Everest is Earth's highest mountain above sea level, located in the Mahalangur Himal sub-range of the Himalayas.",
-        "quote_verified": true,
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
         "text": "Mount Everest is the tallest mountain above sea level on Earth."
       },
       {
         "claim_id": "claim-1",
-        "confidence": 1.0,
-        "evidence_chunk_ids": [
-          "direct-0"
-        ],
-        "label": "SUPPORTED",
-        "quote": "Mount Everest is Earth's highest mountain above sea level, located in the Mahalangur Himal sub-range of the Himalayas.",
-        "quote_verified": true,
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
         "text": "Mount Everest is located in the Himalayas."
       },
       {
         "claim_id": "claim-2",
-        "confidence": 1.0,
-        "evidence_chunk_ids": [
-          "direct-1"
-        ],
-        "label": "SUPPORTED",
-        "quote": "The mountain's summit sits on the international border between Nepal and the Tibet Autonomous Region of China.",
-        "quote_verified": true,
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
         "text": "Mount Everest sits on the border between Nepal and Tibet."
       },
       {
         "claim_id": "claim-3",
-        "confidence": 1.0,
-        "evidence_chunk_ids": [
-          "direct-2"
-        ],
-        "label": "SUPPORTED",
-        "quote": "The first confirmed ascent to the summit was made in 1953 by Edmund Hillary and Tenzing Norgay.",
-        "quote_verified": true,
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
         "text": "Mount Everest was first summited in 1953."
       }
     ],
     "cost_usd": 0.0,
-    "groundedness": 1.0,
+    "groundedness": 0.0,
     "groundedness_ci": [
-      0.5100999795960008,
-      1.0
+      0.0,
+      0.48990002040399916
     ],
     "model_used": {
       "model": "stealth/space-bunny-alpha",
       "provider": "openrouter"
     },
     "n_verifiable_claims": 4,
-    "p_hallucinated": 0.0,
+    "p_hallucinated": 1.0,
     "request_id": "golden-a-005",
     "timings_ms": {
-      "extraction": 2265,
+      "extraction": 1936,
       "retrieval": 0,
-      "total": 6547,
-      "verification": 4281
+      "total": 9594,
+      "verification": 7657
     },
-    "verdict": "GROUNDED"
+    "verdict": "NOT_ENOUGH_INFO"
   },
   "96a3606fc9f4419382c774f46ea1e404badb688267af970bb547f8b17cca55e3": {
     "calibration_version": "heuristic-v0",
@@ -1047,12 +3137,109 @@
     "p_hallucinated": 0.0,
     "request_id": "golden-a-006",
     "timings_ms": {
-      "extraction": 2265,
+      "extraction": 2327,
       "retrieval": 0,
-      "total": 4968,
-      "verification": 2702
+      "total": 7311,
+      "verification": 4984
     },
     "verdict": "GROUNDED"
+  },
+  "98103bb21a85771c75155e3de85e747d4318a66d2a6dcffda0623a73f4e8ead6": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Ibn Battuta lived during the medieval period."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Ibn Battuta was Muslim."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Ibn Battuta was a scholar."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Ibn Battuta was an explorer."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Ibn Battuta traveled across most of the known Islamic world."
+      },
+      {
+        "claim_id": "claim-5",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Ibn Battuta's journeys lasted around 30 years."
+      },
+      {
+        "claim_id": "claim-6",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Ibn Battuta documented his travels in a book."
+      },
+      {
+        "claim_id": "claim-7",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The book documenting Ibn Battuta's travels was called the Rihla."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.3244156195108769
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 8,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-068",
+    "timings_ms": {
+      "extraction": 7140,
+      "retrieval": 0,
+      "total": 10530,
+      "verification": 3389
+    },
+    "verdict": "NOT_ENOUGH_INFO"
   },
   "9860aa6603472c17d98d05ffabebc456a0d84d506f35eb49560ebff82ee8b368": {
     "calibration_version": "heuristic-v0",
@@ -1123,6 +3310,285 @@
     },
     "verdict": "CONTRADICTED"
   },
+  "9946e8e82d33c9ca8fd5d4c2e490d4311c48e3346b95f97ec680ec34f8a911b2": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Sahara is the largest hot desert in the world, covering much of North Africa.",
+        "quote_verified": true,
+        "text": "The Sahara is the largest hot desert in the world."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Sahara is the largest hot desert in the world, covering much of North Africa.",
+        "quote_verified": true,
+        "text": "The Sahara spans much of North Africa."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Sahara spans portions of more than ten countries, including Algeria, Libya, and Egypt.",
+        "quote_verified": true,
+        "text": "The Sahara covers portions of more than ten countries."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Some parts of the Sahara receive less than one inch of rainfall per year.",
+        "quote_verified": true,
+        "text": "Parts of the Sahara receive less than an inch of rain per year."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-032",
+    "timings_ms": {
+      "extraction": 2703,
+      "retrieval": 0,
+      "total": 5359,
+      "verification": 2655
+    },
+    "verdict": "GROUNDED"
+  },
+  "9aa98fbc8e38e2a8bc3a4eb7bd54a893f3c7de91ac442cdf93c327b2111a921e": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Manhattan Project developed the first nuclear weapons.",
+        "quote_verified": true,
+        "text": "The Manhattan Project developed the first nuclear weapons."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The project's main laboratory was located in Los Alamos, Nevada.",
+        "quote_verified": true,
+        "text": "The Manhattan Project's main laboratory was located in Los Alamos, New Mexico."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Manhattan Project was run by the United States during World War II.",
+        "quote_verified": true,
+        "text": "The Manhattan Project was run by the United States during World War II."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "J. Robert Oppenheimer led the scientific work at the project's main laboratory.",
+        "quote_verified": true,
+        "text": "J. Robert Oppenheimer led the laboratory's scientific work."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-083",
+    "timings_ms": {
+      "extraction": 1781,
+      "retrieval": 0,
+      "total": 4828,
+      "verification": 3046
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "9ef17cdba3b8c5b34ff0ddb8343795370de5cef002c7d075522b2363d428b180": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The Chernobyl nuclear disaster occurred in 1984.",
+        "quote_verified": true,
+        "text": "The Chernobyl nuclear disaster occurred in 1986."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The disaster took place in the Soviet Union, in what is now Ukraine.",
+        "quote_verified": true,
+        "text": "The Chernobyl nuclear disaster took place in the Soviet Union."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The disaster took place in the Soviet Union, in what is now Ukraine.",
+        "quote_verified": true,
+        "text": "The Chernobyl nuclear disaster took place in present-day Ukraine."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The accident occurred during a safety test at the plant.",
+        "quote_verified": true,
+        "text": "The accident happened during a safety test."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "A large exclusion zone was established around the plant after the disaster.",
+        "quote_verified": true,
+        "text": "A large exclusion zone was established after the accident."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.8,
+    "groundedness_ci": [
+      0.37552826411853885,
+      0.9637768390302125
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 0.2,
+    "request_id": "golden-a-075",
+    "timings_ms": {
+      "extraction": 4467,
+      "retrieval": 0,
+      "total": 7000,
+      "verification": 2532
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "9f2e36cf868c8d1ff642be524dc08d2dd658274b5c384aed8e6c35888690613c": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The mantis shrimp has an extremely powerful punching strike."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The mantis shrimp has one of the most complex visual systems in the animal kingdom."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Some mantis shrimp species can see polarized light."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The mantis shrimp's strike can generate cavitation bubbles underwater."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-067",
+    "timings_ms": {
+      "extraction": 2592,
+      "retrieval": 0,
+      "total": 7250,
+      "verification": 4657
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
   "a29a3cbba2331eeaa359d1cbd138ef0ff8f060cfb1efdb81fa6f67d2aaddcd07": {
     "calibration_version": "heuristic-v0",
     "claims": [
@@ -1192,6 +3658,145 @@
     },
     "verdict": "CONTRADICTED"
   },
+  "a3574acf1444c417c344de07cf23de30add0550142cf226495648036a2b03947": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Internet has its technical origins in a research project called ARPANET.",
+        "quote_verified": true,
+        "text": "The Internet has its roots in a project called ARPANET."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "ARPANET was originally funded by the U.S. Department of Defense.",
+        "quote_verified": true,
+        "text": "ARPANET was originally funded by the U.S. Department of Defense."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "ARPANET sent its first message between two computers in 1969.",
+        "quote_verified": true,
+        "text": "ARPANET sent its first message in 1969."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The modern Internet evolved from the research and protocols developed for ARPANET.",
+        "quote_verified": true,
+        "text": "The modern Internet grew out of that early network research."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-046",
+    "timings_ms": {
+      "extraction": 2702,
+      "retrieval": 0,
+      "total": 6344,
+      "verification": 3625
+    },
+    "verdict": "GROUNDED"
+  },
+  "a427cba2de624ede0341b9505be27f10a979b44c27467aec99b3c7188070de14": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Chien-Shiung Wu conducted an experiment."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Chien-Shiung Wu's experiment disproved the law of parity conservation."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Chien-Shiung Wu worked on the Manhattan Project."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Chien-Shiung Wu was sometimes called the \"First Lady of Physics.\""
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Chien-Shiung Wu taught at Columbia University for much of her career."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.43449149475208104
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-061",
+    "timings_ms": {
+      "extraction": 3827,
+      "retrieval": 0,
+      "total": 6655,
+      "verification": 2828
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
   "a5521d5e9a6a572be1db7db09a555d829293976fdd011064a8cc95ce7294de5d": {
     "calibration_version": "heuristic-v0",
     "claims": [
@@ -1204,7 +3809,7 @@
         "label": "SUPPORTED",
         "quote": "Photosynthesis is a process used by plants to convert light energy into chemical energy stored in glucose.",
         "quote_verified": true,
-        "text": "Photosynthesis is the process by which plants convert light energy into chemical energy."
+        "text": "Plants convert light energy into chemical energy through photosynthesis."
       },
       {
         "claim_id": "claim-1",
@@ -1237,7 +3842,7 @@
         "label": "SUPPORTED",
         "quote": "The main inputs to photosynthesis are carbon dioxide and water, along with light energy.",
         "quote_verified": true,
-        "text": "Carbon dioxide is a main input of photosynthesis."
+        "text": "Carbon dioxide is a main input to photosynthesis."
       },
       {
         "claim_id": "claim-4",
@@ -1248,7 +3853,7 @@
         "label": "SUPPORTED",
         "quote": "The main inputs to photosynthesis are carbon dioxide and water, along with light energy.",
         "quote_verified": true,
-        "text": "Water is a main input of photosynthesis."
+        "text": "Water is a main input to photosynthesis."
       }
     ],
     "cost_usd": 0.0,
@@ -1265,10 +3870,331 @@
     "p_hallucinated": 0.0,
     "request_id": "golden-a-004",
     "timings_ms": {
-      "extraction": 8110,
+      "extraction": 4280,
       "retrieval": 0,
-      "total": 10875,
-      "verification": 2764
+      "total": 7250,
+      "verification": 2969
+    },
+    "verdict": "GROUNDED"
+  },
+  "a62ab9d624345d4331f8925f8bf96f6009dbb694ac9eb111e920b0149ddc6a5b": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Albert Einstein developed the theory of relativity, one of the two pillars of modern physics.",
+        "quote_verified": true,
+        "text": "Albert Einstein developed the theory of relativity."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Einstein was born in Ulm, in the German Empire, in 1879.",
+        "quote_verified": true,
+        "text": "Albert Einstein was born in Germany."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Einstein was awarded the Nobel Prize in Physics in 1921.",
+        "quote_verified": true,
+        "text": "Albert Einstein won the Nobel Prize in Physics in 1921."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.98,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Albert Einstein worked at Princeton University later in his career."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-033",
+    "timings_ms": {
+      "extraction": 2500,
+      "retrieval": 0,
+      "total": 6062,
+      "verification": 3562
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "a66e965b94f85ce99d4adfa2d006f0fdec321319ad4a02c3ba06c246cee9d95f": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Statue of Liberty is located on Liberty Island in New York Harbor.",
+        "quote_verified": true,
+        "text": "The Statue of Liberty is located in New York Harbor."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The statue was a gift from the people of France to the United States.",
+        "quote_verified": true,
+        "text": "The Statue of Liberty was a gift from France."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Statue of Liberty was dedicated on October 28, 1886.",
+        "quote_verified": true,
+        "text": "The Statue of Liberty was dedicated in 1886."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The statue depicts a robed female figure holding a torch above her head.",
+        "quote_verified": true,
+        "text": "The Statue of Liberty depicts a robed female figure."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The statue depicts a robed female figure holding a torch above her head.",
+        "quote_verified": true,
+        "text": "The female figure depicted by the Statue of Liberty is holding a torch."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.565508505247919,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 5,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-036",
+    "timings_ms": {
+      "extraction": 5280,
+      "retrieval": 0,
+      "total": 7750,
+      "verification": 2469
+    },
+    "verdict": "GROUNDED"
+  },
+  "adce5f7f370c3f5fbc2f946e4c8b0ccd7bb3d843c0eb47d1166a3f73bef0c91e": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The new stadium can seat 68,000 fans."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-052",
+    "timings_ms": {
+      "extraction": 1514,
+      "retrieval": 0,
+      "total": 3625,
+      "verification": 2110
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "b97ec6daf036433ab39e0e5cd1b1fe578948fee476110fe164ec0da98c0ff8ab": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Suez Canal is an artificial waterway connecting the Mediterranean Sea and the Red Sea.",
+        "quote_verified": true,
+        "text": "The Suez Canal connects the Mediterranean Sea and the Red Sea."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Suez Canal is located in Egypt.",
+        "quote_verified": true,
+        "text": "The Suez Canal is located in Egypt."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Suez Canal opened for navigation in 1869.",
+        "quote_verified": true,
+        "text": "The Suez Canal opened in 1869."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The canal allows ships to travel between Europe and Asia without sailing around the African continent.",
+        "quote_verified": true,
+        "text": "The Suez Canal allows ships to avoid sailing around Africa."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-050",
+    "timings_ms": {
+      "extraction": 1546,
+      "retrieval": 0,
+      "total": 3717,
+      "verification": 2170
+    },
+    "verdict": "GROUNDED"
+  },
+  "b9b5fd1887f1f1595d1e74bf2c88fa333ce39aba5f1456bb0214255270a7562e": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Charles Darwin proposed the theory of evolution by means of natural selection.",
+        "quote_verified": true,
+        "text": "Charles Darwin proposed the theory of evolution by natural selection."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Darwin's ideas were shaped in part by his voyage aboard the HMS Beagle.",
+        "quote_verified": true,
+        "text": "Charles Darwin traveled aboard the HMS Beagle."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Darwin published On the Origin of Species in 1859.",
+        "quote_verified": true,
+        "text": "Charles Darwin published On the Origin of Species in 1859."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Darwin's theory was highly controversial when it was first published.",
+        "quote_verified": true,
+        "text": "Charles Darwin's work was controversial at the time."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-049",
+    "timings_ms": {
+      "extraction": 1938,
+      "retrieval": 0,
+      "total": 7422,
+      "verification": 5484
     },
     "verdict": "GROUNDED"
   },
@@ -1278,9 +4204,7 @@
       {
         "claim_id": "claim-0",
         "confidence": 0.99,
-        "evidence_chunk_ids": [
-          "direct-1"
-        ],
+        "evidence_chunk_ids": [],
         "label": "NOT_ENOUGH_INFO",
         "quote": "",
         "quote_verified": false,
@@ -1301,10 +4225,10 @@
     "p_hallucinated": 1.0,
     "request_id": "golden-a-011",
     "timings_ms": {
-      "extraction": 1750,
+      "extraction": 7078,
       "retrieval": 0,
-      "total": 6484,
-      "verification": 4734
+      "total": 12139,
+      "verification": 5061
     },
     "verdict": "NOT_VERIFIABLE"
   },
@@ -1392,12 +4316,46 @@
     "p_hallucinated": 0.0,
     "request_id": "golden-a-009",
     "timings_ms": {
-      "extraction": 2890,
+      "extraction": 4092,
       "retrieval": 0,
-      "total": 6859,
-      "verification": 3968
+      "total": 8342,
+      "verification": 4250
     },
     "verdict": "GROUNDED"
+  },
+  "c1cf6597cd40b076d6239276effc044fb45cfdec38045b8c500cb3f8f158cc41": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The app has been downloaded 50 million times."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-059",
+    "timings_ms": {
+      "extraction": 1500,
+      "retrieval": 0,
+      "total": 3031,
+      "verification": 1531
+    },
+    "verdict": "NOT_VERIFIABLE"
   },
   "c2b6ea08541cfb27a2fdd728cdb23a851e6151e35cba8920733b99987600aa83": {
     "calibration_version": "heuristic-v0",
@@ -1495,10 +4453,10 @@
     "p_hallucinated": 0.0,
     "request_id": "golden-a-003",
     "timings_ms": {
-      "extraction": 2781,
+      "extraction": 3359,
       "retrieval": 0,
-      "total": 9968,
-      "verification": 7186
+      "total": 6264,
+      "verification": 2905
     },
     "verdict": "GROUNDED"
   },
@@ -1640,6 +4598,322 @@
     },
     "verdict": "CONTRADICTED"
   },
+  "d833193a1cb8bf6bf7e906fe9e7674759ae6e6f214c372420ad73dad0eb9a512": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Go originated in ancient China."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Go is played on a grid of intersecting lines."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Players use black and white stones."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.5615060804490177
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 3,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-069",
+    "timings_ms": {
+      "extraction": 2765,
+      "retrieval": 0,
+      "total": 4780,
+      "verification": 2014
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
+  "da5680d22f16bc0c8e59ecf16f219c69eca9736b220b84df0620e888faf3f748": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "K2 is the second-highest mountain on Earth.",
+        "quote_verified": true,
+        "text": "K2 is the second-highest mountain on Earth."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "K2 was first successfully climbed in 1964.",
+        "quote_verified": true,
+        "text": "K2 was first successfully climbed in 1954."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The successful expedition that first climbed K2 was Italian.",
+        "quote_verified": true,
+        "text": "The successful expedition was Italian."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.6666666666666666,
+    "groundedness_ci": [
+      0.20765495512648788,
+      0.9385096847238393
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 3,
+    "p_hallucinated": 0.3333333333333333,
+    "request_id": "golden-a-086",
+    "timings_ms": {
+      "extraction": 3545,
+      "retrieval": 0,
+      "total": 6062,
+      "verification": 2516
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "dfac7699063fc6265e052fc97f809d47204cc48b4000f36dbef5d2d49b5c2fea": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Archduke Franz Ferdinand was assassinated in Sarajevo.",
+        "quote_verified": true,
+        "text": "Archduke Franz Ferdinand was assassinated in Sarajevo."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The assassination occurred in 1904.",
+        "quote_verified": true,
+        "text": "Archduke Franz Ferdinand's assassination occurred in 1914."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The assassination is widely considered a key trigger of the outbreak of World War I.",
+        "quote_verified": true,
+        "text": "Archduke Franz Ferdinand's assassination is considered a key trigger of World War I."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Franz Ferdinand was heir to the Austro-Hungarian throne at the time of his death.",
+        "quote_verified": true,
+        "text": "Archduke Franz Ferdinand was heir to the Austro-Hungarian throne."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-079",
+    "timings_ms": {
+      "extraction": 2515,
+      "retrieval": 0,
+      "total": 4859,
+      "verification": 2343
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "e305ca3f97a24e5e4519c7f8fc0ab1ca8fd034f21610e587946ea4ba6e24a33e": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Rome is traditionally said to have been founded in 653 BC.",
+        "quote_verified": true,
+        "text": "Rome is traditionally said to have been founded in 753 BC."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "According to Roman legend, the city was founded by Romulus.",
+        "quote_verified": true,
+        "text": "According to legend, Rome was founded by Romulus."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The founding legend involves twin brothers Romulus and Remus.",
+        "quote_verified": true,
+        "text": "The legend involves Romulus and his brother Remus."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Rome eventually grew from a small city-state into a vast empire.",
+        "quote_verified": true,
+        "text": "Rome eventually grew into a vast empire."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-074",
+    "timings_ms": {
+      "extraction": 5515,
+      "retrieval": 0,
+      "total": 9719,
+      "verification": 4203
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "e42be031290077b8e8b311d6a26c3f101490c495fce143d442434d0071bfad56": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The wildfire burned through 12,000 acres."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-060",
+    "timings_ms": {
+      "extraction": 2000,
+      "retrieval": 0,
+      "total": 3515,
+      "verification": 1515
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
+  "e4a7d0a0a7765ea9531eb56dfecc102efebfcba8c31d9329616819769222b4e7": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The marathon route is 26.4 miles long this year."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.7934567085261071
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 1,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-055",
+    "timings_ms": {
+      "extraction": 2655,
+      "retrieval": 0,
+      "total": 7015,
+      "verification": 4344
+    },
+    "verdict": "NOT_VERIFIABLE"
+  },
   "e5a5337cc9e7473bfd5e9bdce10b92d6e1209926e9f64682bf45bedb6fb79c40": {
     "calibration_version": "heuristic-v0",
     "claims": [
@@ -1701,6 +4975,274 @@
     },
     "verdict": "NOT_ENOUGH_INFO"
   },
+  "e84f9fdd380631a692c8290a991ab7a33e3a81881daef01c1c8c2b41bc004b81": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Antarctica is the coldest continent on Earth.",
+        "quote_verified": true,
+        "text": "Antarctica is the coldest continent on Earth."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.95,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Antarctica is covered by an ice sheet that holds the vast majority of the world's fresh water.",
+        "quote_verified": true,
+        "text": "Antarctica is covered almost entirely by ice."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "No single country owns Antarctica; it is governed by an international treaty system.",
+        "quote_verified": true,
+        "text": "No country owns Antarctica."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Antarctica has no permanent human residents, only rotating research station staff.",
+        "quote_verified": true,
+        "text": "Antarctica has no permanent human residents."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.5100999795960008,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-045",
+    "timings_ms": {
+      "extraction": 2905,
+      "retrieval": 0,
+      "total": 6890,
+      "verification": 3985
+    },
+    "verdict": "GROUNDED"
+  },
+  "ec0d113bf3f40632b076698322cabd16cea7dbc89a52cc45fb7bb946b1bf9850": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The Leaning Tower of Pisa is located in Florence, Italy.",
+        "quote_verified": true,
+        "text": "The Leaning Tower of Pisa is located in Pisa, Italy."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The tower is a freestanding bell tower, or campanile.",
+        "quote_verified": true,
+        "text": "The Leaning Tower of Pisa is a freestanding bell tower."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The tower's famous tilt is the result of unstable, soft ground beneath its foundation.",
+        "quote_verified": true,
+        "text": "The Leaning Tower of Pisa's tilt is due to unstable ground."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Construction of the tower began in the 12th century.",
+        "quote_verified": true,
+        "text": "Construction of the Leaning Tower of Pisa began in the 12th century."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-072",
+    "timings_ms": {
+      "extraction": 2469,
+      "retrieval": 0,
+      "total": 7969,
+      "verification": 5500
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "edf790e722aaf317f6fb77f7ae9371bb8859d50666ce64253938fee596c2122d": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The Magna Carta was signed in 1265.",
+        "quote_verified": true,
+        "text": "The Magna Carta was signed in 1215."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Magna Carta was signed by King John of England.",
+        "quote_verified": true,
+        "text": "The Magna Carta was signed by King John of England."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The document placed limits on the power of the English monarchy.",
+        "quote_verified": true,
+        "text": "The Magna Carta limited the power of the English monarchy."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Magna Carta influenced the later development of constitutional law.",
+        "quote_verified": true,
+        "text": "The Magna Carta influenced later constitutional law."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-080",
+    "timings_ms": {
+      "extraction": 2453,
+      "retrieval": 0,
+      "total": 4921,
+      "verification": 2468
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "ee3d3ff13e9ce59db1eadf4bb18fc0ced07f5004043bb5392c415f9e105ca270": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Narwhals have a long, spiral tusk."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "The narwhal's tusk is an elongated tooth."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Narwhals live in Arctic waters."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Narwhals are sometimes called the \"unicorns of the sea.\""
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-063",
+    "timings_ms": {
+      "extraction": 3265,
+      "retrieval": 0,
+      "total": 5765,
+      "verification": 2500
+    },
+    "verdict": "NOT_ENOUGH_INFO"
+  },
   "f33bdfc7c3b03603fb905d7f8c9fcbe4fcac29bc0982bcbf14a4bb586891e2af": {
     "calibration_version": "heuristic-v0",
     "claims": [
@@ -1717,14 +5259,14 @@
       },
       {
         "claim_id": "claim-1",
-        "confidence": 1.0,
+        "confidence": 0.99,
         "evidence_chunk_ids": [
           "direct-1"
         ],
         "label": "SUPPORTED",
         "quote": "The Wright brothers achieved the first sustained, controlled, powered flight of a heavier-than-air aircraft on December 17, 1903.",
         "quote_verified": true,
-        "text": "They achieved the first powered flight in 1903."
+        "text": "The Wright brothers achieved the first powered flight in 1903."
       },
       {
         "claim_id": "claim-2",
@@ -1746,7 +5288,7 @@
         "label": "SUPPORTED",
         "quote": "Their aircraft, which made the first flight, was known as the Wright Flyer.",
         "quote_verified": true,
-        "text": "Their aircraft was called the Wright Flyer."
+        "text": "The Wright brothers' aircraft was called the Wright Flyer."
       }
     ],
     "cost_usd": 0.0,
@@ -1763,10 +5305,10 @@
     "p_hallucinated": 0.0,
     "request_id": "golden-a-008",
     "timings_ms": {
-      "extraction": 1796,
+      "extraction": 5983,
       "retrieval": 0,
-      "total": 10561,
-      "verification": 8765
+      "total": 11125,
+      "verification": 5141
     },
     "verdict": "GROUNDED"
   },
@@ -1842,10 +5384,10 @@
     "p_hallucinated": 1.0,
     "request_id": "golden-a-014",
     "timings_ms": {
-      "extraction": 9484,
+      "extraction": 7984,
       "retrieval": 0,
-      "total": 12938,
-      "verification": 3453
+      "total": 21437,
+      "verification": 13453
     },
     "verdict": "NOT_ENOUGH_INFO"
   },
@@ -1917,5 +5459,295 @@
       "verification": 2469
     },
     "verdict": "CONTRADICTED"
+  },
+  "f86db3fe19bb10d9cae6cbad3a4baf50006179d696c68bbb5eee0d264546681d": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Volcanic eruptions occur when molten rock rises through the Earth's crust to the surface.",
+        "quote_verified": true,
+        "text": "Volcanic eruptions are caused by molten rock rising to the surface."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Molten rock beneath the surface is called magma; once it reaches the surface it is called lava.",
+        "quote_verified": true,
+        "text": "The molten rock is called magma."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Volcanic eruptions can release ash, volcanic gases, and lava.",
+        "quote_verified": true,
+        "text": "Eruptions can release ash."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Volcanic eruptions can release ash, volcanic gases, and lava.",
+        "quote_verified": true,
+        "text": "Eruptions can release gas."
+      },
+      {
+        "claim_id": "claim-4",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Volcanic eruptions can release ash, volcanic gases, and lava.",
+        "quote_verified": true,
+        "text": "Eruptions can release lava."
+      },
+      {
+        "claim_id": "claim-5",
+        "confidence": 0.99,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Most volcanoes form near boundaries between tectonic plates.",
+        "quote_verified": true,
+        "text": "Volcanoes often form near tectonic plate boundaries."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 1.0,
+    "groundedness_ci": [
+      0.6096569663469354,
+      1.0
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 6,
+    "p_hallucinated": 0.0,
+    "request_id": "golden-a-047",
+    "timings_ms": {
+      "extraction": 3375,
+      "retrieval": 0,
+      "total": 7171,
+      "verification": 3796
+    },
+    "verdict": "GROUNDED"
+  },
+  "f8a3437af8be2edc7d89eb8018d61934da0d730b80b7fc971005c8318aae8438": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The Chicxulub impact is widely linked to the mass extinction that ended the age of dinosaurs.",
+        "quote_verified": true,
+        "text": "The Chicxulub impact is linked to the extinction of the dinosaurs."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "The impact occurred about 6 million years ago.",
+        "quote_verified": true,
+        "text": "The Chicxulub impact occurred about 66 million years ago."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The impact site is located near the Yucatan Peninsula in Mexico.",
+        "quote_verified": true,
+        "text": "The Chicxulub impact site is located near Mexico."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "The impact created a massive crater more than 150 kilometers wide.",
+        "quote_verified": true,
+        "text": "The Chicxulub impact created a massive crater."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-082",
+    "timings_ms": {
+      "extraction": 2266,
+      "retrieval": 0,
+      "total": 9860,
+      "verification": 7593
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "fe6e12640b6ef76901aab81a5836d6c25b5cfd7029f667da01002667f4df0856": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-0"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Thomas Edison is widely credited with developing a commercially practical incandescent light bulb.",
+        "quote_verified": true,
+        "text": "Thomas Edison is credited with developing a practical incandescent light bulb."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-1"
+        ],
+        "label": "CONTRADICTED",
+        "quote": "Edison achieved a long-lasting incandescent bulb design in 1869.",
+        "quote_verified": true,
+        "text": "Thomas Edison achieved this in 1879."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-2"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Edison's laboratory was located in Menlo Park, New Jersey.",
+        "quote_verified": true,
+        "text": "Edison's lab was located in Menlo Park, New Jersey."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 1.0,
+        "evidence_chunk_ids": [
+          "direct-3"
+        ],
+        "label": "SUPPORTED",
+        "quote": "Several earlier inventors had experimented with incandescent lighting before Edison.",
+        "quote_verified": true,
+        "text": "Earlier inventors had also experimented with incandescent lighting."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.75,
+    "groundedness_ci": [
+      0.30063605244263664,
+      0.9544139373553638
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 0.25,
+    "request_id": "golden-a-073",
+    "timings_ms": {
+      "extraction": 3375,
+      "retrieval": 0,
+      "total": 6468,
+      "verification": 3093
+    },
+    "verdict": "CONTRADICTED"
+  },
+  "fee24565cd418626a8fee09bba4459b0ae4aafccfeba5d7c7a3cb2325e1057ca": {
+    "calibration_version": "heuristic-v0",
+    "claims": [
+      {
+        "claim_id": "claim-0",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Srinivasa Ramanujan made major contributions to number theory."
+      },
+      {
+        "claim_id": "claim-1",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Srinivasa Ramanujan had little formal training in mathematics."
+      },
+      {
+        "claim_id": "claim-2",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Srinivasa Ramanujan collaborated with G. H. Hardy at Cambridge."
+      },
+      {
+        "claim_id": "claim-3",
+        "confidence": 0.0,
+        "evidence_chunk_ids": [],
+        "label": "NOT_ENOUGH_INFO",
+        "quote": "",
+        "quote_verified": false,
+        "text": "Srinivasa Ramanujan died at a young age."
+      }
+    ],
+    "cost_usd": 0.0,
+    "groundedness": 0.0,
+    "groundedness_ci": [
+      0.0,
+      0.48990002040399916
+    ],
+    "model_used": {
+      "model": "stealth/space-bunny-alpha",
+      "provider": "openrouter"
+    },
+    "n_verifiable_claims": 4,
+    "p_hallucinated": 1.0,
+    "request_id": "golden-a-065",
+    "timings_ms": {
+      "extraction": 2125,
+      "retrieval": 0,
+      "total": 5452,
+      "verification": 3327
+    },
+    "verdict": "NOT_ENOUGH_INFO"
   }
 }
