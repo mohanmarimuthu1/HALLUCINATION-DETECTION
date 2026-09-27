@@ -65,6 +65,45 @@ curl -X POST http://localhost:8000/v1/verify \
 `GET /healthz` is unauthenticated (liveness probe). `POST /v1/verify`
 requires a valid `Authorization: Bearer <key>` and is rate-limited per key.
 
+### Bring your own key
+
+By default every request is served through this deployment's own
+OpenRouter free-model pool (`model_prefs.provider: openrouter`, the
+default). A caller can instead route a single request through their own
+Gemini, OpenAI, or Anthropic key via `model_prefs`:
+
+```bash
+curl -X POST http://localhost:8000/v1/verify \
+  -H "Authorization: Bearer <one of your CLIENT_API_KEYS>" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "answer": "The Eiffel Tower is in Paris.",
+        "evidence": ["The Eiffel Tower is located in Paris, France."],
+        "evidence_source": "none",
+        "model_prefs": {
+          "provider": "gemini",
+          "user_api_key": "<caller-supplied Gemini API key>",
+          "pinned_model": "gemini-1.5-flash"
+        }
+      }'
+```
+
+- `model_prefs.provider` - `openrouter` (default) | `gemini` | `openai` |
+  `anthropic` | `custom`. `custom` needs the deployment's own
+  `CUSTOM_PROVIDER_BASE_URL` set in `.env` first - it's a
+  deployment-level endpoint, not something a caller can point anywhere
+  per-request.
+- `model_prefs.user_api_key` - the caller's own provider key. Falls back
+  to this deployment's own key for that provider (if configured) when
+  omitted. Never logged and never echoed back in the response - only
+  hashed into the result-cache key, so two callers with different keys
+  never share a cached answer (`docs/contract.md`).
+- `model_prefs.pinned_model` - forces a specific model id, bypassing
+  OpenRouter's free-pool rotation. Required for `custom`, optional
+  everywhere else (each provider falls back to its own default model).
+- `model_prefs.allow_free_pool` - set `false` to require a pinned/paid
+  model instead of ever falling back to the shared free pool.
+
 ### Layout
 
 ```
