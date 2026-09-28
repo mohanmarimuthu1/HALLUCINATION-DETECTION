@@ -4,7 +4,14 @@ Configuration settings for the Hallucination Detection System
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Paths below resolve against this file, not the working directory, so the
+# app finds its vector store and data whether it is launched from the repo
+# root (`streamlit run legacy/app.py`) or from inside legacy/.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# .env lives at the repo root, shared with v2. load_dotenv() on its own
+# searches upward from the caller, which would miss it from some CWDs.
+load_dotenv(os.path.join(os.path.dirname(BASE_DIR), ".env"))
 
 # ============================================
 # API Configuration
@@ -47,7 +54,7 @@ TOP_K_DOCUMENTS = 3  # Number of documents to retrieve
 # ============================================
 # Vector Database Configuration
 # ============================================
-CHROMA_PERSIST_DIRECTORY = "./chroma_db"
+CHROMA_PERSIST_DIRECTORY = os.path.join(BASE_DIR, "chroma_db")
 COLLECTION_NAME = "knowledge_base"
 
 # ============================================
@@ -60,5 +67,5 @@ HALLUCINATION_THRESHOLD_HIGH = 0.7   # Above this is "Hallucinated"
 # ============================================
 # Paths
 # ============================================
-DATA_DIRECTORY = "./data"
-KNOWLEDGE_BASE_FILE = "./data/knowledge_base.txt"
+DATA_DIRECTORY = os.path.join(BASE_DIR, "data")
+KNOWLEDGE_BASE_FILE = os.path.join(BASE_DIR, "data", "knowledge_base.txt")

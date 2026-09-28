@@ -3,6 +3,9 @@
 /create_presentation.py
 /docs.txt
 /evaluation_results.json
+/legacy/evaluation_results.json
+# Written by legacy/evaluate.py on every run.
+/legacy/docs/
 /Final_Project_Review.pptx
 /generate_ieee_figures.py
 /Hallucination_Detection_2nd_Review.pptx
@@ -30,9 +33,9 @@ build/
 /process.md
 .claude
 
-# Generated/eval output, not source - see data/knowledge_base.txt for the
-# actual knowledge base file, which stays tracked.
-data/*.csv
+# Generated/eval output, not source - see legacy/data/knowledge_base.txt
+# for the actual knowledge base file, which stays tracked.
+legacy/data/*.csv
 
 # Result cache (Phase 6.1) - runtime data, not source.
 /.cache/
