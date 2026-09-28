@@ -44,7 +44,7 @@ def complete_structured(
     prompt: str,
     schema: type[_SchemaT],
     *,
-    max_tokens: int = 1024,
+    max_tokens: int = 8192,
     max_repairs: int = 2,
 ) -> tuple[_SchemaT, bool]:
     """Returns `(instance, honored_on_first_try)`.
@@ -53,6 +53,16 @@ def complete_structured(
     model returned schema-valid JSON with no repair round needed, so
     callers (the router's model ranking, eventually) can prefer it over
     one that only gets there after retries.
+
+    `max_tokens` defaults far above the providers' own 1024 because a
+    reasoning model spends its budget thinking *before* it writes the
+    first JSON token, and a truncated response is unrecoverable here -
+    there is no partial parse to salvage. Measured live against
+    `stealth/space-bunny-alpha` on a real extraction prompt: 1024 and
+    2048 both returned HTTP 200 with `content: null`
+    (`finish_reason=length`), 4096 cut off mid-JSON, and 8192 completed
+    in 2558 completion tokens. This is a ceiling, not a spend - a model
+    that answers in 200 tokens is still only billed for 200.
     """
     schema_json = json.dumps(schema.model_json_schema())
     base_instruction = (
