@@ -27,6 +27,11 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+# The web page is read at runtime, so it must ship inside the installed
+# package (Docker and Vercel both install it rather than using src/).
+"halludetect.web" = ["*.html"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]

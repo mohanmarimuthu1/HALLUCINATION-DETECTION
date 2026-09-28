@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HALLUDETECT: check an answer against its sources</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23c9f0b5'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='700' text-anchor='middle' fill='%231b2a41'%3EH%3C/text%3E%3C/svg%3E">
+<meta name="description" content="Check whether an answer is backed by the sources it should come from. A claim only counts when an exact quote supports it.">
+<style>
+  :root {
+    --page: #f4f6f9;
+    --sheet: #ffffff;
+    --ink: #1b2a41;
+    --ink-soft: #4a5a70;
+    --rule: #d6dce4;
+    --mark-backed: #c9f0b5;
+    --mark-contra: #ffcdc6;
+    --mark-missing: #ffe6a1;
+    --word-backed: #1f5a2c;
+    --word-contra: #9b1c12;
+    --word-missing: #6e4a00;
+    --serif: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+    --sans: "Avenir Next", "Segoe UI Variable Text", "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 16.5px/1.5 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .masthead { border-bottom: 1px solid var(--rule); background: var(--sheet); }
+  .masthead-inner {
+    max-width: 1240px; margin: 0 auto; padding: 22px 28px 20px;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 28px;
+  }
+  .wordmark {
+    margin: 0; font: 700 26px/1 var(--serif); letter-spacing: 0.02em;
+  }
+  .lede { margin: 0; max-width: 62ch; color: var(--ink-soft); }
+
+  .desk {
+    max-width: 1240px; margin: 0 auto; padding: 28px;
+    display: grid; gap: 28px; grid-template-columns: 1fr;
+  }
+  @media (min-width: 980px) {
+    .desk { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+  }
+
+  .sheet {
+    background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 26px 28px 30px;
+  }
+  .sheet-title { margin: 0 0 18px; font: 600 15px/1.3 var(--sans); color: var(--ink-soft); }
+
+  .examples { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 22px; }
+  .examples-label { flex-basis: 100%; color: var(--ink-soft); }
+  .chip {
+    font: inherit; font-size: 15px; color: var(--ink); background: var(--sheet);
+    border: 1px solid var(--rule); border-radius: 999px; padding: 4px 13px; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--ink-soft); }
+
+  .field { margin-bottom: 20px; }
+  .field-label { display: block; font-weight: 600; margin-bottom: 6px; }
+  .field-optional { font-weight: 400; color: var(--ink-soft); }
+  .field-hint { margin: 6px 0 0; font-size: 14.5px; color: var(--ink-soft); }
+
+  .input {
+    width: 100%; font: 17px/1.55 var(--serif); color: var(--ink);
+    background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; padding: 9px 11px;
+  }
+  .input:hover { border-color: var(--ink-soft); }
+  textarea.input { resize: vertical; min-height: 5.5em; }
+  .input-key { font-family: var(--sans); font-size: 16px; }
+
+  .sources { border: 0; margin: 0 0 20px; padding: 0; }
+  .sources-legend { font-weight: 600; padding: 0; margin-bottom: 4px; }
+  .sources-intro { margin: 0 0 10px; font-size: 14.5px; color: var(--ink-soft); }
+  .passage-list { list-style: none; margin: 0; padding: 0; }
+  .passage { margin-bottom: 12px; }
+  .passage-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .passage-name { font-size: 15px; color: var(--ink-soft); }
+
+  .link-button {
+    font: inherit; font-size: 15px; color: var(--ink); background: none; border: 0; padding: 2px 0;
+    text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+  }
+  .link-button:hover { color: var(--ink-soft); }
+
+  .key-row { display: flex; gap: 12px; align-items: center; }
+  .key-row .input { flex: 1; }
+
+  .primary {
+    font: 600 17px/1 var(--sans); color: #ffffff; background: var(--ink);
+    border: 1px solid var(--ink); border-radius: 4px; padding: 13px 22px; cursor: pointer;
+  }
+  .primary:hover { background: #2c3e5a; }
+  .primary[disabled] { opacity: 0.6; cursor: progress; }
+
+  .empty { color: var(--ink-soft); max-width: 46ch; }
+
+  .verdict { margin: 0 0 6px; font: 600 34px/1.18 var(--serif); }
+  .verdict-mark { padding: 0 0.12em; border-radius: 3px; }
+  .summary { margin: 0 0 22px; font-size: 17.5px; max-width: 60ch; }
+
+  .facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 18px; margin: 0 0 26px; font-size: 15px; }
+  .facts dt { color: var(--ink-soft); }
+  .facts dd { margin: 0; }
+
+  .section-title { margin: 26px 0 12px; font: 600 15px/1.3 var(--sans); color: var(--ink-soft); }
+
+  .claims { list-style: none; margin: 0; padding: 0; }
+  .claim { display: grid; grid-template-columns: 30px 1fr; gap: 0 12px; padding: 14px 0; border-top: 1px solid var(--rule); }
+  .claim:first-child { border-top: 0; padding-top: 4px; }
+  .claim-num {
+    width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+    font: 600 14px/1 var(--sans); margin-top: 3px;
+  }
+  .claim-status { font-weight: 600; font-size: 15px; }
+  .claim-text { margin: 2px 0 0; font: 18px/1.5 var(--serif); }
+  .claim-quote { margin: 10px 0 0; padding-left: 14px; border-left: 3px solid var(--rule); font: italic 16.5px/1.55 var(--serif); color: var(--ink-soft); }
+  .claim-note { margin: 6px 0 0; font-size: 14.5px; color: var(--ink-soft); }
+
+  .is-backed { background: var(--mark-backed); }
+  .is-contra { background: var(--mark-contra); }
+  .is-missing { background: var(--mark-missing); }
+  .word-backed { color: var(--word-backed); }
+  .word-contra { color: var(--word-contra); }
+  .word-missing { color: var(--word-missing); }
+
+  .source { margin: 0 0 16px; }
+  .source-name { font-size: 15px; color: var(--ink-soft); margin-bottom: 2px; }
+  .source-text { margin: 0; font: 18px/1.65 var(--serif); max-width: 68ch; }
+  .source-mark { padding: 1px 0; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .source-ref { font: 600 11.5px/1 var(--sans); vertical-align: super; margin-left: 1px; }
+
+  .note { margin: 22px 0 0; font-size: 14.5px; color: var(--ink-soft); max-width: 64ch; }
+
+  .problem { border-left: 4px solid var(--word-contra); padding: 4px 0 4px 16px; }
+  .problem-title { margin: 0 0 4px; font: 600 20px/1.3 var(--serif); }
+  .problem-hint { margin: 0; color: var(--ink-soft); }
+
+  .raw { margin-top: 22px; font-size: 14.5px; }
+  .raw summary { cursor: pointer; color: var(--ink-soft); }
+  .raw pre { overflow: auto; background: var(--page); border-radius: 4px; padding: 12px; font-size: 13px; }
+
+  .foot { max-width: 1240px; margin: 0 auto; padding: 0 28px 36px; font-size: 14.5px; color: var(--ink-soft); }
+  .foot a { color: var(--ink); }
+
+  /* The one piece of motion: marks are drawn on like a highlighter stroke
+     when a result arrives. */
+  @media (prefers-reduced-motion: no-preference) {
+    .draw {
+      background-repeat: no-repeat; background-size: 0% 100%;
+      animation: draw 520ms cubic-bezier(.3, .7, .2, 1) forwards;
+    }
+    .draw.is-backed { background-color: transparent; background-image: linear-gradient(var(--mark-backed), var(--mark-backed)); }
+    .draw.is-contra { background-color: transparent; background-image: linear-gradient(var(--mark-contra), var(--mark-contra)); }
+    .draw.is-missing { background-color: transparent; background-image: linear-gradient(var(--mark-missing), var(--mark-missing)); }
+    @keyframes draw { to { background-size: 100% 100%; } }
+  }
+
+  @media (max-width: 560px) {
+    .masthead-inner, .desk { padding-left: 16px; padding-right: 16px; }
+    .sheet { padding: 20px 18px 24px; }
+    .verdict { font-size: 28px; }
+    .key-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <h1 class="wordmark">HALLUDETECT</h1>
+    <p class="lede">Paste an answer and the sources it should come from. A claim only counts as backed when an exact quote from a source supports it.</p>
+  </div>
+</header>
+
+<main class="desk">
+  <section class="sheet" aria-labelledby="input-title">
+    <h2 id="input-title" class="sheet-title">What to check</h2>
+
+    <div class="examples">
+      <span class="examples-label">Try an example:</span>
+      <button type="button" class="chip" data-example="backed">A backed answer</button>
+      <button type="button" class="chip" data-example="wrong">Wrong facts</button>
+      <button type="button" class="chip" data-example="nosource">No sources</button>
+    </div>
+
+    <form id="check-form" novalidate>
+      <div class="field">
+        <label class="field-label" for="question">Question <span class="field-optional">(optional)</span></label>
+        <input class="input" id="question" type="text" autocomplete="off">
+        <p class="field-hint">Helps split the answer into claims.</p>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="answer">Answer</label>
+        <textarea class="input" id="answer" rows="4"></textarea>
+      </div>
+
+      <fieldset class="sources">
+        <legend class="sources-legend">Sources</legend>
+        <p class="sources-intro">The passages the answer should come from. With none, nothing can be checked.</p>
+        <ol class="passage-list" id="passages"></ol>
+        <button type="button" class="link-button" id="add-passage">Add a source</button>
+      </fieldset>
+
+      <div class="field">
+        <label class="field-label" for="key">Access key</label>
+        <div class="key-row">
+          <input class="input input-key" id="key" type="password" autocomplete="off" spellcheck="false">
+          <button type="button" class="link-button" id="forget-key" hidden>Forget key</button>
+        </div>
+        <p class="field-hint">Ask whoever runs this site. It's kept in this browser only.</p>
+      </div>
+
+      <button type="submit" class="primary" id="submit">Check answer</button>
+    </form>
+  </section>
+
+  <section class="sheet sheet-result" aria-labelledby="result-title">
+    <h2 id="result-title" class="sheet-title">Result</h2>
+    <div id="result" aria-live="polite">
+      <p class="empty">The verdict, each claim, and the sources marked up with their quotes appear here. Try an example to see how it works.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>Calls the same <a href="/docs">/v1/verify API</a> you can use directly. Nothing here is judged on the model's own knowledge: no source, no verdict.</p>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const TIMEOUT_MS = 180000;
+  const KEY_STORE = "halludetect.accessKey";
+
+  const TOWER_A = "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is 330 metres (1,083 ft) tall.";
+  const TOWER_B = "Construction of the Eiffel Tower began in 1887 and it was completed in 1889 for the World Fair.";
+  const EXAMPLES = {
+    backed: {
+      question: "How tall is the Eiffel Tower, when was it completed, and where is it?",
+      answer: "The Eiffel Tower is 330 metres tall, was completed in 1889, and stands on the Champ de Mars in Paris.",
+      passages: [TOWER_A, TOWER_B],
+    },
+    wrong: {
+      question: "Tell me about the Eiffel Tower.",
+      answer: "The Eiffel Tower is 450 metres tall, was completed in 1912, and was designed by Antoni Gaudi.",
+      passages: [TOWER_A, TOWER_B],
+    },
+    nosource: {
+      question: "How tall is the Eiffel Tower?",
+      answer: "The Eiffel Tower is 330 metres tall, was completed in 1889, and is in Paris.",
+      passages: [""],
+    },
+  };
+
+  const LABEL = {
+    SUPPORTED: { word: "Backed", cls: "backed", rank: 1 },
+    CONTRADICTED: { word: "Contradicted", cls: "contra", rank: 2 },
+    NOT_ENOUGH_INFO: { word: "Not in the sources", cls: "missing", rank: 0 },
+  };
+
+  const VERDICT = {
+    GROUNDED: { text: "Backed by the sources.", cls: "backed" },
+    CONTRADICTED: { text: "The sources contradict this answer.", cls: "contra" },
+    NOT_ENOUGH_INFO: { text: "Not fully backed by the sources.", cls: "missing" },
+    NOT_VERIFIABLE: { text: "This answer can't be judged.", cls: "missing" },
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const form = $("check-form");
+  const passageList = $("passages");
+  const result = $("result");
+  const submit = $("submit");
+  const keyInput = $("key");
+  const forgetKey = $("forget-key");
+
+  function el(tag, cls, text) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  // ---- sources input -------------------------------------------------
+
+  function renumberPassages() {
+    const items = passageList.querySelectorAll(".passage");
+    items.forEach((item, i) => {
+      const id = "passage-" + i;
+      item.querySelector(".passage-name").textContent = "Source " + (i + 1);
+      item.querySelector(".passage-name").htmlFor = id;
+      item.querySelector("textarea").id = id;
+      item.querySelector(".link-button").hidden = items.length === 1;
+      item.querySelector(".link-button").setAttribute("aria-label", "Remove source " + (i + 1));
+    });
+  }
+
+  function addPassage(text) {
+    const item = el("li", "passage");
+    const head = el("div", "passage-head");
+    const name = el("label", "passage-name");
+    const remove = el("button", "link-button", "Remove");
+    remove.type = "button";
+    remove.addEventListener("click", () => { item.remove(); renumberPassages(); });
+    head.append(name, remove);
+    const area = el("textarea", "input");
+    area.rows = 3;
+    area.value = text || "";
+    item.append(head, area);
+    passageList.append(item);
+    renumberPassages();
+    return area;
+  }
+
+  function setPassages(texts) {
+    passageList.replaceChildren();
+    (texts.length ? texts : [""]).forEach(addPassage);
+  }
+
+  $("add-passage").addEventListener("click", () => addPassage("").focus());
+
+  document.querySelectorAll("[data-example]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const ex = EXAMPLES[button.dataset.example];
+      $("question").value = ex.question;
+      $("answer").value = ex.answer;
+      setPassages(ex.passages);
+    });
+  });
+
+  // ---- access key ------------------------------------------------------
+
+  function storedKey() {
+    try { return localStorage.getItem(KEY_STORE) || ""; } catch { return ""; }
+  }
+  function storeKey(value) {
+    try { value ? localStorage.setItem(KEY_STORE, value) : localStorage.removeItem(KEY_STORE); } catch { /* private mode */ }
+    forgetKey.hidden = !value;
+  }
+  keyInput.value = storedKey();
+  forgetKey.hidden = !keyInput.value;
+  forgetKey.addEventListener("click", () => { keyInput.value = ""; storeKey(""); keyInput.focus(); });
+
+  // ---- request -----------------------------------------------------------
+
+  const PROBLEMS = {
+    401: ["That access key isn't accepted.", "Check it with whoever runs this site."],
+    429: ["Too many checks in a short time.", "Wait a few seconds, then check again."],
+    502: ["The language model didn't respond properly.", "This is usually a free model being briefly unavailable. Check again; another model may be used."],
+    503: ["No language model is available right now.", "Try again in a minute."],
+  };
+
+  function showProblem(title, hint) {
+    const box = el("div", "problem");
+    box.setAttribute("role", "alert");
+    box.append(el("p", "problem-title", title));
+    if (hint) box.append(el("p", "problem-hint", hint));
+    result.replaceChildren(box);
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const answer = $("answer").value.trim();
+    const question = $("question").value.trim();
+    const key = keyInput.value.trim();
+    // Only non-empty sources are sent, so "Source N" on screen matches the
+    // API's direct-(N-1) chunk ids.
+    const passages = [...passageList.querySelectorAll("textarea")].map((t) => t.value.trim()).filter(Boolean);
+
+    if (!answer) { showProblem("Enter an answer to check."); $("answer").focus(); return; }
+    if (!key) { showProblem("Enter the access key first.", "Ask whoever runs this site for one."); keyInput.focus(); return; }
+    storeKey(key);
+
+    const payload = { answer, evidence: passages, evidence_source: "none" };
+    if (question) payload.question = question;
+
+    submit.disabled = true;
+    submit.textContent = "Checking…";
+    // On a narrow screen the result sits below the form; bring it into view
+    // so the check is visibly under way.
+    const sheet = result.closest(".sheet");
+    if (sheet.getBoundingClientRect().top > window.innerHeight * 0.6) {
+      const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      sheet.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+    }
+    result.replaceChildren(el("p", "empty", passages.length
+      ? "Splitting the answer into claims and checking each one against the sources. This usually takes 10 to 45 seconds."
+      : "Checking…"));
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      const response = await fetch("/v1/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      let body = null;
+      try { body = await response.json(); } catch { body = null; }
+
+      if (response.ok && body && body.verdict) {
+        renderResult(body, passages);
+      } else if (PROBLEMS[response.status]) {
+        const [title, hint] = PROBLEMS[response.status];
+        showProblem(title, hint);
+        if (response.status === 401) { storeKey(""); keyInput.focus(); }
+      } else {
+        const detail = body && typeof body.detail === "string" ? body.detail : "";
+        showProblem("The check didn't go through (HTTP " + response.status + ").", detail);
+      }
+    } catch (err) {
+      if (err && err.name === "AbortError") {
+        showProblem("The check took longer than " + TIMEOUT_MS / 1000 + " seconds.", "The free model pool is slow right now. Try again in a minute.");
+      } else {
+        showProblem("Couldn't reach the service.", "Check your connection, then try again.");
+      }
+    } finally {
+      clearTimeout(timer);
+      submit.disabled = false;
+      submit.textContent = "Check answer";
+    }
+  });
+
+  // ---- result ----------------------------------------------------------
+
+  function sourceIndex(chunkId) {
+    const match = /^direct-(\d+)/.exec(chunkId || "");
+    return match ? Number(match[1]) : -1;
+  }
+
+  // Where `quote` sits in `text`: exact first, then allowing whitespace to
+  // differ, which is the only difference the server's own check forgives.
+  function locate(text, quote) {
+    if (!quote) return null;
+    const at = text.indexOf(quote);
+    if (at >= 0) return [at, at + quote.length];
+    const words = quote.trim().split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    const found = new RegExp(words.join("\\s+")).exec(text);
+    return found ? [found.index, found.index + found[0].length] : null;
+  }
+
+  function summarize(claims, verdict) {
+    const count = (label) => claims.filter((c) => c.label === label).length;
+    const n = claims.length;
+    if (!n) return "";
+    const parts = [count("SUPPORTED") + " of " + n + (n === 1 ? " claim is" : " claims are") + " backed"];
+    if (count("CONTRADICTED")) parts.push(count("CONTRADICTED") + " contradicted");
+    if (count("NOT_ENOUGH_INFO")) parts.push(count("NOT_ENOUGH_INFO") + " not in the sources");
+    return parts.join(", ") + ".";
+  }
+
+  function renderResult(data, passages) {
+    const frag = document.createDocumentFragment();
+    const verdict = VERDICT[data.verdict] || VERDICT.NOT_VERIFIABLE;
+    const claims = data.claims || [];
+
+    const head = el("p", "verdict");
+    const headMark = el("span", "verdict-mark draw is-" + verdict.cls, verdict.text);
+    head.append(headMark);
+    frag.append(head);
+
+    let summary = summarize(claims, data.verdict);
+    if (data.verdict === "NOT_VERIFIABLE") {
+      summary = data.reason === "no_evidence_configured"
+        ? "No sources were given, so there was nothing to check it against. It isn't judged on the model's own knowledge. Add the passages the answer should come from."
+        : "Only " + data.n_verifiable_claims + " factual " + (data.n_verifiable_claims === 1 ? "claim was" : "claims were")
+          + " found, and an overall verdict needs at least 3. " + (claims.length ? "Each claim is still checked below." : "");
+    }
+    if (summary) frag.append(el("p", "summary", summary));
+
+    const facts = el("dl", "facts");
+    const fact = (term, value) => { facts.append(el("dt", "", term), el("dd", "", value)); };
+    if (data.verdict !== "NOT_VERIFIABLE" && claims.length) {
+      const [low, high] = data.groundedness_ci || [0, 0];
+      fact("Backed share", Math.round(data.groundedness * 100) + "% (95% range " + Math.round(low * 100) + " to " + Math.round(high * 100) + "%)");
+    }
+    fact("Model", (data.model_used && data.model_used.model) || "unknown");
+    fact("Time", (data.timings_ms.total / 1000).toFixed(1) + " s");
+    fact("Verdict code", data.verdict + (data.reason ? " (" + data.reason + ")" : ""));
+    frag.append(facts);
+
+    // Marks to draw on each source: one range per claim whose quote was
+    // verified in a cited source.
+    const marks = passages.map(() => []);
+
+    if (claims.length) {
+      frag.append(el("h3", "section-title", "Claims"));
+      const list = el("ol", "claims");
+      claims.forEach((claim, i) => {
+        const label = LABEL[claim.label] || LABEL.NOT_ENOUGH_INFO;
+        const item = el("li", "claim");
+        const num = el("span", "claim-num is-" + label.cls, String(i + 1));
+        num.setAttribute("aria-hidden", "true");
+        const body = el("div", "");
+        body.append(el("span", "claim-status word-" + label.cls, label.word));
+        body.append(el("p", "claim-text", claim.text));
+
+        const cited = (claim.evidence_chunk_ids || []).map(sourceIndex).filter((s) => s >= 0 && s < passages.length);
+        if (claim.quote) {
+          body.append(el("blockquote", "claim-quote", "“" + claim.quote + "”"));
+          let placed = false;
+          if (claim.quote_verified) {
+            for (const s of cited) {
+              const range = locate(passages[s], claim.quote);
+              if (range) { marks[s].push({ start: range[0], end: range[1], num: i + 1, label }); placed = true; break; }
+            }
+          }
+          const where = cited.length ? "source " + [...new Set(cited)].map((s) => s + 1).join(", ") : "the sources";
+          body.append(el("p", "claim-note", claim.quote_verified
+            ? "Exact quote found in " + where + (placed ? ", marked below." : ".")
+            : "This quote isn't in " + where + ", so the claim isn't counted as backed."));
+        } else if (claim.label === "NOT_ENOUGH_INFO") {
+          body.append(el("p", "claim-note", "No passage in the sources supports or contradicts this."));
+        }
+        item.append(num, body);
+        list.append(item);
+      });
+      frag.append(list);
+    }
+
+    if (passages.length) {
+      frag.append(el("h3", "section-title", "Sources, marked up"));
+      passages.forEach((text, s) => {
+        const block = el("div", "source");
+        block.append(el("div", "source-name", "Source " + (s + 1)));
+        block.append(markUp(text, marks[s]));
+        frag.append(block);
+      });
+    }
+
+    frag.append(el("p", "note", "Trust the claim labels and quotes. The overall probability in the raw response (p_hallucinated) comes from a hand-set scoring that hasn't been fitted to data yet."));
+
+    const raw = el("details", "raw");
+    raw.append(el("summary", "", "Raw API response"));
+    raw.append(el("pre", "", JSON.stringify(data, null, 2)));
+    frag.append(raw);
+
+    result.replaceChildren(frag);
+  }
+
+  // Splits `text` at every mark boundary so overlapping quotes still render;
+  // a stretch covered by several claims takes the most severe label.
+  function markUp(text, ranges) {
+    const para = el("p", "source-text");
+    if (!ranges.length) { para.textContent = text; return para; }
+    const cuts = new Set([0, text.length]);
+    ranges.forEach((r) => { cuts.add(r.start); cuts.add(r.end); });
+    const points = [...cuts].sort((a, b) => a - b);
+    for (let k = 0; k < points.length - 1; k++) {
+      const from = points[k], to = points[k + 1];
+      const covering = ranges.filter((r) => r.start <= from && r.end >= to);
+      const piece = text.slice(from, to);
+      if (!covering.length) { para.append(document.createTextNode(piece)); continue; }
+      const worst = covering.reduce((a, b) => (b.label.rank > a.label.rank ? b : a));
+      para.append(el("mark", "source-mark draw is-" + worst.label.cls, piece));
+      ranges.filter((r) => r.end === to).forEach((r) => {
+        const ref = el("sup", "source-ref", String(r.num));
+        ref.setAttribute("aria-label", "claim " + r.num);
+        para.append(ref);
+      });
+    }
+    return para;
+  }
+
+  setPassages([""]);
+})();
+</script>
+</body>
+</html>

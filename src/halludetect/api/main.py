@@ -9,7 +9,10 @@ resolution (`api.resolve`), and response serialization against
 """
 from __future__ import annotations
 
+from importlib.resources import files
+
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 
 from halludetect.api.ratelimit import enforce_rate_limit
 from halludetect.api.resolve import ResolutionError, resolve_evidence_source, resolve_provider
@@ -60,6 +63,15 @@ def _get_cache_store(settings: Settings) -> CacheStore | None:
             _cache_unavailable = True
             _logger.warning("cache_unavailable", cache_dir=settings.cache_dir, error=str(exc))
     return _cache_store
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def index() -> HTMLResponse:
+    """The browser client (halludetect/web/index.html). It holds no key:
+    visitors enter their own, which the page sends as a Bearer token.
+    """
+    page = files("halludetect.web").joinpath("index.html").read_text(encoding="utf-8")
+    return HTMLResponse(page, headers={"X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer"})
 
 
 @app.get("/healthz")

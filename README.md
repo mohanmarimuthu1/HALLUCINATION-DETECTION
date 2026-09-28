@@ -69,10 +69,19 @@ No evidence returns `NOT_VERIFIABLE` with `reason: no_evidence_configured`.
 `GET /healthz` is unauthenticated (liveness probe). `POST /v1/verify`
 requires a valid `Authorization: Bearer <key>` and is rate-limited per key.
 
-### Run the UI
+### Use it in a browser
 
-A thin Streamlit client for the API above. It has no detection logic of
-its own - everything it shows comes from `/v1/verify`.
+The service serves a web page at `/` (http://localhost:8000 locally, or the
+root of any deployment). Paste an answer and its sources; it shows each
+claim, its quote, and the sources with the quoted passages highlighted.
+Visitors enter an access key - one of `CLIENT_API_KEYS` - which stays in
+their browser. The page holds no key of its own, so it is safe to share
+the address.
+
+### Run the Streamlit UI
+
+A second, local-only client. Like the web page, it has no detection logic
+of its own - everything it shows comes from `/v1/verify`.
 
 ```bash
 pip install -e ".[ui]"
@@ -87,10 +96,9 @@ so there is nothing extra to configure. Set `HALLUDETECT_API_URL` /
 ### Deploy to Vercel
 
 Pushing to `main` deploys the API; `[tool.vercel]` in `pyproject.toml`
-points Vercel at `halludetect.api.main:app`. The Streamlit UI does not
-deploy there - it needs a long-lived server, which Vercel functions are
-not - so run it locally or on a host such as Streamlit Community Cloud,
-with `HALLUDETECT_API_URL` set to the deployment.
+points Vercel at `halludetect.api.main:app`, and the web page at `/` comes
+with it. The Streamlit UI does not deploy there - it needs a long-lived
+server, which Vercel functions are not.
 
 `.env` is not deployed. Set these under Project Settings -> Environment
 Variables:
