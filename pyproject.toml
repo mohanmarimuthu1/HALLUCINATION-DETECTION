@@ -55,3 +55,9 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Header"]
 python_version = "3.11"
 mypy_path = "src"
 ignore_missing_imports = true
+
+[tool.vercel]
+# Deploys the API. Without this Vercel picks up the repo-root app.py, which
+# is the Streamlit UI launcher, and fails the build. Streamlit itself can't
+# run on Vercel (it needs a long-lived server holding a websocket).
+entrypoint = "src.halludetect.api.main:app"

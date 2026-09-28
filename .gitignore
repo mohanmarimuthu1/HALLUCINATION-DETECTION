@@ -45,3 +45,8 @@ legacy/data/*.csv
 # committed on purpose; this is the metrics report a run writes out.
 /eval_report.json
 
+# Vercel CLI: project link (.vercel/) and pulled env files, which hold a
+# deployment token. .env.example is the tracked template, so it stays in.
+.vercel
+.env*
+!.env.example

@@ -84,6 +84,26 @@ Run locally it uses the first of `CLIENT_API_KEYS` from the same `.env`,
 so there is nothing extra to configure. Set `HALLUDETECT_API_URL` /
 `HALLUDETECT_API_KEY` to point it at a service running elsewhere.
 
+### Deploy to Vercel
+
+Pushing to `main` deploys the API; `[tool.vercel]` in `pyproject.toml`
+points Vercel at `halludetect.api.main:app`. The Streamlit UI does not
+deploy there - it needs a long-lived server, which Vercel functions are
+not - so run it locally or on a host such as Streamlit Community Cloud,
+with `HALLUDETECT_API_URL` set to the deployment.
+
+`.env` is not deployed. Set these under Project Settings -> Environment
+Variables:
+
+- `OPENROUTER_API_KEY`
+- `CLIENT_API_KEYS` - use a different key from your local one; anyone
+  holding it spends your OpenRouter quota.
+- `CACHE_DIR=/tmp/halludetect` - `/tmp` is the only writable path on
+  Vercel. Without it the service still works, just uncached.
+
+Don't run `vercel build` followed by `vercel deploy --prebuilt` from a
+working copy that has a `.env`: a local build bundles it into the output.
+
 ### Bring your own key
 
 By default every request is served through this deployment's own

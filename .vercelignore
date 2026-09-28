@@ -1,0 +1,21 @@
+# Kept out of `vercel deploy` uploads and Git-triggered builds. A local
+# `vercel build` does NOT read this file and bundles .env into its output,
+# so never follow it with `vercel deploy --prebuilt` from a working copy
+# that has a .env - that ships the keys. Deploy by pushing to main instead.
+.env
+.env.*
+.claude/
+.cache/
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.pyc
+build/
+*.egg-info/
+
+# Not needed by the API function.
+legacy/
+tests/
+docs/
