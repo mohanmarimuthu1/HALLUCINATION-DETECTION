@@ -41,12 +41,24 @@ app.state.custom_evidence_source = None
 # HealthTracker) - constructed lazily against settings.cache_dir on first
 # use, not per request.
 _cache_store: CacheStore | None = None
+# Set once opening the cache has failed, so later requests don't retry it.
+_cache_unavailable = False
 
 
-def _get_cache_store(settings: Settings) -> CacheStore:
-    global _cache_store
-    if _cache_store is None:
-        _cache_store = DiskCacheStore(settings.cache_dir)
+def _get_cache_store(settings: Settings) -> CacheStore | None:
+    """`None` if the cache directory can't be opened. The cache is an
+    optimisation, so an unwritable directory runs the service uncached
+    rather than failing every request - which is what happened on Vercel,
+    whose filesystem is read-only outside /tmp (point CACHE_DIR there to
+    keep caching).
+    """
+    global _cache_store, _cache_unavailable
+    if _cache_store is None and not _cache_unavailable:
+        try:
+            _cache_store = DiskCacheStore(settings.cache_dir)
+        except OSError as exc:
+            _cache_unavailable = True
+            _logger.warning("cache_unavailable", cache_dir=settings.cache_dir, error=str(exc))
     return _cache_store
 
 

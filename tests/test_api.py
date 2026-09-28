@@ -6,6 +6,7 @@ mock them; this suite is about request wiring (parsing -> resolution ->
 pipeline -> response), not HTTP parsing, which is already covered per
 provider elsewhere.
 """
+import errno
 import json
 from collections import deque
 
@@ -57,6 +58,7 @@ def _reset_state(tmp_path, monkeypatch):
     _openrouter_health._health.clear()
     ratelimit._limiter = None
     main._cache_store = None
+    main._cache_unavailable = False
     yield
     main.app.dependency_overrides.clear()
 
@@ -312,3 +314,25 @@ def test_cache_disabled_runs_the_pipeline_every_time(client, monkeypatch):
     assert first.status_code == 200
     assert second.status_code == 200
     assert call_count["n"] == 4
+
+
+def test_unwritable_cache_dir_runs_uncached_instead_of_failing(client, monkeypatch):
+    """Vercel's filesystem is read-only outside /tmp. Opening the cache there
+    used to raise inside the request, so every /v1/verify returned 500.
+    """
+    opened: list[str] = []
+
+    def _read_only(directory):
+        opened.append(directory)
+        raise OSError(errno.EROFS, "Read-only file system", directory)
+
+    monkeypatch.setattr(main, "DiskCacheStore", _read_only)
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    body = {"answer": "irrelevant", "evidence_source": "none"}
+
+    first = client.post("/v1/verify", json=body, headers=_AUTH_HEADERS)
+    second = client.post("/v1/verify", json=body, headers=_AUTH_HEADERS)
+
+    assert first.status_code == 200 and second.status_code == 200
+    assert first.json()["verdict"] == "NOT_VERIFIABLE"
+    assert len(opened) == 1  # a failed open is remembered, not retried per request
