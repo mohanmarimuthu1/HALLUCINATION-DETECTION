@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: HALLUDETECT API
-  version: "1.0.0"
+  version: "1.1.0"
   description: >
     Standalone hallucination verification service. Verifies whether a given
     answer is grounded in supplied or fetched evidence. Never falls back to
@@ -246,3 +246,12 @@ components:
           $ref: '#/components/schemas/Timings'
         calibration_version:
           type: string
+        reason:
+          type: string
+          nullable: true
+          enum: [no_evidence_configured, insufficient_verifiable_claims, null]
+          description: >
+            Set exactly when verdict is NOT_VERIFIABLE, null otherwise
+            (contract v1.1). no_evidence_configured - no evidence was
+            available to verify against. insufficient_verifiable_claims -
+            fewer than 3 FACTUAL claims were extracted.

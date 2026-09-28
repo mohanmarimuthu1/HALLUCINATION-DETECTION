@@ -105,6 +105,7 @@ def test_verify_with_no_evidence_is_not_verifiable_without_calling_the_model(cli
     assert response.status_code == 200
     body = response.json()
     assert body["verdict"] == "NOT_VERIFIABLE"
+    assert body["reason"] == "no_evidence_configured"
     assert body["model_used"] == {"provider": "openrouter", "model": "free/a"}
 
 

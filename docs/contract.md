@@ -1,6 +1,11 @@
 # HALLUDETECT API Contract
 
-`contract_version: v1`
+`contract_version: v1.1`
+
+| Version | Change |
+|---|---|
+| v1 | Initial frozen contract (Phase 0). |
+| v1.1 | Added optional `reason` to the response. Rules 1 and 2 below already promised a reason (`no_evidence_configured`) but v1's schema table never defined the field, so no implementation could return it. Additive: every v1 field is unchanged, and a v1 client that ignores unknown fields is unaffected. |
 
 This document is the single source of truth for the `/v1/verify` request and
 response schema. Per the project plan (Phase 0, "Spec lock"), it is frozen
@@ -65,6 +70,7 @@ or `GROUNDED` verdict — absence of evidence always resolves to
 | `cost_usd` | float | Estimated cost in USD for this request. `0.0` when using the free model pool. |
 | `timings_ms` | object: `{total, retrieval, extraction, verification: integer}` | Latency breakdown in milliseconds. |
 | `calibration_version` | string | Identifier for the scoring/calibration model version that produced `p_hallucinated`/`groundedness`, so results remain comparable across deployments. |
+| `reason` | enum: `no_evidence_configured \| insufficient_verifiable_claims`, or `null` | Set exactly when `verdict` is `NOT_VERIFIABLE`, `null` otherwise (v1.1). `no_evidence_configured`: no evidence was available to verify against (rule 2) - supply `evidence` or configure a search key. `insufficient_verifiable_claims`: fewer than 3 `FACTUAL` claims were extracted (rule 1) - the answer is too short to score. |
 
 ### `ClaimResult`
 

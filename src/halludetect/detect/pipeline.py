@@ -29,6 +29,7 @@ from halludetect.detect.claims import DEFAULT_MAX_CLAIMS, extract_claims
 from halludetect.detect.fuse import CALIBRATION_VERSION, fuse, summarize
 from halludetect.detect.quote_check import quote_is_grounded
 from halludetect.detect.schemas import (
+    AbstentionReason,
     AnalysisResult,
     Claim,
     ClaimResult,
@@ -67,6 +68,7 @@ def _not_verifiable_result(
         cost_usd=cost_usd,
         timings_ms=timings,
         calibration_version=CALIBRATION_VERSION,
+        reason=AbstentionReason.NO_EVIDENCE_CONFIGURED,
     )
 
 
@@ -164,4 +166,7 @@ def run(
         cost_usd=cost_usd,
         timings_ms=timings,
         calibration_version=CALIBRATION_VERSION,
+        # fuse() only returns NOT_VERIFIABLE for the low-claim-count rule;
+        # the no-evidence case returned early above.
+        reason=AbstentionReason.INSUFFICIENT_VERIFIABLE_CLAIMS if verdict == Verdict.NOT_VERIFIABLE else None,
     )

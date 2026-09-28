@@ -1,7 +1,7 @@
 import json
 
 from halludetect.detect import pipeline
-from halludetect.detect.schemas import Label, ModelUsed, Verdict
+from halludetect.detect.schemas import AbstentionReason, Label, ModelUsed, Verdict
 from halludetect.evidence.base import Evidence
 from halludetect.llm.base import LLMResponse, TokenUsage
 from halludetect.llm.fake import FakeProvider, fake_response
@@ -45,6 +45,7 @@ def test_no_evidence_forces_not_verifiable_without_calling_the_llm():
     )
 
     assert result.verdict == Verdict.NOT_VERIFIABLE
+    assert result.reason == AbstentionReason.NO_EVIDENCE_CONFIGURED
     assert result.claims == []
     assert result.n_verifiable_claims == 0
     assert provider.call_count == 0
@@ -82,6 +83,9 @@ def test_fewer_than_three_verifiable_claims_forces_not_verifiable():
 
     assert result.n_verifiable_claims == 1
     assert result.verdict == Verdict.NOT_VERIFIABLE
+    # Distinct from the no-evidence case: evidence existed, the answer was
+    # just too short to score, so the caller's fix is different.
+    assert result.reason == AbstentionReason.INSUFFICIENT_VERIFIABLE_CLAIMS
     assert result.claims[0].label == Label.SUPPORTED
     assert result.claims[0].quote_verified is True
 
@@ -142,6 +146,7 @@ def test_grounded_verdict_when_all_claims_supported_with_verified_quotes():
     )
 
     assert result.verdict == Verdict.GROUNDED
+    assert result.reason is None
     assert result.groundedness == 1.0
     assert result.n_verifiable_claims == 3
 

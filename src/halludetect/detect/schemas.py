@@ -39,6 +39,16 @@ class Verdict(str, Enum):
     NOT_VERIFIABLE = "NOT_VERIFIABLE"
 
 
+class AbstentionReason(str, Enum):
+    """Why a response is `NOT_VERIFIABLE` (contract v1.1). The two cases
+    need different action from a caller - supply evidence, or supply a
+    longer answer - so a bare verdict is not enough to act on.
+    """
+
+    NO_EVIDENCE_CONFIGURED = "no_evidence_configured"
+    INSUFFICIENT_VERIFIABLE_CLAIMS = "insufficient_verifiable_claims"
+
+
 class ExtractedClaim(BaseModel):
     """One claim as returned by the extraction LLM call, before a stable
     claim_id is assigned (see claims.py - claim_id is never model-
@@ -111,6 +121,10 @@ class AnalysisResult(BaseModel):
     cost_usd: float
     timings_ms: Timings
     calibration_version: str
+    # Set exactly when `verdict` is NOT_VERIFIABLE, `None` otherwise.
+    # Optional so results recorded before contract v1.1 (the golden-set
+    # replay files, the result cache) still deserialize.
+    reason: AbstentionReason | None = None
 
 
 class Signals(BaseModel):
