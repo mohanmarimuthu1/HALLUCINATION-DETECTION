@@ -56,14 +56,34 @@ curl -X POST http://localhost:8000/v1/verify \
   -H "Authorization: Bearer <one of your CLIENT_API_KEYS>" \
   -H "Content-Type: application/json" \
   -d '{
-        "answer": "The Eiffel Tower is in Paris.",
-        "evidence": ["The Eiffel Tower is located in Paris, France."],
+        "answer": "The Eiffel Tower is 330 metres tall, was completed in 1889, and stands in Paris.",
+        "evidence": ["The Eiffel Tower is on the Champ de Mars in Paris, France. It is 330 metres tall.",
+                     "Construction began in 1887 and it was completed in 1889."],
         "evidence_source": "none"
       }'
 ```
 
+An answer needs at least 3 factual claims for an overall verdict; fewer
+returns `NOT_VERIFIABLE` with `reason: insufficient_verifiable_claims`.
+No evidence returns `NOT_VERIFIABLE` with `reason: no_evidence_configured`.
+
 `GET /healthz` is unauthenticated (liveness probe). `POST /v1/verify`
 requires a valid `Authorization: Bearer <key>` and is rate-limited per key.
+
+### Run the UI
+
+A thin Streamlit client for the API above. It has no detection logic of
+its own - everything it shows comes from `/v1/verify`.
+
+```bash
+pip install -e ".[ui]"
+uvicorn halludetect.api.main:app            # terminal 1
+streamlit run src/halludetect/ui/app.py     # terminal 2, http://localhost:8501
+```
+
+Run locally it uses the first of `CLIENT_API_KEYS` from the same `.env`,
+so there is nothing extra to configure. Set `HALLUDETECT_API_URL` /
+`HALLUDETECT_API_KEY` to point it at a service running elsewhere.
 
 ### Bring your own key
 
@@ -77,8 +97,9 @@ curl -X POST http://localhost:8000/v1/verify \
   -H "Authorization: Bearer <one of your CLIENT_API_KEYS>" \
   -H "Content-Type: application/json" \
   -d '{
-        "answer": "The Eiffel Tower is in Paris.",
-        "evidence": ["The Eiffel Tower is located in Paris, France."],
+        "answer": "The Eiffel Tower is 330 metres tall, was completed in 1889, and stands in Paris.",
+        "evidence": ["The Eiffel Tower is on the Champ de Mars in Paris, France. It is 330 metres tall.",
+                     "Construction began in 1887 and it was completed in 1889."],
         "evidence_source": "none",
         "model_prefs": {
           "provider": "gemini",
@@ -139,4 +160,14 @@ streamlit run app.py        # http://localhost:8501
 ```
 
 Configuration lives in `config.py` / `.env` (`GOOGLE_API_KEY`,
-`OPENROUTER_API_KEY_1`, `OPENROUTER_API_KEY_2`).
+`OPENROUTER_API_KEY_1`, `OPENROUTER_API_KEY_2`). These are different names
+from v2's: setting `OPENROUTER_API_KEY` configures v2 only, and the legacy
+app will not see it.
+
+Do not use its output as a verdict. When its model calls fail it does not
+report an error: `detection/fact_verifier.py` substitutes hardcoded
+fallback results, so with no working key it still renders a score
+("PARTIALLY SUPPORTED, 60%") built from no model output at all. Its
+verification prompt also tells the model to use its own general
+knowledge when the evidence is silent. The same detector backs `demo.py`
+and `evaluate.py`, so numbers from either inherit both problems.
