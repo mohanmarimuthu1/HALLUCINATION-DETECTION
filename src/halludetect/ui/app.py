@@ -1,5 +1,6 @@
 """Streamlit demo UI for HALLUDETECT v2 (Phase 5.4).
 
+    streamlit run app.py        (repo-root entry point)
     streamlit run src/halludetect/ui/app.py
 
 Needs the API running (`uvicorn halludetect.api.main:app`). Presentation
@@ -216,4 +217,7 @@ def main() -> None:
         _render_result(st.session_state["result"])
 
 
-main()
+# Streamlit runs a script with __name__ == "__main__"; the guard keeps the
+# repo-root app.py from rendering the page twice when it imports main().
+if __name__ == "__main__":
+    main()

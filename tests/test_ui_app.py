@@ -114,3 +114,16 @@ def test_a_failed_call_shows_an_error_and_never_a_verdict(monkeypatch):
     # at.main, not at: the sidebar's own "API is running" is an st.success.
     assert not at.main.success and not at.main.warning and not at.main.info
     assert not [m for m in at.main.metric if m.label == "Groundedness"]
+
+
+def test_repo_root_app_py_opens_the_v2_ui():
+    """`streamlit run app.py` is the command people already use; it must
+    open this UI, rendered once, not the legacy v1 app.
+    """
+    root_app = str(Path(__file__).resolve().parents[1] / "app.py")
+    at = AppTest.from_file(root_app, default_timeout=30)
+    at.run()
+
+    assert not at.exception
+    assert [b.label for b in at.button] == ["Verify"]
+    assert [t.value for t in at.title] == ["HALLUDETECT"]

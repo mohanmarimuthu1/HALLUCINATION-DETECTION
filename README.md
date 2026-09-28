@@ -2,9 +2,8 @@
 
 This repo is mid-migration. The active project is **HALLUDETECT v2**
 (`src/halludetect/`), a standalone hallucination-verification API service.
-It supersedes the original Streamlit self-RAG demo at the repo root
-(`app.py`, `detection/`, `rag/`, `knowledge_base/`), which is kept for
-reference until the migration finishes but is not where new work happens.
+It supersedes the original Streamlit self-RAG demo, now in `legacy/`,
+which is kept for reference but is not where new work happens.
 
 See `docs/contract.md` for the frozen API contract this service implements.
 
@@ -77,8 +76,8 @@ its own - everything it shows comes from `/v1/verify`.
 
 ```bash
 pip install -e ".[ui]"
-uvicorn halludetect.api.main:app            # terminal 1
-streamlit run src/halludetect/ui/app.py     # terminal 2, http://localhost:8501
+uvicorn halludetect.api.main:app   # terminal 1
+streamlit run app.py               # terminal 2, http://localhost:8501
 ```
 
 Run locally it uses the first of `CLIENT_API_KEYS` from the same `.env`,
@@ -139,6 +138,9 @@ src/halludetect/
   detect/         claim extraction, verification, quote-grounding,
                   calibrated fusion - the pipeline itself
   api/            FastAPI app: /v1/verify, /healthz, auth, rate limiting
+  ui/             Streamlit demo UI - calls the API, no logic of its own
+app.py            `streamlit run app.py` entry point for the UI above
+legacy/           the v1 app, kept for reference (see below)
 docs/
   contract.md     the frozen API contract (source of truth)
   openapi.yaml    machine-readable mirror of the same contract
@@ -154,20 +156,20 @@ grounding, a self-learning loop that fed hallucinated answers back into
 its own knowledge base) that v2's design specifically avoids.
 
 ```bash
-pip install -r requirements.txt
-python init_legacy_app.py   # first-time setup: builds the vector store
-streamlit run app.py        # http://localhost:8501
+pip install -r legacy/requirements.txt
+python legacy/init_legacy_app.py   # first-time setup: builds the vector store
+streamlit run legacy/app.py        # http://localhost:8501
 ```
 
-Configuration lives in `config.py` / `.env` (`GOOGLE_API_KEY`,
+Configuration lives in `legacy/config.py` / `.env` (`GOOGLE_API_KEY`,
 `OPENROUTER_API_KEY_1`, `OPENROUTER_API_KEY_2`). These are different names
 from v2's: setting `OPENROUTER_API_KEY` configures v2 only, and the legacy
 app will not see it.
 
 Do not use its output as a verdict. When its model calls fail it does not
-report an error: `detection/fact_verifier.py` substitutes hardcoded
+report an error: `legacy/detection/fact_verifier.py` substitutes hardcoded
 fallback results, so with no working key it still renders a score
 ("PARTIALLY SUPPORTED, 60%") built from no model output at all. Its
 verification prompt also tells the model to use its own general
-knowledge when the evidence is silent. The same detector backs `demo.py`
-and `evaluate.py`, so numbers from either inherit both problems.
+knowledge when the evidence is silent. The same detector backs `legacy/demo.py`
+and `legacy/evaluate.py`, so numbers from either inherit both problems.
