@@ -11,6 +11,7 @@ Two separate concerns live here on purpose:
 """
 from __future__ import annotations
 
+import threading
 import time
 from dataclasses import dataclass, field
 
@@ -128,11 +129,17 @@ class FreeModelCatalog:
     ttl_s: float = CATALOG_TTL_S
     _models: list[str] = field(default_factory=list)
     _fetched_at: float | None = None
+    # One catalog is shared by every concurrent request through the
+    # router, so the staleness check and the refetch it guards have to be
+    # one atomic step - otherwise N threads arriving on a cold or expired
+    # cache each make the same network call (Phase 8.2).
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False, compare=False)
 
     def get_models(self, *, force_refresh: bool = False) -> list[str]:
-        now = time.monotonic()
-        stale = self._fetched_at is None or (now - self._fetched_at) >= self.ttl_s
-        if force_refresh or stale:
-            self._models = fetch_free_models(self.api_key)
-            self._fetched_at = now
-        return list(self._models)
+        with self._lock:
+            now = time.monotonic()
+            stale = self._fetched_at is None or (now - self._fetched_at) >= self.ttl_s
+            if force_refresh or stale:
+                self._models = fetch_free_models(self.api_key)
+                self._fetched_at = now
+            return list(self._models)

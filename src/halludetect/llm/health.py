@@ -7,6 +7,7 @@ breaker rule (Phase 2.5) is defined in exactly one place.
 """
 from __future__ import annotations
 
+import threading
 import time
 from dataclasses import dataclass
 
@@ -40,43 +41,55 @@ class HealthTracker:
     the consecutive-failure counter for that model. Cooldown is
     time-based, not a manual reset, so a model recovers on its own once
     it starts working again.
+
+    Thread-safe (Phase 8.2): one tracker is shared process-wide by
+    `api.resolve`, so every concurrent request increments the same
+    counters. `attempts += 1` is not atomic, and these counters are not
+    just statistics - `rank_available` routes on them and the breaker
+    trips on them, so a lost update silently skews model selection and
+    delays a demotion.
     """
 
     def __init__(self, *, failure_threshold: int = FAILURE_THRESHOLD, cooldown_s: float = COOLDOWN_S):
         self._health: dict[str, ModelHealth] = {}
         self._failure_threshold = failure_threshold
         self._cooldown_s = cooldown_s
+        self._lock = threading.RLock()
 
     def _get(self, model: str) -> ModelHealth:
         return self._health.setdefault(model, ModelHealth())
 
     def record_success(self, model: str, latency_ms: float) -> None:
-        health = self._get(model)
-        health.attempts += 1
-        health.successes += 1
-        health.total_latency_ms += latency_ms
-        health.consecutive_failures = 0
-        health.cooldown_until = None
+        with self._lock:
+            health = self._get(model)
+            health.attempts += 1
+            health.successes += 1
+            health.total_latency_ms += latency_ms
+            health.consecutive_failures = 0
+            health.cooldown_until = None
 
     def record_failure(self, model: str, *, rate_limited: bool = False, now: float | None = None) -> None:
         now = now if now is not None else time.monotonic()
-        health = self._get(model)
-        health.attempts += 1
-        health.consecutive_failures += 1
-        if rate_limited:
-            health.last_rate_limited_at = now
-        if health.consecutive_failures >= self._failure_threshold:
-            health.cooldown_until = now + self._cooldown_s
+        with self._lock:
+            health = self._get(model)
+            health.attempts += 1
+            health.consecutive_failures += 1
+            if rate_limited:
+                health.last_rate_limited_at = now
+            if health.consecutive_failures >= self._failure_threshold:
+                health.cooldown_until = now + self._cooldown_s
 
     def is_available(self, model: str, *, now: float | None = None) -> bool:
         now = now if now is not None else time.monotonic()
-        health = self._health.get(model)
-        if health is None or health.cooldown_until is None:
-            return True
-        return now >= health.cooldown_until
+        with self._lock:
+            health = self._health.get(model)
+            if health is None or health.cooldown_until is None:
+                return True
+            return now >= health.cooldown_until
 
     def get(self, model: str) -> ModelHealth:
-        return self._get(model)
+        with self._lock:
+            return self._get(model)
 
     def rank_available(self, models: list[str], *, now: float | None = None) -> list[str]:
         """Available models (not in active cooldown), best first: higher
@@ -84,12 +97,15 @@ class HealthTracker:
         (given a chance before ranking data exists).
         """
         now = now if now is not None else time.monotonic()
-        available = [m for m in models if self.is_available(m, now=now)]
+        # Held across the whole ranking so the sort sees one consistent
+        # snapshot; an RLock because is_available() takes it too.
+        with self._lock:
+            available = [m for m in models if self.is_available(m, now=now)]
 
-        def sort_key(model: str) -> tuple[float, float]:
-            health = self._health.get(model)
-            if health is None or health.attempts == 0:
-                return (-1.0, 0.0)
-            return (-health.success_rate, health.avg_latency_ms)
+            def sort_key(model: str) -> tuple[float, float]:
+                health = self._health.get(model)
+                if health is None or health.attempts == 0:
+                    return (-1.0, 0.0)
+                return (-health.success_rate, health.avg_latency_ms)
 
-        return sorted(available, key=sort_key)
+            return sorted(available, key=sort_key)

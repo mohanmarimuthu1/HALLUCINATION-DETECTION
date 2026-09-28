@@ -11,6 +11,7 @@ never a 429 - rate limiting only applies once a key is known to be valid.
 """
 from __future__ import annotations
 
+import threading
 import time
 from dataclasses import dataclass
 
@@ -27,39 +28,56 @@ class _Bucket:
 
 
 class RateLimiter:
+    """Thread-safe: FastAPI runs `enforce_rate_limit` (a sync dependency)
+    in its threadpool, so concurrent requests mutate one bucket from real
+    OS threads. Refilling, checking and decrementing is a read-modify-write
+    that must be atomic as a whole - measured without the lock, a burst of
+    8 threads against a capacity of 20 admitted 24. A ceiling a caller can
+    beat by sending requests in parallel is not a ceiling.
+    """
+
     def __init__(self, *, capacity: float, refill_per_s: float):
         self._capacity = capacity
         self._refill_per_s = refill_per_s
         self._buckets: dict[str, _Bucket] = {}
+        self._lock = threading.Lock()
 
     def allow(self, key: str, *, now: float | None = None) -> bool:
         now = now if now is not None else time.monotonic()
-        bucket = self._buckets.get(key)
-        if bucket is None:
-            bucket = _Bucket(tokens=self._capacity, last_refill=now)
-            self._buckets[key] = bucket
-        else:
-            elapsed = now - bucket.last_refill
-            bucket.tokens = min(self._capacity, bucket.tokens + elapsed * self._refill_per_s)
-            bucket.last_refill = now
+        with self._lock:
+            bucket = self._buckets.get(key)
+            if bucket is None:
+                bucket = _Bucket(tokens=self._capacity, last_refill=now)
+                self._buckets[key] = bucket
+            else:
+                elapsed = now - bucket.last_refill
+                bucket.tokens = min(self._capacity, bucket.tokens + elapsed * self._refill_per_s)
+                bucket.last_refill = now
 
-        if bucket.tokens < 1.0:
-            return False
-        bucket.tokens -= 1.0
-        return True
+            if bucket.tokens < 1.0:
+                return False
+            bucket.tokens -= 1.0
+            return True
 
 
 # One shared limiter per process (same pattern as api.resolve's shared
 # HealthTracker) - per-key bucket state must persist across requests, not
 # reset on every call.
 _limiter: RateLimiter | None = None
+# Guards the lazy init below, not the limiter's own state. Two threads
+# racing the first request would otherwise each build a limiter and one
+# would win, discarding the other's already-spent tokens.
+_limiter_lock = threading.Lock()
 
 
 def _get_limiter(settings: Settings) -> RateLimiter:
     global _limiter
-    if _limiter is None:
-        _limiter = RateLimiter(capacity=settings.rate_limit_capacity, refill_per_s=settings.rate_limit_refill_per_s)
-    return _limiter
+    with _limiter_lock:
+        if _limiter is None:
+            _limiter = RateLimiter(
+                capacity=settings.rate_limit_capacity, refill_per_s=settings.rate_limit_refill_per_s
+            )
+        return _limiter
 
 
 def enforce_rate_limit(
