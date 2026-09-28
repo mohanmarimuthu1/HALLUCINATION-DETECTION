@@ -16,6 +16,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.10"]
+# Demo UI (Phase 5.4). Kept out of the core install so the API image
+# does not carry Streamlit.
+ui = ["streamlit>=1.30"]
 
 [build-system]
 requires = ["setuptools>=68"]

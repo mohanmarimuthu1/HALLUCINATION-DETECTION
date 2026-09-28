@@ -16,7 +16,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        # ui is installed so the demo UI's smoke test runs here rather than
+        # being skipped for a missing import.
+        run: pip install -e ".[dev,ui]"
 
       - name: Lint (ruff)
         run: ruff check src/ tests/
