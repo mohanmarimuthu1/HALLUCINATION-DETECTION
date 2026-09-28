@@ -38,3 +38,9 @@ jobs:
         # if the abstention-recall / quote-verification-rate invariants
         # regress (see eval/__main__.py's module docstring).
         run: python -m halludetect.eval --suite golden
+
+      - name: Eval gate (golden set B)
+        # Phase 7.2 - open-domain items sampled from HaluEval. Same fully
+        # offline replay shape as golden set A, from
+        # tests/data/golden/eval_set_b.replay.json.
+        run: python -m halludetect.eval --suite golden_b

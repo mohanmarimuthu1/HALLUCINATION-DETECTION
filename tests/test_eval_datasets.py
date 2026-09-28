@@ -20,7 +20,27 @@ def test_loads_real_golden_set_a():
     assert len(items) >= 30
     assert all(item.evidence for item in items)
     categories = {item.category for item in items}
-    assert categories == set(GoldenCategory)
+    assert categories == {
+        GoldenCategory.ANSWERABLE_IN_EVIDENCE,
+        GoldenCategory.UNANSWERABLE_IN_EVIDENCE,
+        GoldenCategory.INJECTED_CONTRADICTION,
+    }
+    assert all(item.source is None for item in items)  # self-authored, no external dataset
+
+
+def test_loads_real_golden_set_b():
+    from pathlib import Path
+
+    path = Path(__file__).parent / "data" / "golden" / "eval_set_b.yaml"
+    items = load_golden_set(path)
+    assert len(items) >= 30
+    assert all(item.evidence for item in items)
+    categories = {item.category for item in items}
+    assert categories == {
+        GoldenCategory.OPEN_DOMAIN_GROUNDED,
+        GoldenCategory.OPEN_DOMAIN_HALLUCINATED,
+    }
+    assert all(item.source is not None and item.source.startswith("halueval-qa:") for item in items)
 
 
 def test_parses_fields(tmp_path):

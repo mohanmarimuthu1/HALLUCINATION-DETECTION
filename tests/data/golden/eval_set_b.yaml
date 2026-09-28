@@ -1,0 +1,930 @@
+# Golden Set B (Phase 7.2) - open-domain items sampled from a public
+# benchmark, as a companion to golden set A's hand-authored, evidence-
+# provided items.
+#
+# Source: HaluEval QA subset (https://github.com/RUCAIBox/HaluEval,
+# data/qa_data.json), MIT license. 10,000 rows, each with a `knowledge`
+# passage, a `question`, a `right_answer`, and a `hallucinated_answer`.
+# FEVER and TruthfulQA were considered and rejected (see process.md):
+# FEVER's evidence is only referenced by Wikipedia sentence id, not
+# inline, and TruthfulQA has no evidence/knowledge field at all - neither
+# fits this pipeline's "verify against supplied evidence" design without
+# extra machinery HaluEval doesn't need.
+#
+# Sampling: 30 row indices drawn from the 10,000-row file with
+# `random.Random(42).sample(range(10000), 80)`, taking the first 30 whose
+# `right_answer` wasn't a bare "yes"/"no" (too short to expand into a
+# checkable claim), in the order they were drawn. Each of those 30 rows
+# produces exactly two golden items below: one built around the row's
+# `right_answer` (expected GROUNDED), one built around its
+# `hallucinated_answer` (expected CONTRADICTED or NOT_ENOUGH_INFO). Every
+# pair shares the same `source: halueval-qa:<row index>` tag and the same
+# evidence (drawn verbatim from that row's `knowledge` field, split into
+# its constituent sentences).
+#
+# Every one of the 60 items below was read and labeled by hand, not
+# converted mechanically: several sampled rows were skipped because their
+# `hallucinated_answer` turned out, on inspection, to still be true or
+# only vaguely non-committal rather than a genuine hallucination (e.g.
+# one row's "hallucinated" answer restated a fact the knowledge itself
+# confirmed) - shipping those as mislabeled ground truth would have been
+# worse than a smaller, correct set. Two extra rows beyond the first 30
+# clean ones were pulled from the same 80-row draw to replace skips,
+# still in draw order, still from the same fixed-seed sample.
+#
+# Each answer is composed of 3 claims (this pipeline's fuse.py forces
+# NOT_VERIFIABLE below 3 verifiable claims, so a single-fact Q&A pair
+# can't otherwise produce a GROUNDED/CONTRADICTED verdict): the tested
+# fact (the row's right_answer or hallucinated_answer, reworded into a
+# full sentence) plus two other true supporting facts pulled from the
+# same knowledge passage, kept identical between the grounded and
+# hallucinated variant of a pair - only the tested claim changes.
+
+- id: golden-b-001
+  category: open_domain_grounded
+  source: "halueval-qa:1824"
+  question: "Bebe Rexha was a singer who guested on the David Guetta song that was produced by which Dutch DJ?"
+  answer: >
+    Bebe Rexha is a featured guest vocalist on David Guetta's "Hey Mama."
+    The song also features vocals from Nicki Minaj. "Hey Mama" was
+    produced by Dutch DJ and producer Afrojack.
+  evidence:
+    - "Bebe Rexha is best known as a featured guest vocalist on several Billboard Hot 100 charting songs, such as G-Eazy's \"Me, Myself & I\", David Guetta's \"Hey Mama\", Martin Garrix's \"In the Name of Love\", and Cash Cash's \"Take Me Home\"."
+    - "\"Hey Mama\" is a song by French DJ and record producer David Guetta, featuring vocals from Nicki Minaj and Bebe Rexha, as well as production from Dutch DJ and producer Afrojack."
+  expected_verdict: GROUNDED
+
+- id: golden-b-002
+  category: open_domain_grounded
+  source: "halueval-qa:4506"
+  question: "What Lindsey Stirling song's video received 1.3 million views on YouTube after one day?"
+  answer: >
+    "Shatter Me" is a song composed and performed by American violinist
+    Lindsey Stirling for her second studio album of the same name. The
+    song features vocals from American rock singer Lzzy Hale, the lead
+    singer of the band Halestorm. The music video for "Shatter Me"
+    received 1.3 million views on YouTube after one day.
+  evidence:
+    - "\"Shatter Me\" is a song composed and performed by American violinist Lindsey Stirling for her second studio album of the same name, and features vocals from American rock singer Lzzy Hale, the lead singer of American rock band Halestorm."
+    - "The second single, \"Shatter Me\", was released on April 23, accumulating 1.3 million views after one day on YouTube."
+  expected_verdict: GROUNDED
+
+- id: golden-b-003
+  category: open_domain_grounded
+  source: "halueval-qa:4012"
+  question: "The 1st Battle of Kharkov was named so by a German field marshal born in which year?"
+  answer: >
+    The 1st Battle of Kharkov was named by German field marshal Wilhelm
+    Keitel. Keitel served as Chief of the Armed Forces High Command (OKW)
+    in Nazi Germany during World War II. Wilhelm Keitel was born on
+    September 22, 1882.
+  evidence:
+    - "The 1st Battle of Kharkov, so named by Wilhelm Keitel, was the 1941 tactical battle for the city of Kharkov (now \"Kharkiv\") (Ukrainian SSR) during the final phase of Operation \"Barbarossa\" between the German 6th Army of Army Group South and the Soviet Southwestern Front."
+    - "Wilhelm Keitel (22 September 1882 - 16 October 1946) was a German field marshal who served as Chief of the Armed Forces High Command (\"Oberkommando der Wehrmacht\" or OKW) in Nazi Germany during World War II."
+  expected_verdict: GROUNDED
+
+- id: golden-b-004
+  category: open_domain_grounded
+  source: "halueval-qa:1679"
+  question: "What was the population of the terminus of the Willunga railway line in 2011?"
+  answer: >
+    The Willunga railway line ran from Adelaide railway station to the
+    town of Willunga, over 45 km long. Willunga is a town south of
+    Adelaide, South Australia, in the City of Onkaparinga local
+    government area. At the 2011 census, Willunga had a population of
+    2,416.
+  evidence:
+    - "The Willunga railway line ran through the southern Adelaide suburbs from Adelaide railway station to Willunga, over 45 km long (longer than the current Gawler line, 42.2 km)."
+    - "Willunga is a town south of Adelaide, South Australia in the City of Onkaparinga local government area 47 km from the Adelaide CBD. At the 2011 census, Willunga had a population of 2,416."
+  expected_verdict: GROUNDED
+
+- id: golden-b-005
+  category: open_domain_grounded
+  source: "halueval-qa:8935"
+  question: "Gaten Matarazzo began his career on the Broadway stage as who, in \"Priscilla, Queen of the Desert\"?"
+  answer: >
+    Gaten Matarazzo starred in the first season of "Stranger Things." He
+    also played Gavroche in a separate Broadway production of "Les
+    Misérables." Gaten Matarazzo began his Broadway career playing
+    Benjamin in "Priscilla, Queen of the Desert."
+  evidence:
+    - "The first season stars Winona Ryder, David Harbour, Finn Wolfhard, Millie Bobby Brown, Gaten Matarazzo, Caleb McLaughlin, Natalia Dyer, Charlie Heaton, Cara Buono, and Matthew Modine, with Noah Schnapp and Joe Keery in recurring roles."
+    - "He began his career on the Broadway stage as Benjamin in \"Priscilla, Queen of the Desert\", and as Gavroche in \"Les Misérables\"."
+  expected_verdict: GROUNDED
+
+- id: golden-b-006
+  category: open_domain_grounded
+  source: "halueval-qa:1535"
+  question: "Which genus is more spread around the world, Maytenus or Eucommia?"
+  answer: >
+    Eucommia is a genus of small trees now native to China. Maytenus is a
+    genus of flowering plants in the staff vine family, Celastraceae.
+    Maytenus is distributed throughout Central and South America,
+    Southeast Asia, Micronesia, Australasia, the Indian Ocean, and Africa,
+    giving it a wider distribution than Eucommia.
+  evidence:
+    - "Eucommia is a genus of small trees now native to China, with a fossil record that shows a much wider distribution."
+    - "Maytenus is a genus of flowering plants in the staff vine family, Celastraceae. Members of the genus are distributed throughout Central and South America, Southeast Asia, Micronesia and Australasia, the Indian Ocean and Africa."
+  expected_verdict: GROUNDED
+
+- id: golden-b-007
+  category: open_domain_grounded
+  source: "halueval-qa:8279"
+  question: "In which town was the 1987 American drama film Ironweed shot on location, featuring a 400-acre pastoral cemetery?"
+  answer: >
+    "Ironweed" is a 1987 American drama film directed by Héctor Babenco.
+    Major portions of the film were shot on location including Jay Street
+    at Lark Street and the Miss Albany Diner on North Broadway. The film
+    also used the Albany Rural Cemetery, located in Colonie, New York,
+    just outside Albany.
+  evidence:
+    - "Ironweed is a 1987 American drama film directed by Héctor Babenco. Major portions of the film were shot on location in Albany, New York, including Jay Street at Lark Street, Albany Rural Cemetery and the Miss Albany Diner on North Broadway."
+    - "The Albany Rural Cemetery was established October 7, 1844, in Colonie, New York, just outside the city of Albany, New York. It is renowned as one of the most beautiful, pastoral cemeteries in the United States, at over 400 acre."
+  expected_verdict: GROUNDED
+
+- id: golden-b-008
+  category: open_domain_grounded
+  source: "halueval-qa:3257"
+  question: "Toby Williams has appeared in which British comedy television series, shown on the Sky Living channel?"
+  answer: >
+    Toby Williams is a British actor, writer, and stand-up comedian. He
+    has also appeared in Holby City, Morgana Robinson's The Agency, Bull,
+    and Raised By Wolves. Toby Williams appeared in the British comedy
+    series "Trying Again", shown on the Sky Living channel in 2014.
+  evidence:
+    - "He has appeared in Holby City (BBC 1), Morgana Robinson's The Agency (BBC 2) and in the sitcoms Bull (UKTV GOLD), Raised By Wolves (Channel 4) and Trying Again (Sky Living) and is soon to appear in Carters Get Rich (Sky 1) and Benidorm (ITV)."
+    - "Trying Again is a British comedy television series shown on the Sky Living channel in 2014."
+  expected_verdict: GROUNDED
+
+- id: golden-b-009
+  category: open_domain_grounded
+  source: "halueval-qa:4552"
+  question: "Near what river is the library that contains the Aberdeen Bestiary located?"
+  answer: >
+    The Aberdeen Bestiary is a 12th-century English illuminated manuscript
+    bestiary. It was first listed in 1542 in the inventory of the Old
+    Royal Library at the Palace of Westminster. The Palace of Westminster,
+    where the Aberdeen Bestiary was once catalogued, lies on the north
+    bank of the River Thames.
+  evidence:
+    - "The Aberdeen Bestiary (Aberdeen University Library, Univ Lib. MS 24) is a 12th-century English illuminated manuscript bestiary that was first listed in 1542 in the inventory of the Old Royal Library at the Palace of Westminster."
+    - "The Palace of Westminster is the meeting place of the House of Commons and the House of Lords, the two houses of the Parliament of the United Kingdom. Commonly known as the Houses of Parliament after its occupants, the Palace lies on the north bank of the River Thames in the City of Westminster, in central London."
+  expected_verdict: GROUNDED
+
+- id: golden-b-010
+  category: open_domain_grounded
+  source: "halueval-qa:3527"
+  question: "The album cover of Proud To Commit Commercial Suicide depicts the aftermath of which infamous remote settlement?"
+  answer: >
+    "Proud To Commit Commercial Suicide" is a live album by industrial
+    metal band Nailbomb. It captures the band's only live appearance at
+    the 1995 Dynamo Open Air Festival. The album cover depicts the
+    aftermath of the Jonestown settlement, established in Guyana by Jim
+    Jones's Peoples Temple.
+  evidence:
+    - "Proud To Commit Commercial Suicide is a live album by industrial metal band Nailbomb and captures the band's only live appearance at the 1995 Dynamo Open Air Festival. The album cover is a picture of the aftermath of the infamous Jonestown suicides."
+    - "The Peoples Temple Agricultural Project, better known by its informal name \"Jonestown\", was a remote settlement established by the Peoples Temple, an American socialist organization under the leadership of Jim Jones, in northwestern Guyana."
+  expected_verdict: GROUNDED
+
+- id: golden-b-011
+  category: open_domain_grounded
+  source: "halueval-qa:5514"
+  question: "Who directed the film in which Christoph Koncz starred as Kaspar Weiss?"
+  answer: >
+    "The Red Violin" is a 1998 Canadian drama film starring Samuel L.
+    Jackson, Carlo Cecchi, and Sylvia Chang. The film won the 1999 Academy
+    Award for Best Original Score. "The Red Violin" was directed by
+    François Girard.
+  evidence:
+    - "At the age of just nine, he received worldwide acclaim for starring as child prodigy Kaspar Weiss in the Canadian feature film \"The Red Violin\", which won the 1999 Academy Award for Best Original Score."
+    - "The Red Violin (French: Le Violon Rouge) is a 1998 Canadian drama film directed by François Girard and starring Samuel L. Jackson, Carlo Cecchi and Sylvia Chang."
+  expected_verdict: GROUNDED
+
+- id: golden-b-012
+  category: open_domain_grounded
+  source: "halueval-qa:1674"
+  question: "The Northern Ireland peace process is often considered to cover events leading up to which year's IRA ceasefire?"
+  answer: >
+    Decommissioning in Northern Ireland was a process in the Belfast
+    Agreement, part of the Northern Ireland peace process. The peace
+    process is considered to cover events through the Good Friday
+    (Belfast) Agreement of 1998. The Northern Ireland peace process is
+    often considered to cover events leading up to the 1994 Provisional
+    IRA ceasefire.
+  evidence:
+    - "Decommissioning in Northern Ireland was a process in the Belfast Agreement as part of the Northern Ireland peace process."
+    - "The Northern Ireland peace process is often considered to cover the events leading up to the 1994 Provisional Irish Republican Army (IRA) ceasefire, the end of most of the violence of the Troubles, the Good Friday (or Belfast) Agreement of 1998, and subsequent political developments."
+  expected_verdict: GROUNDED
+
+- id: golden-b-013
+  category: open_domain_grounded
+  source: "halueval-qa:6224"
+  question: "Which prefecture is the city where Japanese actor Akiji Kobayashi passed away the capital of?"
+  answer: >
+    Akiji Kobayashi was a Japanese actor who died of lung cancer in
+    Yokohama at the age of 65. He was sometimes credited as Shōji
+    Kobayashi or Issei Mori. Yokohama, where Kobayashi died, is the
+    capital city of Kanagawa Prefecture.
+  evidence:
+    - "Akiji Kobayashi (September 6, 1930 - August 27, 1996), sometimes credited as Shōji Kobayashi or Issei Mori, was a Japanese actor. Kobayashi died of lung cancer in Yokohama at the age of 65."
+    - "It is the capital city of Kanagawa Prefecture."
+  expected_verdict: GROUNDED
+
+- id: golden-b-014
+  category: open_domain_grounded
+  source: "halueval-qa:1584"
+  question: "In what year was the Korean student scholarship established by the chairman of Samsung Group?"
+  answer: >
+    The Samsung Scholarship provides financial support to gifted Korean
+    students pursuing higher education overseas. It was established as
+    the Samsung Lee Kun-hee Scholarship, named after the chairman who
+    succeeded founder Lee Byung-chul. The Samsung Scholarship was
+    established in 2002.
+  evidence:
+    - "Samsung Scholarship was established in 2002 by Samsung to provide financial support, encouragement and opportunities to gifted Korean students pursuing higher education overseas, who have shown the capacity to become global leaders."
+    - "It was established as Samsung Lee Kun-hee Scholarship, named after the current chairman of Samsung Group who succeeded Lee Byung-chul, the founder."
+  expected_verdict: GROUNDED
+
+- id: golden-b-015
+  category: open_domain_grounded
+  source: "halueval-qa:5635"
+  question: "Jang Yeong-sil stars a South Korean actor best known for his role in what 2006 hit drama series?"
+  answer: >
+    "Jang Yeong-sil" is a 2016 South Korean historical drama television
+    series. It stars South Korean actor Song Il-gook, born October 1,
+    1971, along with Kim Yeong-cheol, Kim Sang-kyung, and Park Sun-young.
+    Song Il-gook is best known for his role in the 2006 hit drama series
+    "Jumong."
+  evidence:
+    - "Jang Yeong-sil () is a 2016 South Korean historical drama television series starring Song Il-gook, Kim Yeong-cheol, Kim Sang-kyung and Park Sun-young."
+    - "Song Il-gook (born October 1, 1971) is a South Korean actor. He is best known for his role in the 2006 hit drama series \"Jumong\" as the titular character."
+  expected_verdict: GROUNDED
+
+- id: golden-b-016
+  category: open_domain_grounded
+  source: "halueval-qa:9891"
+  question: "Which actor also starred in the series The Strain as Mr. Quinlan?"
+  answer: >
+    The series was written by Lizzie Mickery, directed by James Hawes,
+    and filmed on location in Scotland. It starred Rupert Penry-Jones,
+    Lydia Leonard, David Haig, Eddie Marsan, and Patrick Malahide. Rupert
+    Penry-Jones is also known for playing Mr. Quinlan in the FX horror
+    series "The Strain."
+  evidence:
+    - "It was written by Lizzie Mickery, directed by James Hawes, and filmed on location in Scotland, starring Rupert Penry-Jones, Lydia Leonard, David Haig, Eddie Marsan, and Patrick Malahide."
+    - "Rupert William Penry-Jones (born 22 September 1970) is an English actor, best known for his roles as Adam Carter in the BBC One spy drama series \"Spooks\", Clive Reader QC in the BBC One legal drama \"Silk\", policeman DI Joseph Chandler in the ITV murder mystery series \"Whitechapel\", and Mr. Quinlan in the FX horror series \"The Strain\"."
+  expected_verdict: GROUNDED
+
+- id: golden-b-017
+  category: open_domain_grounded
+  source: "halueval-qa:711"
+  question: "Which board game was created by Reiner Knizia, Junta or Medici?"
+  answer: >
+    Junta is a board game designed by Vincent Tsao, published in 1985 by
+    West End Games. Medici is a German-style board game. Medici was
+    designed by Reiner Knizia.
+  evidence:
+    - "Junta is a board game designed by Vincent Tsao published, as of 1985, by West End Games."
+    - "Medici is a German-style board game by Reiner Knizia."
+  expected_verdict: GROUNDED
+
+- id: golden-b-018
+  category: open_domain_grounded
+  source: "halueval-qa:1291"
+  question: "Who owns a mall in Youngstown, Ohio with a BAM! store?"
+  answer: >
+    Huntington Mall is an enclosed shopping mall in Barboursville, Cabell
+    County, West Virginia. Its major tenants include Books-A-Million and
+    Old Navy. Huntington Mall is owned by Cafaro Company, based in
+    Youngstown, Ohio.
+  evidence:
+    - "Huntington Mall is an enclosed shopping mall in the village of Barboursville in Cabell County in the U.S. state of West Virginia. Other major tenants including Books-A-Million, and Old Navy."
+    - "The mall is owned by Cafaro Company of Youngstown, Ohio."
+  expected_verdict: GROUNDED
+
+- id: golden-b-019
+  category: open_domain_grounded
+  source: "halueval-qa:5925"
+  question: "When was the railroad opened which is north of Bates Pond?"
+  answer: >
+    Bates Pond is a 20-acre pond in Carver, Massachusetts. The pond is
+    located south of the Edaville Railroad. The Edaville Railroad, a
+    heritage railroad in South Carver, Massachusetts, opened in 1947.
+  evidence:
+    - "Bates Pond is a 20 acre pond in Carver, Massachusetts. The pond is located south of Edaville Railroad."
+    - "Edaville Railroad is a heritage railroad in South Carver, Massachusetts, opened in 1947."
+  expected_verdict: GROUNDED
+
+- id: golden-b-020
+  category: open_domain_grounded
+  source: "halueval-qa:1139"
+  question: "What genre are both Giant Drag and Chagall Guevara?"
+  answer: >
+    Giant Drag is an American Indie rock band from Los Angeles,
+    California. Chagall Guevara was an American rock band formed in 1989
+    by solo artist Steve Taylor and other musicians. Both Giant Drag and
+    Chagall Guevara are rock bands.
+  evidence:
+    - "Giant Drag is an American Indie rock band from Los Angeles, California."
+    - "Chagall Guevara was an American rock band formed in 1989 by solo artist Steve Taylor, guitarists Dave Perkins and Lynn Nichols (from the 1970s Phil Keaggy band), bassist Wade Jaynes, and drummer Mike Mead."
+  expected_verdict: GROUNDED
+
+- id: golden-b-021
+  category: open_domain_grounded
+  source: "halueval-qa:750"
+  question: "What is the best-seller by Ruta Sepetys?"
+  answer: >
+    "Ashes in the Snow" is a World War II drama based on the best-seller
+    "Between Shades of Gray." "Between Shades of Gray" is a New York
+    Times Bestseller and the debut novel of American novelist Ruta
+    Sepetys. Ruta Sepetys' best-seller is titled "Between Shades of Gray."
+  evidence:
+    - "Ashes in the Snow is a World War II drama based on the best-seller \"Between Shades of Gray\" by Ruta Sepetys."
+    - "Between Shades of Gray, a New York Times Bestseller, is the debut novel of American novelist Ruta Sepetys."
+  expected_verdict: GROUNDED
+
+- id: golden-b-022
+  category: open_domain_grounded
+  source: "halueval-qa:4422"
+  question: "Foxcatcher is a 2014 American true crime sports drama film about a wrestling team set up in what state?"
+  answer: >
+    "Foxcatcher" is a 2014 American true crime sports drama film. The
+    film's plot is loosely based on multimillionaire John du Pont's 1986
+    recruitment of Olympic wrestlers Mark and Dave Schultz. The Foxcatcher
+    wrestling team was set up on John du Pont's estate in Pennsylvania.
+  evidence:
+    - "The film's plot is loosely based on the events surrounding multimillionaire Du Pont family heir and wrestling enthusiast John du Pont's 1986 recruitment of 1984 U.S. Olympic gold medalist brothers Mark (Freestyle Wrestling - 82 kg) and Dave Schultz (Freestyle Wrestling - 74 kg) to help coach U.S. wrestlers for participation in national, world, and Olympic competition, and the subsequent murder of Dave by John du Pont in January 1996."
+    - "He was shot and killed by John Eleuthère du Pont, a millionaire philanthropist who sponsored the private Foxcatcher wrestling team at an amateur sports center, known as Foxcatcher Farm, he set up on his estate in Pennsylvania."
+  expected_verdict: GROUNDED
+
+- id: golden-b-023
+  category: open_domain_grounded
+  source: "halueval-qa:9125"
+  question: "What is the nationality of the 2003 FIBA Under-19 World Championship MVP?"
+  answer: >
+    Andrew Bogut was named the tournament MVP. Andrew Michael Bogut, born
+    November 28, 1984, is a professional basketball player who has played
+    in the National Basketball Association (NBA). Andrew Bogut, the
+    tournament MVP, is Australian.
+  evidence:
+    - "Andrew Bogut was named the tournament MVP."
+    - "Andrew Michael Bogut (born 28 November 1984) is an Australian professional basketball player for the Los Angeles Lakers of the National Basketball Association (NBA)."
+  expected_verdict: GROUNDED
+
+- id: golden-b-024
+  category: open_domain_grounded
+  source: "halueval-qa:6912"
+  question: "Which castle in the border region of Scotland did Hermitage Water pass through?"
+  answer: >
+    The Water flows through the hamlets of Dinley and Gorrenberry, and
+    through the village of Hermitage. Hermitage Castle is a semi-ruined
+    castle in the border region of Scotland. The Water passes Hermitage
+    Castle.
+  evidence:
+    - "The Water flows through the hamlets of Dinley and Gorrenberry, and through the village of Hermitage, and past Hermitage Castle."
+    - "Hermitage Castle is a semi-ruined castle in the border region of Scotland."
+  expected_verdict: GROUNDED
+
+- id: golden-b-025
+  category: open_domain_grounded
+  source: "halueval-qa:520"
+  question: "Which movie was co-written by the person who directed \"Blood\"?"
+  answer: >
+    Nick Murphy is best known for directing the films "The Awakening"
+    (2011) and "Blood" (2012). "The Awakening" is a 2011 British horror
+    film starring Rebecca Hall, Dominic West, Isaac Hempstead-Wright, and
+    Imelda Staunton. "The Awakening" was co-written by Nick Murphy, the
+    director of "Blood."
+  evidence:
+    - "He is best known for directing the films \"The Awakening\" (2011) (also writer) and \"Blood\" (2012)."
+    - "The Awakening is a 2011 British horror film directed and co-written by Nick Murphy, starring Rebecca Hall, Dominic West, Isaac Hempstead-Wright and Imelda Staunton."
+  expected_verdict: GROUNDED
+
+- id: golden-b-026
+  category: open_domain_grounded
+  source: "halueval-qa:9195"
+  question: "What was a branch of the Khalwatiyya order of Islamic mysticism founded by Sayyid Hasan Husameddin?"
+  answer: >
+    Ushshaki is a branch of the Khalwatiyya order of Islamic mysticism. It
+    is also known as "Tasawwuf." Ushshaki was founded by Sayyid Hasan
+    Husameddin.
+  evidence:
+    - "Ushshaki (Turkish: \"Uşşaki\"), is a branch of the Khalwatiyya order of Islamic mysticism, also known as \"Tasawwuf\", founded by Sayyid Hasan Husameddin."
+  expected_verdict: GROUNDED
+
+- id: golden-b-027
+  category: open_domain_grounded
+  source: "halueval-qa:3611"
+  question: "The special operations force of the Irish Defence Forces had access to what, according to the modern weapons of the Irish Army?"
+  answer: >
+    The Army Ranger Wing (ARW) is the special operations force of the
+    Irish Defence Forces, the military of Ireland. The Irish Defence
+    Forces oversee several specialized military units. The Army Ranger
+    Wing has access to a wide variety of specialist weapons for use in
+    different roles.
+  evidence:
+    - "The Army Ranger Wing has access to a wide variety of specialist weapons for use in different roles."
+    - "The Army Ranger Wing (ARW) is the special operations force of the Irish Defence Forces, the military of Ireland."
+  expected_verdict: GROUNDED
+
+- id: golden-b-028
+  category: open_domain_grounded
+  source: "halueval-qa:7359"
+  question: "Where is the Peppers Manor House and the New South Wales State Heritage Register located?"
+  answer: >
+    The Peppers Manor House (formerly Mount Broughton) is located in
+    Sutton Forest, New South Wales, Australia. The New South Wales State
+    Heritage Register is a heritage list of places in New South Wales
+    protected under the Heritage Act, 1977. Both the Peppers Manor House
+    and the New South Wales State Heritage Register are located in
+    Australia.
+  evidence:
+    - "The Peppers Manor House (formerly called Mount Broughton) is a house of local historical significance located in Sutton Forest, New South Wales, Australia."
+    - "The New South Wales State Heritage Register, also known as NSW State Heritage Register, is an heritage list of places in the state of New South Wales, Australia, that are protected by New South Wales legislation, generally covered by the \"Heritage Act, 1977\" (NSW) and its 2010 amendments."
+  expected_verdict: GROUNDED
+
+- id: golden-b-029
+  category: open_domain_grounded
+  source: "halueval-qa:2547"
+  question: "What life member of The Actors Studio, often portraying military or authority-figure roles, starred in a film directed by Richard Wilson?"
+  answer: >
+    "Pay or Die" is a 1960 Allied Artists Pictures film directed by
+    Richard Wilson. The film starred Ernest Borgnine, Zohra Lampert,
+    Howard Caine, Alan Austin, and Robert F. Simon. Robert F. Simon, a
+    life member of The Actors Studio, was known for portraying military
+    and authority-figure roles.
+  evidence:
+    - "Pay or Die is a 1960 Allied Artists Pictures film starring Ernest Borgnine, Zohra Lampert, Howard Caine, Alan Austin, and Robert F. Simon that was directed by Richard Wilson."
+    - "A life member of The Actors Studio, Simon appeared in films and on television between 1950 and 1985, having mastered the genre of westerns, drama, and comedy."
+  expected_verdict: GROUNDED
+
+- id: golden-b-030
+  category: open_domain_grounded
+  source: "halueval-qa:8785"
+  question: "What Japanese mixed martial artist worked for the Dream organization in many of their promoted MMA shows?"
+  answer: >
+    Dream was a Japanese mixed martial arts organization promoted by
+    former PRIDE FC executives and K-1 promoter Fighting and Entertainment
+    Group. It promoted over 20 shows featuring fighters such as Shinya
+    Aoki, Gesias Cavalcante, Eddie Alvarez, and Alistair Overeem. Kazushi
+    Sakuraba, a Japanese mixed martial artist, competed in many of Dream's
+    promoted shows.
+  evidence:
+    - "Dream (styled DREAM in capitals) was a Japanese mixed martial arts (MMA) organization promoted by former PRIDE FC executives and K-1 promoter Fighting and Entertainment Group. They promoted over 20 shows highlighting some of the best Japanese and international MMA talent, establishing or enhancing the careers of top ranked fighters such as Shinya Aoki, Gesias Cavalcante, Tatsuya Kawajiri, Ronaldo Jacaré, Eddie Alvarez, Jason Miller, Kazushi Sakuraba, Gegard Mousasi and Alistair Overeem."
+    - "Kazushi Sakuraba (born July 14, 1969) is a Japanese mixed martial artist and professional wrestler, currently signed to Rizin Fighting Federation."
+  expected_verdict: GROUNDED
+
+- id: golden-b-031
+  category: open_domain_hallucinated
+  source: "halueval-qa:1824"
+  question: "Bebe Rexha was a singer who guested on the David Guetta song that was produced by which Dutch DJ?"
+  answer: >
+    Bebe Rexha is a featured guest vocalist on David Guetta's "Hey Mama."
+    The song also features vocals from Nicki Minaj. "Take Me Home" is a
+    song originally performed by Bebe Rexha herself, not a song she
+    guest-featured on.
+  evidence:
+    - "Bebe Rexha is best known as a featured guest vocalist on several Billboard Hot 100 charting songs, such as G-Eazy's \"Me, Myself & I\", David Guetta's \"Hey Mama\", Martin Garrix's \"In the Name of Love\", and Cash Cash's \"Take Me Home\"."
+    - "\"Hey Mama\" is a song by French DJ and record producer David Guetta, featuring vocals from Nicki Minaj and Bebe Rexha, as well as production from Dutch DJ and producer Afrojack."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer misattributes \"Take Me Home\" as a Bebe Rexha original rather than a Cash Cash song she guested on."
+
+- id: golden-b-032
+  category: open_domain_hallucinated
+  source: "halueval-qa:4506"
+  question: "What Lindsey Stirling song's video received 1.3 million views on YouTube after one day?"
+  answer: >
+    "Shatter Me" is a song composed and performed by American violinist
+    Lindsey Stirling for her second studio album of the same name. The
+    song features vocals from American rock singer Lzzy Hale, the lead
+    singer of the band Halestorm. The music video for a song called "Sun
+    Skip" by Lindsey Stirling received 1.3 million views on YouTube after
+    one day, not "Shatter Me."
+  evidence:
+    - "\"Shatter Me\" is a song composed and performed by American violinist Lindsey Stirling for her second studio album of the same name, and features vocals from American rock singer Lzzy Hale, the lead singer of American rock band Halestorm."
+    - "The second single, \"Shatter Me\", was released on April 23, accumulating 1.3 million views after one day on YouTube."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer invents a nonexistent song title in place of the evidenced \"Shatter Me\"."
+
+- id: golden-b-033
+  category: open_domain_hallucinated
+  source: "halueval-qa:4012"
+  question: "The 1st Battle of Kharkov was named so by a German field marshal born in which year?"
+  answer: >
+    The 1st Battle of Kharkov was named by German field marshal Wilhelm
+    Keitel. Keitel served as Chief of the Armed Forces High Command (OKW)
+    in Nazi Germany during World War II. Wilhelm Keitel was born in 1885.
+  evidence:
+    - "The 1st Battle of Kharkov, so named by Wilhelm Keitel, was the 1941 tactical battle for the city of Kharkov (now \"Kharkiv\") (Ukrainian SSR) during the final phase of Operation \"Barbarossa\" between the German 6th Army of Army Group South and the Soviet Southwestern Front."
+    - "Wilhelm Keitel (22 September 1882 - 16 October 1946) was a German field marshal who served as Chief of the Armed Forces High Command (\"Oberkommando der Wehrmacht\" or OKW) in Nazi Germany during World War II."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer states 1885 instead of the evidenced 1882."
+
+- id: golden-b-034
+  category: open_domain_hallucinated
+  source: "halueval-qa:1679"
+  question: "What was the population of the terminus of the Willunga railway line in 2011?"
+  answer: >
+    The Willunga railway line ran from Adelaide railway station to the
+    town of Willunga, over 45 km long. Willunga is a town south of
+    Adelaide, South Australia, in the City of Onkaparinga local
+    government area. At the 2011 census, Willunga had a population of
+    2,415.
+  evidence:
+    - "The Willunga railway line ran through the southern Adelaide suburbs from Adelaide railway station to Willunga, over 45 km long (longer than the current Gawler line, 42.2 km)."
+    - "Willunga is a town south of Adelaide, South Australia in the City of Onkaparinga local government area 47 km from the Adelaide CBD. At the 2011 census, Willunga had a population of 2,416."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer is off by one from the evidenced population figure (2,415 vs 2,416)."
+
+- id: golden-b-035
+  category: open_domain_hallucinated
+  source: "halueval-qa:8935"
+  question: "Gaten Matarazzo began his career on the Broadway stage as who, in \"Priscilla, Queen of the Desert\"?"
+  answer: >
+    Gaten Matarazzo starred in the first season of "Stranger Things." He
+    also played Gavroche in a separate Broadway production of "Les
+    Misérables." Gaten Matarazzo began his Broadway career playing
+    Gavroche in "Priscilla, Queen of the Desert."
+  evidence:
+    - "The first season stars Winona Ryder, David Harbour, Finn Wolfhard, Millie Bobby Brown, Gaten Matarazzo, Caleb McLaughlin, Natalia Dyer, Charlie Heaton, Cara Buono, and Matthew Modine, with Noah Schnapp and Joe Keery in recurring roles."
+    - "He began his career on the Broadway stage as Benjamin in \"Priscilla, Queen of the Desert\", and as Gavroche in \"Les Misérables\"."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer swaps his two Broadway roles - Gavroche was in Les Misérables, not Priscilla."
+
+- id: golden-b-036
+  category: open_domain_hallucinated
+  source: "halueval-qa:1535"
+  question: "Which genus is more spread around the world, Maytenus or Eucommia?"
+  answer: >
+    Eucommia is a genus of small trees now native to China. Maytenus is a
+    genus of flowering plants in the staff vine family, Celastraceae.
+    Eucommia has a wider modern distribution than Maytenus, spanning
+    Central and South America, Southeast Asia, and Africa.
+  evidence:
+    - "Eucommia is a genus of small trees now native to China, with a fossil record that shows a much wider distribution."
+    - "Maytenus is a genus of flowering plants in the staff vine family, Celastraceae. Members of the genus are distributed throughout Central and South America, Southeast Asia, Micronesia and Australasia, the Indian Ocean and Africa."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer reverses which genus is more widely distributed."
+
+- id: golden-b-037
+  category: open_domain_hallucinated
+  source: "halueval-qa:8279"
+  question: "In which town was the 1987 American drama film Ironweed shot on location, featuring a 400-acre pastoral cemetery?"
+  answer: >
+    "Ironweed" is a 1987 American drama film directed by Héctor Babenco.
+    Major portions of the film were shot on location including Jay Street
+    at Lark Street and the Miss Albany Diner on North Broadway. The film
+    also used the Albany Rural Cemetery, located in downtown Albany, New
+    York itself.
+  evidence:
+    - "Ironweed is a 1987 American drama film directed by Héctor Babenco. Major portions of the film were shot on location in Albany, New York, including Jay Street at Lark Street, Albany Rural Cemetery and the Miss Albany Diner on North Broadway."
+    - "The Albany Rural Cemetery was established October 7, 1844, in Colonie, New York, just outside the city of Albany, New York. It is renowned as one of the most beautiful, pastoral cemeteries in the United States, at over 400 acre."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer places the cemetery in downtown Albany itself, contradicting evidence that it's in Colonie, just outside Albany."
+
+- id: golden-b-038
+  category: open_domain_hallucinated
+  source: "halueval-qa:3257"
+  question: "Toby Williams has appeared in which British comedy television series, shown on the Sky Living channel?"
+  answer: >
+    Toby Williams is a British actor, writer, and stand-up comedian. He
+    has also appeared in Holby City, Morgana Robinson's The Agency, Bull,
+    and Raised By Wolves. Toby Williams appeared in the British comedy
+    series "Not Trying At All", shown on the Sky Living channel in 2014.
+  evidence:
+    - "He has appeared in Holby City (BBC 1), Morgana Robinson's The Agency (BBC 2) and in the sitcoms Bull (UKTV GOLD), Raised By Wolves (Channel 4) and Trying Again (Sky Living) and is soon to appear in Carters Get Rich (Sky 1) and Benidorm (ITV)."
+    - "Trying Again is a British comedy television series shown on the Sky Living channel in 2014."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer invents a nonexistent show title in place of the evidenced \"Trying Again\"."
+
+- id: golden-b-039
+  category: open_domain_hallucinated
+  source: "halueval-qa:4552"
+  question: "Near what river is the library that contains the Aberdeen Bestiary located?"
+  answer: >
+    The Aberdeen Bestiary is a 12th-century English illuminated manuscript
+    bestiary. It was first listed in 1542 in the inventory of the Old
+    Royal Library at the Palace of Westminster. The Palace of Westminster,
+    where the Aberdeen Bestiary was once catalogued, lies on the bank of
+    the River Avon.
+  evidence:
+    - "The Aberdeen Bestiary (Aberdeen University Library, Univ Lib. MS 24) is a 12th-century English illuminated manuscript bestiary that was first listed in 1542 in the inventory of the Old Royal Library at the Palace of Westminster."
+    - "The Palace of Westminster is the meeting place of the House of Commons and the House of Lords, the two houses of the Parliament of the United Kingdom. Commonly known as the Houses of Parliament after its occupants, the Palace lies on the north bank of the River Thames in the City of Westminster, in central London."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer names the wrong river (Avon instead of the evidenced Thames)."
+
+- id: golden-b-040
+  category: open_domain_hallucinated
+  source: "halueval-qa:3527"
+  question: "The album cover of Proud To Commit Commercial Suicide depicts the aftermath of which infamous remote settlement?"
+  answer: >
+    "Proud To Commit Commercial Suicide" is a live album by industrial
+    metal band Nailbomb. It captures the band's only live appearance at
+    the 1995 Dynamo Open Air Festival. The album cover does not depict any
+    real historical settlement or event.
+  evidence:
+    - "Proud To Commit Commercial Suicide is a live album by industrial metal band Nailbomb and captures the band's only live appearance at the 1995 Dynamo Open Air Festival. The album cover is a picture of the aftermath of the infamous Jonestown suicides."
+    - "The Peoples Temple Agricultural Project, better known by its informal name \"Jonestown\", was a remote settlement established by the Peoples Temple, an American socialist organization under the leadership of Jim Jones, in northwestern Guyana."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer directly negates evidence's confirmation that the cover depicts the real Jonestown settlement."
+
+- id: golden-b-041
+  category: open_domain_hallucinated
+  source: "halueval-qa:5514"
+  question: "Who directed the film in which Christoph Koncz starred as Kaspar Weiss?"
+  answer: >
+    "The Red Violin" is a 1998 Canadian drama film starring Samuel L.
+    Jackson, Carlo Cecchi, and Sylvia Chang. The film won the 1999 Academy
+    Award for Best Original Score. "The Red Violin" was not directed by
+    François Girard.
+  evidence:
+    - "At the age of just nine, he received worldwide acclaim for starring as child prodigy Kaspar Weiss in the Canadian feature film \"The Red Violin\", which won the 1999 Academy Award for Best Original Score."
+    - "The Red Violin (French: Le Violon Rouge) is a 1998 Canadian drama film directed by François Girard and starring Samuel L. Jackson, Carlo Cecchi and Sylvia Chang."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer directly negates evidence's confirmation that Girard directed the film."
+
+- id: golden-b-042
+  category: open_domain_hallucinated
+  source: "halueval-qa:1674"
+  question: "The Northern Ireland peace process is often considered to cover events leading up to which year's IRA ceasefire?"
+  answer: >
+    Decommissioning in Northern Ireland was a process in the Belfast
+    Agreement, part of the Northern Ireland peace process. The peace
+    process is considered to cover events through the Good Friday
+    (Belfast) Agreement of 1998. The Northern Ireland peace process is
+    often considered to have begun only after 1997.
+  evidence:
+    - "Decommissioning in Northern Ireland was a process in the Belfast Agreement as part of the Northern Ireland peace process."
+    - "The Northern Ireland peace process is often considered to cover the events leading up to the 1994 Provisional Irish Republican Army (IRA) ceasefire, the end of most of the violence of the Troubles, the Good Friday (or Belfast) Agreement of 1998, and subsequent political developments."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer's 1997 start date contradicts evidence's 1994 IRA ceasefire as the process's starting point."
+
+- id: golden-b-043
+  category: open_domain_hallucinated
+  source: "halueval-qa:6224"
+  question: "Which prefecture is the city where Japanese actor Akiji Kobayashi passed away the capital of?"
+  answer: >
+    Akiji Kobayashi was a Japanese actor who died of lung cancer in
+    Yokohama at the age of 65. He was sometimes credited as Shōji
+    Kobayashi or Issei Mori. Yokohama, where Kobayashi died, is the
+    capital city of Shizuoka Prefecture.
+  evidence:
+    - "Akiji Kobayashi (September 6, 1930 - August 27, 1996), sometimes credited as Shōji Kobayashi or Issei Mori, was a Japanese actor. Kobayashi died of lung cancer in Yokohama at the age of 65."
+    - "It is the capital city of Kanagawa Prefecture."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer names the wrong prefecture (Shizuoka instead of the evidenced Kanagawa)."
+
+- id: golden-b-044
+  category: open_domain_hallucinated
+  source: "halueval-qa:1584"
+  question: "In what year was the Korean student scholarship established by the chairman of Samsung Group?"
+  answer: >
+    The Samsung Scholarship provides financial support to gifted Korean
+    students pursuing higher education overseas. It was established as
+    the Samsung Lee Kun-hee Scholarship, named after the chairman who
+    succeeded founder Lee Byung-chul. The Samsung Scholarship was
+    established in 2003.
+  evidence:
+    - "Samsung Scholarship was established in 2002 by Samsung to provide financial support, encouragement and opportunities to gifted Korean students pursuing higher education overseas, who have shown the capacity to become global leaders."
+    - "It was established as Samsung Lee Kun-hee Scholarship, named after the current chairman of Samsung Group who succeeded Lee Byung-chul, the founder."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer states 2003 instead of the evidenced 2002."
+
+- id: golden-b-045
+  category: open_domain_hallucinated
+  source: "halueval-qa:5635"
+  question: "Jang Yeong-sil stars a South Korean actor best known for his role in what 2006 hit drama series?"
+  answer: >
+    "Jang Yeong-sil" is a 2016 South Korean historical drama television
+    series. It stars South Korean actor Song Il-gook, born October 1,
+    1971, along with Kim Yeong-cheol, Kim Sang-kyung, and Park Sun-young.
+    Song Il-gook is best known for his role in the 2006 hit drama series
+    "Winter Sonata."
+  evidence:
+    - "Jang Yeong-sil () is a 2016 South Korean historical drama television series starring Song Il-gook, Kim Yeong-cheol, Kim Sang-kyung and Park Sun-young."
+    - "Song Il-gook (born October 1, 1971) is a South Korean actor. He is best known for his role in the 2006 hit drama series \"Jumong\" as the titular character."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer names the wrong drama series (Winter Sonata instead of the evidenced Jumong)."
+
+- id: golden-b-046
+  category: open_domain_hallucinated
+  source: "halueval-qa:9891"
+  question: "Which actor also starred in the series The Strain as Mr. Quinlan?"
+  answer: >
+    The series was written by Lizzie Mickery, directed by James Hawes,
+    and filmed on location in Scotland. It starred Rupert Penry-Jones,
+    Lydia Leonard, David Haig, Eddie Marsan, and Patrick Malahide. Lydia
+    Leonard, not Rupert Penry-Jones, played Mr. Quinlan in the FX horror
+    series "The Strain."
+  evidence:
+    - "It was written by Lizzie Mickery, directed by James Hawes, and filmed on location in Scotland, starring Rupert Penry-Jones, Lydia Leonard, David Haig, Eddie Marsan, and Patrick Malahide."
+    - "Rupert William Penry-Jones (born 22 September 1970) is an English actor, best known for his roles as Adam Carter in the BBC One spy drama series \"Spooks\", Clive Reader QC in the BBC One legal drama \"Silk\", policeman DI Joseph Chandler in the ITV murder mystery series \"Whitechapel\", and Mr. Quinlan in the FX horror series \"The Strain\"."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer misattributes the Mr. Quinlan role to Lydia Leonard instead of the evidenced Rupert Penry-Jones."
+
+- id: golden-b-047
+  category: open_domain_hallucinated
+  source: "halueval-qa:711"
+  question: "Which board game was created by Reiner Knizia, Junta or Medici?"
+  answer: >
+    Junta is a board game designed by Vincent Tsao, published in 1985 by
+    West End Games. Medici is a German-style board game. Junta, not
+    Medici, was designed by Reiner Knizia.
+  evidence:
+    - "Junta is a board game designed by Vincent Tsao published, as of 1985, by West End Games."
+    - "Medici is a German-style board game by Reiner Knizia."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer swaps the two games' designers."
+
+- id: golden-b-048
+  category: open_domain_hallucinated
+  source: "halueval-qa:1291"
+  question: "Who owns a mall in Youngstown, Ohio with a BAM! store?"
+  answer: >
+    Huntington Mall is an enclosed shopping mall in Barboursville, Cabell
+    County, West Virginia. Its major tenants include Books-A-Million and
+    Old Navy. Huntington Mall's Books-A-Million store is owned by Old
+    Navy.
+  evidence:
+    - "Huntington Mall is an enclosed shopping mall in the village of Barboursville in Cabell County in the U.S. state of West Virginia. Other major tenants including Books-A-Million, and Old Navy."
+    - "The mall is owned by Cafaro Company of Youngstown, Ohio."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer misattributes ownership to a co-tenant (Old Navy) instead of the evidenced Cafaro Company."
+
+- id: golden-b-049
+  category: open_domain_hallucinated
+  source: "halueval-qa:5925"
+  question: "When was the railroad opened which is north of Bates Pond?"
+  answer: >
+    Bates Pond is a 20-acre pond in Carver, Massachusetts. The pond is
+    located south of the Edaville Railroad. There is no railroad located
+    north of Bates Pond.
+  evidence:
+    - "Bates Pond is a 20 acre pond in Carver, Massachusetts. The pond is located south of Edaville Railroad."
+    - "Edaville Railroad is a heritage railroad in South Carver, Massachusetts, opened in 1947."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer denies the existence of the Edaville Railroad, which evidence confirms is located north of the pond."
+
+- id: golden-b-050
+  category: open_domain_hallucinated
+  source: "halueval-qa:1139"
+  question: "What genre are both Giant Drag and Chagall Guevara?"
+  answer: >
+    Giant Drag is an American Indie rock band from Los Angeles,
+    California. Chagall Guevara was an American rock band formed in 1989
+    by solo artist Steve Taylor and other musicians. Giant Drag and
+    Chagall Guevara belong to entirely different music genres.
+  evidence:
+    - "Giant Drag is an American Indie rock band from Los Angeles, California."
+    - "Chagall Guevara was an American rock band formed in 1989 by solo artist Steve Taylor, guitarists Dave Perkins and Lynn Nichols (from the 1970s Phil Keaggy band), bassist Wade Jaynes, and drummer Mike Mead."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer denies the shared rock genre both evidence chunks confirm."
+
+- id: golden-b-051
+  category: open_domain_hallucinated
+  source: "halueval-qa:750"
+  question: "What is the best-seller by Ruta Sepetys?"
+  answer: >
+    "Ashes in the Snow" is a World War II drama based on the best-seller
+    "Between Shades of Gray." "Between Shades of Gray" is a New York
+    Times Bestseller and the debut novel of American novelist Ruta
+    Sepetys. Ruta Sepetys' best-seller is titled "The Gray Shade."
+  evidence:
+    - "Ashes in the Snow is a World War II drama based on the best-seller \"Between Shades of Gray\" by Ruta Sepetys."
+    - "Between Shades of Gray, a New York Times Bestseller, is the debut novel of American novelist Ruta Sepetys."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer invents a nonexistent title in place of the evidenced \"Between Shades of Gray\"."
+
+- id: golden-b-052
+  category: open_domain_hallucinated
+  source: "halueval-qa:4422"
+  question: "Foxcatcher is a 2014 American true crime sports drama film about a wrestling team set up in what state?"
+  answer: >
+    "Foxcatcher" is a 2014 American true crime sports drama film. The
+    film's plot is loosely based on multimillionaire John du Pont's 1986
+    recruitment of Olympic wrestlers Mark and Dave Schultz. The Foxcatcher
+    wrestling team was set up on John du Pont's estate in Illinois.
+  evidence:
+    - "The film's plot is loosely based on the events surrounding multimillionaire Du Pont family heir and wrestling enthusiast John du Pont's 1986 recruitment of 1984 U.S. Olympic gold medalist brothers Mark (Freestyle Wrestling - 82 kg) and Dave Schultz (Freestyle Wrestling - 74 kg) to help coach U.S. wrestlers for participation in national, world, and Olympic competition, and the subsequent murder of Dave by John du Pont in January 1996."
+    - "He was shot and killed by John Eleuthère du Pont, a millionaire philanthropist who sponsored the private Foxcatcher wrestling team at an amateur sports center, known as Foxcatcher Farm, he set up on his estate in Pennsylvania."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer names the wrong state (Illinois instead of the evidenced Pennsylvania)."
+
+- id: golden-b-053
+  category: open_domain_hallucinated
+  source: "halueval-qa:9125"
+  question: "What is the nationality of the 2003 FIBA Under-19 World Championship MVP?"
+  answer: >
+    Andrew Bogut was named the tournament MVP. Andrew Michael Bogut, born
+    November 28, 1984, is a professional basketball player who has played
+    in the National Basketball Association (NBA). Andrew Bogut, the
+    tournament MVP, is a citizen of New Zealand.
+  evidence:
+    - "Andrew Bogut was named the tournament MVP."
+    - "Andrew Michael Bogut (born 28 November 1984) is an Australian professional basketball player for the Los Angeles Lakers of the National Basketball Association (NBA)."
+  expected_verdict: CONTRADICTED
+  notes: "hallucinated_answer names the wrong nationality (New Zealand instead of the evidenced Australian)."
+
+- id: golden-b-054
+  category: open_domain_hallucinated
+  source: "halueval-qa:6912"
+  question: "Which castle in the border region of Scotland did Hermitage Water pass through?"
+  answer: >
+    The Water flows through the hamlets of Dinley and Gorrenberry, and
+    through the village of Hermitage. Hermitage Castle is a semi-ruined
+    castle in the border region of Scotland. The Water passes several
+    castles in the border region of Scotland, including Hermitage Castle.
+  evidence:
+    - "The Water flows through the hamlets of Dinley and Gorrenberry, and through the village of Hermitage, and past Hermitage Castle."
+    - "Hermitage Castle is a semi-ruined castle in the border region of Scotland."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "hallucinated_answer's claim of \"several castles\" is unsupported - evidence names only Hermitage Castle, not a plural set."
+
+- id: golden-b-055
+  category: open_domain_hallucinated
+  source: "halueval-qa:520"
+  question: "Which movie was co-written by the person who directed \"Blood\"?"
+  answer: >
+    Nick Murphy is best known for directing the films "The Awakening"
+    (2011) and "Blood" (2012). "The Awakening" is a 2011 British horror
+    film starring Rebecca Hall, Dominic West, Isaac Hempstead-Wright, and
+    Imelda Staunton. "Blood" was co-written by James Cameron.
+  evidence:
+    - "He is best known for directing the films \"The Awakening\" (2011) (also writer) and \"Blood\" (2012)."
+    - "The Awakening is a 2011 British horror film directed and co-written by Nick Murphy, starring Rebecca Hall, Dominic West, Isaac Hempstead-Wright and Imelda Staunton."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "hallucinated_answer's James Cameron attribution is unsupported - evidence never mentions him at all."
+
+- id: golden-b-056
+  category: open_domain_hallucinated
+  source: "halueval-qa:9195"
+  question: "What was a branch of the Khalwatiyya order of Islamic mysticism founded by Sayyid Hasan Husameddin?"
+  answer: >
+    Ushshaki is a branch of the Khalwatiyya order of Islamic mysticism. It
+    is also known as "Tasawwuf." Sayyid Hasan Husameddin, who founded
+    Ushshaki, was related to the Prophet Muhammad.
+  evidence:
+    - "Ushshaki (Turkish: \"Uşşaki\"), is a branch of the Khalwatiyya order of Islamic mysticism, also known as \"Tasawwuf\", founded by Sayyid Hasan Husameddin."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "hallucinated_answer's claimed relation to the Prophet Muhammad is unsupported - evidence never connects Husameddin to Muhammad."
+
+- id: golden-b-057
+  category: open_domain_hallucinated
+  source: "halueval-qa:3611"
+  question: "The special operations force of the Irish Defence Forces had access to what, according to the modern weapons of the Irish Army?"
+  answer: >
+    The Army Ranger Wing (ARW) is the special operations force of the
+    Irish Defence Forces, the military of Ireland. The Irish Defence
+    Forces oversee several specialized military units. The Army Ranger
+    Wing has access to the most modern weapons in the world.
+  evidence:
+    - "The Army Ranger Wing has access to a wide variety of specialist weapons for use in different roles."
+    - "The Army Ranger Wing (ARW) is the special operations force of the Irish Defence Forces, the military of Ireland."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "hallucinated_answer's superlative claim (\"most modern weapons in the world\") is unsupported - evidence only says \"a wide variety\"."
+
+- id: golden-b-058
+  category: open_domain_hallucinated
+  source: "halueval-qa:7359"
+  question: "Where is the Peppers Manor House and the New South Wales State Heritage Register located?"
+  answer: >
+    The Peppers Manor House (formerly Mount Broughton) is located in
+    Sutton Forest, New South Wales, Australia. The New South Wales State
+    Heritage Register is a heritage list of places in New South Wales
+    protected under the Heritage Act, 1977. The New South Wales State
+    Heritage Register is specifically located in the city of Sydney.
+  evidence:
+    - "The Peppers Manor House (formerly called Mount Broughton) is a house of local historical significance located in Sutton Forest, New South Wales, Australia."
+    - "The New South Wales State Heritage Register, also known as NSW State Heritage Register, is an heritage list of places in the state of New South Wales, Australia, that are protected by New South Wales legislation, generally covered by the \"Heritage Act, 1977\" (NSW) and its 2010 amendments."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "hallucinated_answer's specific Sydney location is unsupported - evidence never names a specific city for the register itself."
+
+- id: golden-b-059
+  category: open_domain_hallucinated
+  source: "halueval-qa:2547"
+  question: "What life member of The Actors Studio, often portraying military or authority-figure roles, starred in a film directed by Richard Wilson?"
+  answer: >
+    "Pay or Die" is a 1960 Allied Artists Pictures film directed by
+    Richard Wilson. The film starred Ernest Borgnine, Zohra Lampert,
+    Howard Caine, Alan Austin, and Robert F. Simon. Director Richard
+    Wilson also appeared on-screen in "Pay or Die" as an authority figure.
+  evidence:
+    - "Pay or Die is a 1960 Allied Artists Pictures film starring Ernest Borgnine, Zohra Lampert, Howard Caine, Alan Austin, and Robert F. Simon that was directed by Richard Wilson."
+    - "A life member of The Actors Studio, Simon appeared in films and on television between 1950 and 1985, having mastered the genre of westerns, drama, and comedy."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "hallucinated_answer's claim that director Wilson also acted on-screen is unsupported - evidence attributes the authority-figure acting role to Robert F. Simon, not Wilson."
+
+- id: golden-b-060
+  category: open_domain_hallucinated
+  source: "halueval-qa:8785"
+  question: "What Japanese mixed martial artist worked for the Dream organization in many of their promoted MMA shows?"
+  answer: >
+    Dream was a Japanese mixed martial arts organization promoted by
+    former PRIDE FC executives and K-1 promoter Fighting and Entertainment
+    Group. It promoted over 20 shows featuring fighters such as Shinya
+    Aoki, Gesias Cavalcante, Eddie Alvarez, and Alistair Overeem. Shinya
+    Aoki was Dream's mainstay fighter, competing in over 15 of its shows.
+  evidence:
+    - "Dream (styled DREAM in capitals) was a Japanese mixed martial arts (MMA) organization promoted by former PRIDE FC executives and K-1 promoter Fighting and Entertainment Group. They promoted over 20 shows highlighting some of the best Japanese and international MMA talent, establishing or enhancing the careers of top ranked fighters such as Shinya Aoki, Gesias Cavalcante, Tatsuya Kawajiri, Ronaldo Jacaré, Eddie Alvarez, Jason Miller, Kazushi Sakuraba, Gegard Mousasi and Alistair Overeem."
+    - "Kazushi Sakuraba (born July 14, 1969) is a Japanese mixed martial artist and professional wrestler, currently signed to Rizin Fighting Federation."
+  expected_verdict: NOT_ENOUGH_INFO
+  notes: "hallucinated_answer's specific \"15 shows\" mainstay claim about Aoki is unsupported - evidence lists him among several fighters without a show count, and names Sakuraba as the tournament's specifically credited competitor."
