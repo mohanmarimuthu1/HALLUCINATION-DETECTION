@@ -336,3 +336,43 @@ def test_unwritable_cache_dir_runs_uncached_instead_of_failing(client, monkeypat
     assert first.status_code == 200 and second.status_code == 200
     assert first.json()["verdict"] == "NOT_VERIFIABLE"
     assert len(opened) == 1  # a failed open is remembered, not retried per request
+
+
+def test_not_enough_info_is_not_cached_so_a_flaky_response_is_not_sticky(client, monkeypatch):
+    """Seen in production: a free model returned no quotes once, turning a
+    fully supported answer into NOT_ENOUGH_INFO, and the cache then served
+    that to every identical request for an hour.
+    """
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    evidence = ["The tower is 330 metres tall.", "It was completed in 1889.", "It stands in Paris."]
+    claims = json.dumps(
+        {"claims": [{"text": text, "claim_type": "FACTUAL"} for text in ("330 m", "1889", "Paris")]}
+    )
+
+    def _verdicts(label: str, with_quotes: bool) -> str:
+        return json.dumps(
+            {
+                "claim_verdicts": [
+                    {
+                        "claim_id": f"claim-{i}",
+                        "label": label,
+                        "confidence": 0.9,
+                        "evidence_chunk_ids": [f"direct-{i}"],
+                        "quote": evidence[i] if with_quotes else "",
+                    }
+                    for i in range(3)
+                ]
+            }
+        )
+
+    _script_openrouter_completions(
+        monkeypatch,
+        [claims, _verdicts("NOT_ENOUGH_INFO", False), claims, _verdicts("SUPPORTED", True)],
+    )
+    body = {"answer": "It is 330 m, done in 1889, in Paris.", "evidence": evidence, "evidence_source": "none"}
+
+    flaky = client.post("/v1/verify", json=body, headers=_AUTH_HEADERS)
+    retry = client.post("/v1/verify", json=body, headers=_AUTH_HEADERS)
+
+    assert flaky.json()["verdict"] == "NOT_ENOUGH_INFO"
+    assert retry.json()["verdict"] == "GROUNDED"  # recomputed, not served from cache

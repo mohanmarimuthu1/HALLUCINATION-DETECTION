@@ -18,7 +18,7 @@ from halludetect.cache.base import CacheStore
 from halludetect.cache.key import compute_cache_key
 from halludetect.cache.store import DiskCacheStore
 from halludetect.detect import pipeline
-from halludetect.detect.schemas import AnalysisResult, Timings
+from halludetect.detect.schemas import AnalysisResult, Timings, Verdict
 from halludetect.llm.exceptions import LLMError
 from halludetect.logging import bind_request_id, configure_logging, get_logger
 from halludetect.settings import Settings, get_settings
@@ -116,7 +116,14 @@ def verify(request: VerifyRequestIn, api_key: str = Depends(enforce_rate_limit))
         _logger.warning("verify_llm_error", error=str(exc))
         raise HTTPException(status_code=502, detail=f"LLM provider failed: {exc}") from exc
 
-    if cache_store is not None:
+    # A NOT_ENOUGH_INFO verdict isn't cached: it's the only verdict a flaky
+    # model response can produce (a missing quote downgrades SUPPORTED to
+    # NOT_ENOUGH_INFO; it can never fake SUPPORTED, and CONTRADICTED wins
+    # the verdict regardless), so caching it would serve one bad response
+    # to every identical request for cache_ttl_s. Seen in production: a
+    # three-claim answer the evidence fully supports got NOT_ENOUGH_INFO
+    # once and GROUNDED on every retry.
+    if cache_store is not None and result.verdict != Verdict.NOT_ENOUGH_INFO:
         cache_store.set(cache_key, result, ttl_s=settings.cache_ttl_s)
 
     return result
