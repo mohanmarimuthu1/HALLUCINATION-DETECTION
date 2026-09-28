@@ -132,3 +132,29 @@ def test_force_record_recalls_already_recorded_items(tmp_path, monkeypatch):
 
     assert len(calls) == len(items)  # every item was re-called, not just missing ones
     assert len(outcomes) == len(items)
+
+
+def test_record_model_pins_the_model_without_changing_the_cache_key(tmp_path, monkeypatch):
+    replay_path = tmp_path / "partial.json"
+    items = load_golden_set(_GOLDEN_PATH)
+    store = EvalReplayStore(replay_path)
+    for item in items[1:]:
+        store.set(_cache_key_for(item), _stub_result(item.id))
+    store.save()
+
+    seen_prefs: list[object] = []
+
+    def _fake_resolve(model_prefs, settings):
+        seen_prefs.append(model_prefs)
+        return object(), ModelUsed(provider="openrouter", model=model_prefs.pinned_model or "free/b")
+
+    monkeypatch.setattr("halludetect.eval.runner.resolve_provider", _fake_resolve)
+    monkeypatch.setattr("halludetect.eval.runner.pipeline.run", lambda **kw: _stub_result(kw["request_id"]))
+
+    run_suite(_GOLDEN_PATH, replay_path, record=True, record_model="free/pinned", sleep=lambda _s: None)
+
+    assert [p.pinned_model for p in seen_prefs] == ["free/pinned"]
+    # The recorded entry still lands under the unpinned free-pool key, so a
+    # pinned recording stays replayable by an unpinned CI run.
+    reloaded = EvalReplayStore(replay_path)
+    assert reloaded.get(_cache_key_for(items[0])) is not None

@@ -1,5 +1,7 @@
-"""CLI entry point (Phase 7.4): `python -m halludetect.eval --suite golden
-[--record [--force-record]] [--out report.json]`.
+"""CLI entry point (Phase 7.4): `python -m halludetect.eval --suite
+{golden,golden_b} [--record [--force-record]] [--out report.json]`.
+`golden` is golden set A (Phase 7.1, hand-authored); `golden_b` is golden
+set B (Phase 7.2, sampled from HaluEval).
 
 First `python -m` module CLI in this codebase - no prior `argparse` or
 `[project.scripts]` precedent existed to follow, so this establishes the
@@ -33,6 +35,9 @@ def _suites() -> dict[str, tuple[Path, Path]]:
     golden_dir = _repo_root() / "tests" / "data" / "golden"
     return {
         "golden": (golden_dir / "eval_set_a.yaml", golden_dir / "eval_set_a.replay.json"),
+        # Phase 7.2: open-domain items sampled from HaluEval - see
+        # eval_set_b.yaml's header for sourcing/licensing/sampling detail.
+        "golden_b": (golden_dir / "eval_set_b.yaml", golden_dir / "eval_set_b.replay.json"),
     }
 
 
@@ -50,13 +55,28 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="With --record, also re-call already-recorded items instead of reusing them.",
     )
+    parser.add_argument(
+        "--record-model",
+        default=None,
+        help=(
+            "With --record, pin the free OpenRouter model that does the recording "
+            "instead of taking whichever the free pool ranks first. Recording only - "
+            "does not change the replay cache key (see eval/runner.py)."
+        ),
+    )
     parser.add_argument("--out", default="eval_report.json", help="Where to write the full metrics report JSON.")
     args = parser.parse_args(argv)
 
     golden_path, replay_path = suites[args.suite]
 
     try:
-        outcomes = run_suite(golden_path, replay_path, record=args.record, force_record=args.force_record)
+        outcomes = run_suite(
+            golden_path,
+            replay_path,
+            record=args.record,
+            force_record=args.force_record,
+            record_model=args.record_model,
+        )
     except MissingReplayError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

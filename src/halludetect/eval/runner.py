@@ -104,13 +104,31 @@ def _cache_key_for(item: GoldenItem) -> str:
     )
 
 
-def _resolve_recording_provider(settings: Settings) -> tuple[LLMProvider, ModelUsed]:
-    model_prefs = ModelPrefsIn(provider=ModelProvider.OPENROUTER, allow_free_pool=True)
+def _resolve_recording_provider(settings: Settings, record_model: str | None) -> tuple[LLMProvider, ModelUsed]:
+    """`record_model` pins which free model does the recording. It is not
+    part of `_cache_key_for()` on purpose: the key must stay the hash of
+    the request a real caller sends (unpinned free pool), and which model
+    happened to answer was never in that key anyway - the free pool
+    rotates, so golden set A's own committed replay file already contains
+    entries answered by two different models under one key shape.
+
+    Worth pinning because the free pool is not uniformly usable: some
+    models are agentic-harness-only (HTTP 403 per model, not per key),
+    some are rate-limited upstream (429), and several return HTTP 200
+    with `content: null` after spending the whole token budget
+    reasoning - all verified live, per model, 2026-09-28. The account's
+    free tier also allows only 50 requests/day, so letting a fresh
+    process rediscover which models are unusable costs quota that the
+    remaining golden items need.
+    """
+    model_prefs = ModelPrefsIn(
+        provider=ModelProvider.OPENROUTER, allow_free_pool=True, pinned_model=record_model
+    )
     return resolve_provider(model_prefs, settings)
 
 
 def _resolve_recording_provider_with_backoff(
-    settings: Settings, *, sleep: Callable[[float], None], attempts: int = 3
+    settings: Settings, record_model: str | None, *, sleep: Callable[[float], None], attempts: int = 3
 ) -> tuple[LLMProvider, ModelUsed]:
     """Resolution itself (the free-model catalog fetch) can hit the same
     transient network failures a `.complete()` call can - discovered live
@@ -121,7 +139,7 @@ def _resolve_recording_provider_with_backoff(
     last_error: LLMError | None = None
     for attempt in range(attempts):
         try:
-            return _resolve_recording_provider(settings)
+            return _resolve_recording_provider(settings, record_model)
         except LLMError as exc:
             last_error = exc
             if attempt < attempts - 1:
@@ -136,6 +154,7 @@ def run_suite(
     *,
     record: bool,
     force_record: bool = False,
+    record_model: str | None = None,
     settings: Settings | None = None,
     # Injectable so tests never actually sleep, matching llm/retry.py's
     # RetryingProvider convention - a fully-mocked test recording 90 items
@@ -161,7 +180,7 @@ def run_suite(
             # invocation where every item is already recorded never
             # touches the network at all.
             if provider is None:
-                provider, model_used = _resolve_recording_provider_with_backoff(settings, sleep=sleep)
+                provider, model_used = _resolve_recording_provider_with_backoff(settings, record_model, sleep=sleep)
             result = None
             last_error: LLMError | None = None
             for _ in range(_MAX_RECORD_ATTEMPTS_PER_ITEM):
@@ -181,7 +200,9 @@ def run_suite(
                     api_resolve._openrouter_health.record_failure(model_used.model)
                     sleep(_RECORD_ITEM_DELAY_S)
                     try:
-                        provider, model_used = _resolve_recording_provider_with_backoff(settings, sleep=sleep)
+                        provider, model_used = _resolve_recording_provider_with_backoff(
+                            settings, record_model, sleep=sleep
+                        )
                     except LLMError:
                         pass  # transient resolution hiccup - retry the next attempt with the same provider
             if result is None:
