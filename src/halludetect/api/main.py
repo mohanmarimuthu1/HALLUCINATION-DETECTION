@@ -26,6 +26,7 @@ from halludetect.detect import pipeline
 from halludetect.detect.fuse import rescore
 from halludetect.detect.schemas import AnalysisResult, Timings, Verdict
 from halludetect.evidence.base import EvidenceSource
+from halludetect.llm.base import LLMProvider, LLMResponse
 from halludetect.llm.exceptions import LLMAuthError, LLMError, LLMRateLimitError
 from halludetect.logging import bind_request_id, configure_logging, get_logger
 from halludetect.settings import Settings, get_settings
@@ -83,6 +84,23 @@ def healthz() -> dict:
     return {"status": "ok"}
 
 
+class _CallCounter:
+    """Counts calls, so health is only updated for a model that was asked
+    something (a no-evidence request returns without calling it).
+    """
+
+    def __init__(self, provider: LLMProvider):
+        self._provider = provider
+        self.calls = 0
+
+    def complete(self, prompt: str, *, max_tokens: int = 1024) -> LLMResponse:
+        self.calls += 1
+        return self._provider.complete(prompt, max_tokens=max_tokens)
+
+    def supports_json_schema(self) -> bool:
+        return self._provider.supports_json_schema()
+
+
 def _run_with_failover(
     request: VerifyRequestIn,
     evidence_source: EvidenceSource,
@@ -112,12 +130,13 @@ def _run_with_failover(
                 break
             attempts += 1
             start = monotonic()
+            counted = _CallCounter(candidate.provider)
             try:
                 result = pipeline.run(
                     answer=request.answer,
                     question=request.question,
                     evidence_source=evidence_source,
-                    provider=candidate.provider,
+                    provider=counted,
                     request_id=request_id,
                     model_used=model_used,
                 )
@@ -134,7 +153,7 @@ def _run_with_failover(
                     "verify_llm_error", model=model_used.model, provider=model_used.provider, error=str(exc)
                 )
             else:
-                if candidate.health is not None:
+                if candidate.health is not None and counted.calls:
                     candidate.health.record_success(model_used.model, (monotonic() - start) * 1000)
                 return result
     except LLMError as exc:

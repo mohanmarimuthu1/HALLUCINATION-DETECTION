@@ -543,3 +543,12 @@ def test_allow_free_pool_false_with_a_pinned_model_runs(client, monkeypatch):
     )
     assert response.status_code == 200
     assert response.json()["model_used"] == {"provider": "openrouter", "model": "paid/model"}
+
+
+def test_a_request_that_never_calls_the_model_leaves_its_health_alone(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    response = client.post(
+        "/v1/verify", json={"answer": "The sky is blue.", "evidence_source": "none"}, headers=_AUTH_HEADERS
+    )
+    assert response.status_code == 200
+    assert _openrouter_health.get("free/a").attempts == 0

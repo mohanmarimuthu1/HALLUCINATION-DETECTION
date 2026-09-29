@@ -8,7 +8,13 @@ configuration this deployment can't satisfy).
 """
 import pytest
 
-from halludetect.api.resolve import ResolutionError, resolve_evidence_source, resolve_provider
+from halludetect.api.resolve import (
+    ResolutionError,
+    _nvidia_health,
+    _openrouter_health,
+    resolve_evidence_source,
+    resolve_provider,
+)
 from halludetect.api.schemas import EvidenceSourceKind, ModelPrefsIn, ModelProvider, VerifyRequestIn
 from halludetect.evidence.direct import DirectEvidence
 from halludetect.evidence.none import NoEvidenceSource
@@ -18,6 +24,13 @@ from halludetect.llm.exceptions import LLMResponseError
 from halludetect.llm.gemini import GeminiProvider
 from halludetect.llm.retry import RetryingProvider
 from halludetect.settings import Settings
+
+
+@pytest.fixture(autouse=True)
+def _fresh_health():
+    # Process-wide trackers; other test modules record into them.
+    _openrouter_health._health.clear()
+    _nvidia_health._health.clear()
 
 
 def _settings(**overrides) -> Settings:
