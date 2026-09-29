@@ -1,87 +1,414 @@
-# Hallucination Detection
+# HALLUDETECT
 
-This repo is mid-migration. The active project is **HALLUDETECT v2**
-(`src/halludetect/`), a standalone hallucination-verification API service.
-It supersedes the original Streamlit self-RAG demo, now in `legacy/`,
-which is kept for reference but is not where new work happens.
+[![CI](https://github.com/mohanmarimuthu1/HALLUCINATION-DETECTION/actions/workflows/ci.yml/badge.svg)](https://github.com/mohanmarimuthu1/HALLUCINATION-DETECTION/actions/workflows/ci.yml)
 
-See `docs/contract.md` for the frozen API contract this service implements.
+A hallucination verification service. Give it an answer, from any LLM or
+any person, and the evidence it should be based on. It splits the answer
+into claims, checks each claim against that evidence, and returns a
+verdict with the exact quote that backs or contradicts each claim.
 
-## HALLUDETECT v2
+**Live:** https://hallucination-detection-azure.vercel.app (needs an
+access key, see [Web page](#web-page)).
 
-Verifies whether a given answer is grounded in supplied or fetched
-evidence. It never lets a verifier fall back on an LLM's own world
-knowledge and call that "supported" - no evidence available always means
-`NOT_VERIFIABLE`, never a guess. See `docs/contract.md` for the full,
-versioned request/response contract.
+The rule the whole design serves: **the verifier never uses a model's own
+knowledge as evidence.** A claim is `SUPPORTED` only when the model cites
+a quote and the service finds that quote, word for word, in the evidence.
+With no evidence, the answer is `NOT_VERIFIABLE`, never a guess.
 
-### Setup
+## Contents
+
+- [What it returns](#what-it-returns)
+- [How it works](#how-it-works)
+- [Architecture](#architecture)
+- [Tech stack](#tech-stack)
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Configuration](#configuration)
+- [API reference](#api-reference)
+- [Model backends](#model-backends)
+- [Evidence sources](#evidence-sources)
+- [Scoring and calibration](#scoring-and-calibration)
+- [Clients](#clients)
+- [Deployment](#deployment)
+- [Testing and evaluation](#testing-and-evaluation)
+- [Project layout](#project-layout)
+- [Design decisions](#design-decisions)
+- [Known limitations](#known-limitations)
+- [Legacy v1 app](#legacy-v1-app)
+
+## What it returns
+
+Real output for an answer with one planted error ("Berlin"):
+
+```json
+{
+  "verdict": "CONTRADICTED",
+  "p_hallucinated": 0.976,
+  "groundedness": 0.667,
+  "groundedness_ci": [0.208, 0.939],
+  "claims": [
+    {"claim_id": "claim-0", "text": "The Eiffel Tower is 330 metres tall.",
+     "label": "SUPPORTED", "quote": "It is 330 metres tall.", "quote_verified": true,
+     "evidence_chunk_ids": ["direct-0"], "confidence": 1.0},
+    {"claim_id": "claim-1", "text": "The Eiffel Tower was completed in 1889.",
+     "label": "SUPPORTED", "quote": "Construction began in 1887 and it was completed in 1889.",
+     "quote_verified": true, "evidence_chunk_ids": ["direct-1"], "confidence": 1.0},
+    {"claim_id": "claim-2", "text": "The Eiffel Tower stands in Berlin.",
+     "label": "CONTRADICTED", "quote": "The Eiffel Tower is on the Champ de Mars in Paris, France.",
+     "quote_verified": true, "evidence_chunk_ids": ["direct-0"], "confidence": 1.0}
+  ],
+  "n_verifiable_claims": 3,
+  "model_used": {"provider": "openrouter", "model": "stealth/space-bunny-alpha"},
+  "cost_usd": 0.0,
+  "timings_ms": {"total": 8360, "retrieval": 0, "extraction": 1735, "verification": 6625},
+  "calibration_version": "verdict-rate-v1",
+  "reason": null
+}
+```
+
+| Verdict | Meaning |
+|---|---|
+| `GROUNDED` | Every checkable claim is supported by a verified quote. |
+| `CONTRADICTED` | At least one claim is contradicted by the evidence. |
+| `NOT_ENOUGH_INFO` | Nothing is contradicted, but at least one claim isn't covered by the evidence. |
+| `NOT_VERIFIABLE` | No evidence was available (`reason: no_evidence_configured`), or the answer has fewer than 3 checkable claims (`reason: insufficient_verifiable_claims`). |
+
+## How it works
+
+1. **Get evidence.** Use the caller's `evidence`, or fetch it from web
+   search or a registered retriever. Long passages are split into chunks
+   of up to 1,000 characters, each with an id (`direct-0`, `direct-1`, ...).
+   If there is no evidence, stop here: `NOT_VERIFIABLE`, and no model is called.
+2. **Extract claims.** An LLM splits the answer into up to 12 claims and
+   types each one: `FACTUAL`, `OPINION`, `INSTRUCTION` or `META`. Only
+   `FACTUAL` claims are checked.
+3. **Verify.** A second LLM call labels each claim `SUPPORTED`,
+   `CONTRADICTED` or `NOT_ENOUGH_INFO`, citing chunk ids and a quote. The
+   prompt forbids using the model's own knowledge. Verdicts are matched to
+   claims by `claim_id`, never by position.
+4. **Check quotes.** The service searches the cited chunks for the quote
+   (exact match after collapsing whitespace). A `SUPPORTED` label whose
+   quote isn't found is downgraded to `NOT_ENOUGH_INFO` before the
+   response is built.
+5. **Score.** Combine the claim labels into a verdict, a calibrated
+   `p_hallucinated`, a groundedness fraction and its Wilson 95% interval.
+   Fewer than 3 checkable claims forces `NOT_VERIFIABLE`.
+
+Both LLM calls ask for JSON matching a schema. Output that doesn't
+validate gets up to 2 repair retries, then the call fails with an error.
+A partial parse is never used.
+
+## Architecture
+
+```mermaid
+flowchart TB
+    C["Clients<br/>web page · Streamlit · curl / your code"]
+
+    subgraph API["FastAPI service (api/)"]
+        direction LR
+        A["Auth<br/>Bearer client key"] --> R["Rate limit<br/>per key"] --> K{"Result cache<br/>hit returns early"} --> F["Model fallback<br/>up to 3 models / 90s"]
+    end
+
+    subgraph Pipeline["Detection pipeline (detect/), one model per run"]
+        direction LR
+        E["Get evidence"] --> X["Extract claims"] --> V["Verify claims"] --> Q["Check quotes"] --> Z["Score and calibrate"]
+    end
+
+    subgraph Evidence["Evidence sources (evidence/)"]
+        direction LR
+        D["Caller-supplied"] ~~~ T["Tavily web search"] ~~~ U["Custom retriever"]
+    end
+
+    subgraph Models["LLM backends (llm/)"]
+        direction LR
+        OR["OpenRouter free"] ~~~ NV["NVIDIA-hosted"] ~~~ BY["Gemini · OpenAI<br/>Anthropic · custom"]
+    end
+
+    H[("Per-model health<br/>+ circuit breaker")]
+    OUT["AnalysisResult<br/>verdict · claims · quotes · p_hallucinated"]
+
+    C --> API
+    API -. "rank / record" .- H
+    API --> Pipeline
+    Pipeline -. "evidence" .-> Evidence
+    Pipeline -. "extract + verify calls" .-> Models
+    Pipeline --> OUT
+```
+
+A request on the default free pool:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant Pool as Free pool
+    participant Model
+    Client->>API: POST /v1/verify (Bearer key)
+    API->>API: auth, rate limit, cache lookup
+    API->>Pool: ranked candidates (OpenRouter, then NVIDIA)
+    loop up to 3 models, no new attempt after 90s
+        API->>Model: extract claims
+        API->>Model: verify claims against evidence
+        alt model fails (error, empty reply, timeout)
+            API->>Pool: record failure, take next model
+        else success
+            API->>Pool: record success and latency
+        end
+    end
+    API->>API: check quotes, score, cache
+    API-->>Client: AnalysisResult (model_used = the model that answered)
+```
+
+One result always comes from one model: if a model fails partway through,
+the whole pipeline re-runs on the next one, so `model_used` is exact.
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| Language | Python 3.11 or 3.12 |
+| API | FastAPI, Uvicorn |
+| Validation and settings | Pydantic v2, pydantic-settings (every key is a `SecretStr`) |
+| HTTP to model providers | httpx, called directly (no vendor SDKs) |
+| Result cache | diskcache (file-backed, survives restarts) |
+| Logging | structlog, JSON lines with a per-request `request_id` |
+| Golden sets | YAML (PyYAML) |
+| Web page | One HTML file, plain JavaScript, no build step, no external requests |
+| Demo UI | Streamlit (optional extra) |
+| LLM backends | OpenRouter free models, NVIDIA-hosted models, Gemini, OpenAI, Anthropic, any OpenAI-compatible endpoint |
+| Web search | Tavily (optional) |
+| Quality | pytest, ruff, mypy, GitHub Actions |
+| Deploy | Docker / docker-compose, Vercel |
+
+## Requirements
+
+- Python **3.11 or 3.12** (`requires-python = ">=3.11,<3.13"`).
+- An **OpenRouter API key** (free at openrouter.ai), or an **NVIDIA API
+  key** (free at build.nvidia.com), or both. Without either, only
+  your own Gemini/OpenAI/Anthropic key can serve requests.
+- At least one **client key** you make up yourself (`CLIENT_API_KEYS`).
+  Callers send it to use the service.
+- Optional: a Tavily key for web-search evidence, Docker for containers,
+  the Vercel CLI (`npx vercel`) to deploy there.
+
+Running the tests needs no keys and no network.
+
+## Quick start
 
 ```bash
+git clone https://github.com/mohanmarimuthu1/HALLUCINATION-DETECTION.git
+cd HALLUCINATION-DETECTION
 python -m venv .venv
-.venv/Scripts/activate        # or `source .venv/bin/activate` on Linux/Mac
-pip install -e ".[dev]"
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"            # add ,ui for the Streamlit client
 cp .env.example .env
 ```
 
-Fill in `.env`:
-- `OPENROUTER_API_KEY` - the default backend is OpenRouter's free-model
-  pool; without a key, every request that needs an LLM call fails.
-- `CLIENT_API_KEYS` - one or more caller-facing keys you invent yourself
-  (not from a vendor), comma-separated. Without at least one, every
-  `/v1/verify` request is rejected with 401.
-
-Everything else in `.env.example` is optional and degrades gracefully if
-left blank (a missing web-search key just disables `evidence_source: web`,
-for example - it never crashes a request).
-
-### Run the tests
+Set at least these in `.env`:
 
 ```bash
-pytest
+OPENROUTER_API_KEY=sk-or-...       # and/or NVIDIA_API_KEY=nvapi-...
+CLIENT_API_KEYS=pick-any-long-random-string
 ```
 
-The full suite runs offline - no network access and no live API keys
-required.
+Generate a client key with
+`python -c "import secrets; print('hd_' + secrets.token_urlsafe(32))"`.
 
-### Run the service
+Run the service:
 
 ```bash
 uvicorn halludetect.api.main:app --reload
 ```
 
+- http://localhost:8000: web page
+- http://localhost:8000/docs: interactive API docs (Swagger)
+- http://localhost:8000/healthz: liveness check
+
+Verify an answer:
+
 ```bash
 curl -X POST http://localhost:8000/v1/verify \
-  -H "Authorization: Bearer <one of your CLIENT_API_KEYS>" \
+  -H "Authorization: Bearer <your CLIENT_API_KEYS value>" \
   -H "Content-Type: application/json" \
   -d '{
-        "answer": "The Eiffel Tower is 330 metres tall, was completed in 1889, and stands in Paris.",
+        "answer": "The Eiffel Tower is 330 metres tall, was completed in 1889, and stands in Berlin.",
         "evidence": ["The Eiffel Tower is on the Champ de Mars in Paris, France. It is 330 metres tall.",
                      "Construction began in 1887 and it was completed in 1889."],
         "evidence_source": "none"
       }'
 ```
 
-An answer needs at least 3 factual claims for an overall verdict; fewer
-returns `NOT_VERIFIABLE` with `reason: insufficient_verifiable_claims`.
-No evidence returns `NOT_VERIFIABLE` with `reason: no_evidence_configured`.
+## Configuration
 
-`GET /healthz` is unauthenticated (liveness probe). `POST /v1/verify`
-requires a valid `Authorization: Bearer <key>` and is rate-limited per key.
+All settings come from environment variables or `.env`
+(`src/halludetect/settings.py`). Everything is optional except where noted.
 
-### Use it in a browser
+| Variable | Default | Purpose |
+|---|---|---|
+| `CLIENT_API_KEYS` | none | **Required.** Comma-separated keys callers may use. None set means every request gets 401. |
+| `OPENROUTER_API_KEY` | none | OpenRouter free-model pool, the first tier of the default pool. |
+| `NVIDIA_API_KEY` | none | NVIDIA-hosted models: `provider: nvidia`, and the second tier of the pool. |
+| `NVIDIA_MODELS` | `nvidia/nemotron-3-super-120b-a12b,nvidia/ising-calibration-1.5-31b` | NVIDIA models in the pool, in order. |
+| `GEMINI_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | none | Server-side fallback key when a caller picks that provider without sending `user_api_key`. |
+| `CUSTOM_PROVIDER_BASE_URL` / `CUSTOM_PROVIDER_API_KEY` | none | An OpenAI-compatible endpoint for `provider: custom`. |
+| `TAVILY_API_KEY` | none | Enables `evidence_source: web`. Without it, `web` behaves like `none`. |
+| `RATE_LIMIT_CAPACITY` | `60` | Token-bucket size per client key. |
+| `RATE_LIMIT_REFILL_PER_S` | `1.0` | Tokens added per second. |
+| `CACHE_ENABLED` | `true` | Result cache on or off. |
+| `CACHE_DIR` | `.cache/halludetect` | Cache directory. Use `/tmp/halludetect` on Vercel. |
+| `CACHE_TTL_S` | `3600` | How long a cached result is served. |
+| `RETRY_MAX_ATTEMPTS` | `3` | Retries per model call on rate limits (and timeouts, outside the free pool). |
+| `RETRY_BASE_DELAY_S` / `RETRY_MAX_DELAY_S` | `0.5` / `8.0` | Jittered exponential backoff bounds. |
+| `FREE_POOL_MAX_ATTEMPTS` | `3` | Models one request tries before returning 502. |
+| `FREE_POOL_BUDGET_S` | `90` | No new model attempt starts after this many seconds. |
 
-The service serves a web page at `/` (http://localhost:8000 locally, or the
-root of any deployment). Paste an answer and its sources; it shows each
-claim, its quote, and the sources with the quoted passages highlighted.
-Visitors enter an access key - one of `CLIENT_API_KEYS` - which stays in
-their browser. The page holds no key of its own, so it is safe to share
-the address.
+Streamlit client only: `HALLUDETECT_API_URL` (default
+`http://127.0.0.1:8000`) and `HALLUDETECT_API_KEY` (default: the first of
+`CLIENT_API_KEYS`).
 
-### Run the Streamlit UI
+## API reference
 
-A second, local-only client. Like the web page, it has no detection logic
-of its own - everything it shows comes from `/v1/verify`.
+The contract is versioned and frozen: [`docs/contract.md`](docs/contract.md)
+(currently v1.2), with a machine-readable copy in
+[`docs/openapi.yaml`](docs/openapi.yaml). The running service also serves
+its schema at `/openapi.json` and `/docs`.
+
+### Endpoints
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| `POST` | `/v1/verify` | Bearer client key | Verify an answer. |
+| `GET` | `/healthz` | none | Liveness: `{"status": "ok"}`. |
+| `GET` | `/` | none | Web page. |
+| `GET` | `/docs`, `/openapi.json` | none | API docs. |
+
+### Request body
+
+| Field | Type | Notes |
+|---|---|---|
+| `answer` | string, required | The text to verify. |
+| `question` | string | Optional. Improves claim extraction and is the web-search query. |
+| `evidence` | string[] | If non-empty, the only evidence used; `evidence_source` is ignored. |
+| `evidence_source` | `none` \| `web` \| `custom`, required | Where to get evidence when `evidence` is empty. |
+| `model_prefs.provider` | `openrouter` \| `gemini` \| `openai` \| `anthropic` \| `nvidia` \| `custom` | Default `openrouter`, which means the free pool unless a model is pinned. |
+| `model_prefs.pinned_model` | string | Use exactly this model, with no fallback. Required for `custom`. |
+| `model_prefs.user_api_key` | string | Your own key for the chosen provider. Never logged or returned. |
+| `model_prefs.allow_free_pool` | bool | Default `true`. `false` with `provider: openrouter` needs `pinned_model`, otherwise 400. |
+
+### Status codes
+
+| Code | When |
+|---|---|
+| 200 | An `AnalysisResult`, including `NOT_VERIFIABLE` results. |
+| 400 | Invalid request or unusable configuration (e.g. `custom` with nothing registered). |
+| 401 | Missing, malformed or unknown client key. |
+| 422 | Body fails schema validation. |
+| 429 | Rate limit exceeded for this key. |
+| 502 | Every model tried failed. The error lists each one and why. |
+| 503 | No model is available to try. |
+
+## Model backends
+
+**Default: the free pool.** With `provider: openrouter` and no pinned
+model, a request tries:
+
+1. OpenRouter's free models: models whose prompt and completion prices
+   are both 0, read from OpenRouter's model catalog.
+2. Then the NVIDIA models in `NVIDIA_MODELS`, if `NVIDIA_API_KEY` is set.
+
+Within each tier, models are ranked by success rate, then average
+latency. Untried models get a turn first. A model with 3 consecutive
+failures is benched for 5 minutes. Rules for moving to the next model:
+
+- An error, empty reply, rate limit that outlasts retries, or timeout
+  sends the request to the next model.
+- Timeouts aren't retried on the same model: a hung free model is
+  usually slower to wait out than switching.
+- A 401 (rejected key) skips the rest of that provider, since its models
+  share the key. A 403 (key valid, but this model isn't allowed) only
+  skips that model.
+- At most `FREE_POOL_MAX_ATTEMPTS` models, and no new attempt after
+  `FREE_POOL_BUDGET_S`.
+
+NVIDIA's list is set by hand because its catalog can't be trusted. On
+2026-09-29, 30 of its 43 listed chat models returned 404 and most others
+timed out. Check that a model answers before adding it to `NVIDIA_MODELS`.
+
+**Your own key.** Any request can use a specific provider and key:
+
+```json
+"model_prefs": {"provider": "anthropic", "user_api_key": "sk-ant-...", "pinned_model": "claude-3-5-haiku-latest"}
+```
+
+Default models: Gemini `gemini-2.0-flash`, OpenAI `gpt-4o-mini`,
+Anthropic `claude-3-5-haiku-latest`, NVIDIA
+`nvidia/nemotron-3-super-120b-a12b`. `cost_usd` uses the provider's
+reported cost when available (OpenRouter), otherwise a per-token rate
+table. It's `0.0` on the free pool.
+
+## Evidence sources
+
+| Mode | How | When nothing is found |
+|---|---|---|
+| `evidence: [...]` | Your text, chunked at 1,000 characters. | Empty list: `NOT_VERIFIABLE`. |
+| `evidence_source: web` | Tavily search on `question` (or the answer), top 5 results. Needs `TAVILY_API_KEY`. | No key, a failed search, or no results: `NOT_VERIFIABLE`. |
+| `evidence_source: custom` | Your own retriever, registered in the app. | Its exceptions are raised, not hidden. |
+| `evidence_source: none` | No evidence. | Always `NOT_VERIFIABLE`, no model call. |
+
+Register a retriever when embedding the service:
+
+```python
+from halludetect.api.main import app
+from halludetect.evidence.custom import CustomEvidenceSource
+
+def my_retriever(query: str) -> list[str]:
+    return vector_store.search(query, k=5)   # plain text chunks
+
+app.state.custom_evidence_source = CustomEvidenceSource(my_retriever)
+```
+
+## Scoring and calibration
+
+- `verdict`: any `CONTRADICTED` claim gives `CONTRADICTED`, else any
+  `NOT_ENOUGH_INFO` gives `NOT_ENOUGH_INFO`, else `GROUNDED`. Fewer than 3
+  checkable claims gives `NOT_VERIFIABLE`.
+- `p_hallucinated`: the probability that the answer has at least one
+  unsupported or contradicted claim. It's the observed rate for that
+  verdict across 135 labelled golden-set answers (`verdict-rate-v1`):
+  GROUNDED 0.043, NOT_ENOUGH_INFO 0.660, CONTRADICTED 0.976.
+- `groundedness` and `groundedness_ci`: the supported fraction of
+  checkable claims, with a Wilson 95% interval. Treat it as a rough guide
+  at small claim counts.
+
+Fitting on one golden set and scoring on the other gives an expected
+calibration error of 0.063 and 0.082. The old claim-fraction heuristic
+scored 0.345 and 0.288. Refit after changing the golden sets or the
+verdict logic:
+
+```bash
+python -m halludetect.eval.calibrate
+```
+
+Then update `P_HALLUCINATED_BY_VERDICT` and bump `CALIBRATION_VERSION` in
+`detect/fuse.py`. A test fails if those constants drift from the fit.
+Cached and replayed results are re-scored from their stored claims, so a
+version bump needs no new model calls.
+
+## Clients
+
+### Web page
+
+Served at `/`. Paste an answer and its sources. It shows each claim, its
+label and quote, and highlights the quoted passage in the sources. The
+page has no key built in: visitors enter an **access key** (one of
+`CLIENT_API_KEYS`), which is kept in their browser's local storage until
+they press "Forget key", or cleared automatically on a 401. Model output
+is inserted as text, never as HTML.
+
+### Streamlit UI
+
+Local only (Streamlit needs a long-running server). Like the web page, it
+only calls the API.
 
 ```bash
 pip install -e ".[ui]"
@@ -89,124 +416,174 @@ uvicorn halludetect.api.main:app   # terminal 1
 streamlit run app.py               # terminal 2, http://localhost:8501
 ```
 
-Run locally it uses the first of `CLIENT_API_KEYS` from the same `.env`,
-so there is nothing extra to configure. Set `HALLUDETECT_API_URL` /
-`HALLUDETECT_API_KEY` to point it at a service running elsewhere.
+## Deployment
 
-### Deploy to Vercel
-
-Pushing to `main` deploys the API; `[tool.vercel]` in `pyproject.toml`
-points Vercel at `halludetect.api.main:app`, and the web page at `/` comes
-with it. The Streamlit UI does not deploy there - it needs a long-lived
-server, which Vercel functions are not.
-
-`.env` is not deployed. Set these under Project Settings -> Environment
-Variables:
-
-- `OPENROUTER_API_KEY`
-- `CLIENT_API_KEYS` - use a different key from your local one; anyone
-  holding it spends your OpenRouter quota.
-- `CACHE_DIR=/tmp/halludetect` - `/tmp` is the only writable path on
-  Vercel. Without it the service still works, just uncached.
-
-Don't run `vercel build` followed by `vercel deploy --prebuilt` from a
-working copy that has a `.env`: a local build bundles it into the output.
-
-### Bring your own key
-
-By default every request is served through this deployment's free-model
-pool (`model_prefs.provider: openrouter`, the default): OpenRouter's free
-models ranked by health, then NVIDIA-hosted models if `NVIDIA_API_KEY` is
-set. If a model fails mid-request, the request is re-run on the next one,
-up to `FREE_POOL_MAX_ATTEMPTS` (default 3) and with no new attempt
-after `FREE_POOL_BUDGET_S` (default 90s); free-pool models aren't retried
-on a timeout, the next model is tried instead. `model_used` names the model
-that produced the result. `NVIDIA_MODELS` overrides the NVIDIA list; most
-models NVIDIA lists are retired or take over a minute per call, so check
-a model responds before adding it. A caller can instead route a single
-request through their own Gemini, OpenAI, Anthropic or NVIDIA key via
-`model_prefs`:
+### Docker
 
 ```bash
-curl -X POST http://localhost:8000/v1/verify \
-  -H "Authorization: Bearer <one of your CLIENT_API_KEYS>" \
-  -H "Content-Type: application/json" \
-  -d '{
-        "answer": "The Eiffel Tower is 330 metres tall, was completed in 1889, and stands in Paris.",
-        "evidence": ["The Eiffel Tower is on the Champ de Mars in Paris, France. It is 330 metres tall.",
-                     "Construction began in 1887 and it was completed in 1889."],
-        "evidence_source": "none",
-        "model_prefs": {
-          "provider": "gemini",
-          "user_api_key": "<caller-supplied Gemini API key>",
-          "pinned_model": "gemini-1.5-flash"
-        }
-      }'
+docker compose up --build          # reads .env, serves on :8000
 ```
 
-- `model_prefs.provider` - `openrouter` (default) | `gemini` | `openai` |
-  `anthropic` | `nvidia` | `custom`. `custom` needs the deployment's own
-  `CUSTOM_PROVIDER_BASE_URL` set in `.env` first - it's a
-  deployment-level endpoint, not something a caller can point anywhere
-  per-request.
-- `model_prefs.user_api_key` - the caller's own provider key. Falls back
-  to this deployment's own key for that provider (if configured) when
-  omitted. Never logged and never echoed back in the response - only
-  hashed into the result-cache key, so two callers with different keys
-  never share a cached answer (`docs/contract.md`).
-- `model_prefs.pinned_model` - forces a specific model id, bypassing
-  OpenRouter's free-pool rotation. Required for `custom`, optional
-  everywhere else (each provider falls back to its own default model).
-- `model_prefs.allow_free_pool` - set `false` to keep a request off the
-  shared free pool. With `provider: openrouter` it then needs a
-  `pinned_model`, or the request is rejected with 400.
+The image is `python:3.11-slim` with a health check on `/healthz`. The
+cache lives in the `halludetect-cache` volume, so it survives restarts.
 
-### Layout
+### Vercel
+
+`[tool.vercel]` in `pyproject.toml` points Vercel at
+`halludetect.api.main:app`, and a push to `main` deploys it. The web page
+at `/` deploys with it; the Streamlit UI can't.
+
+Set these in Project Settings, Environment Variables (`.env` is not deployed):
+
+| Variable | Note |
+|---|---|
+| `CLIENT_API_KEYS` | Use a different key from local; anyone holding it spends your quota. |
+| `OPENROUTER_API_KEY`, `NVIDIA_API_KEY` | Model pool keys. |
+| `CACHE_DIR=/tmp/halludetect` | `/tmp` is the only writable path. Without it the service runs uncached. |
+
+A new variable takes effect after a redeploy. Rebuild the latest
+Git deployment with `npx vercel redeploy <deployment-url> --target production`
+rather than `vercel --prod`, which uploads your working copy (and
+its `.env`). The per-request time budget keeps a request inside Vercel's
+300s function limit.
+
+## Testing and evaluation
+
+```bash
+pytest                    # full suite, offline, no keys
+ruff check src/ tests/    # lint
+mypy src/                 # types
+python -m halludetect.eval --suite golden     # golden set A gate
+python -m halludetect.eval --suite golden_b   # golden set B gate
+```
+
+CI (`.github/workflows/ci.yml`) runs all five on every push and pull
+request, with no API keys.
+
+**Golden sets** (`tests/data/golden/`):
+
+- **A**: 90 hand-written items with evidence, covering answerable,
+  unanswerable and deliberately contradicted cases.
+- **B**: 60 open-domain items sampled from HaluEval QA.
+
+Each item's model output was recorded once against a real free model
+into a `*.replay.json` file. The eval replays those recordings, so it's
+offline, and two runs produce byte-identical reports. A missing
+recording is an error, never a live call.
+
+The gate fails if any item that should abstain doesn't return
+`NOT_VERIFIABLE`, or if any `SUPPORTED` claim lacks a verified quote. The
+report (`eval_report.json`) also includes average precision against its
+prevalence baseline, Brier score, ECE with a reliability table, abstention
+precision and recall, latency p50/p95 and cost per query. Current numbers:
+
+| Set | Avg. precision (baseline) | Brier | ECE |
+|---|---|---|---|
+| A | 0.976 (0.667) | 0.052 | 0.039 |
+| B | 0.784 (0.500) | 0.129 | 0.032 |
+
+The ECE here is in-sample, since calibration was fitted on both sets. See
+[Scoring and calibration](#scoring-and-calibration) for held-out numbers.
+
+To record new items against a live model (needs `OPENROUTER_API_KEY`;
+resumable, and already-recorded items are skipped):
+
+```bash
+python -m halludetect.eval --suite golden --record [--record-model <model-id>]
+```
+
+## Project layout
 
 ```
 src/halludetect/
-  settings.py     pydantic-settings, SecretStr per provider/client key
-  logging.py      structlog JSON logging, per-request request_id
-  llm/            LLMProvider per backend (OpenRouter free pool, Gemini,
-                  OpenAI, Anthropic, generic OpenAI-compatible), router
-                  with health tracking + circuit breaker
-  evidence/       EvidenceSource per mode (caller-supplied, web search,
-                  none, a caller's own retriever)
-  detect/         claim extraction, verification, quote-grounding,
-                  calibrated fusion - the pipeline itself
-  api/            FastAPI app: /v1/verify, /healthz, auth, rate limiting
-  ui/             Streamlit demo UI - calls the API, no logic of its own
-app.py            `streamlit run app.py` entry point for the UI above
-legacy/           the v1 app, kept for reference (see below)
-docs/
-  contract.md     the frozen API contract (source of truth)
-  openapi.yaml    machine-readable mirror of the same contract
-tests/            fully offline - monkeypatched HTTP, no live keys
+  settings.py        environment settings, SecretStr for every key
+  logging.py         structlog JSON logging, request_id context
+  api/
+    main.py          FastAPI app: routes, cache, model fallback loop
+    resolve.py       request -> evidence source + candidate models
+    auth.py          Bearer client-key check
+    ratelimit.py     token bucket per client key
+    schemas.py       request models
+  detect/
+    claims.py        typed claim extraction
+    verify.py        claim verification, joined by claim_id
+    quote_check.py   quote-in-evidence check
+    fuse.py          verdict, calibrated score, Wilson interval, rescore
+    pipeline.py      runs the steps above for one request
+    schemas.py       AnalysisResult, ClaimResult, labels, verdicts
+  evidence/          direct, web search (Tavily), custom retriever, none
+  llm/
+    openrouter.py    OpenRouter provider + free-model catalog
+    nvidia.py        NVIDIA provider
+    gemini.py  openai.py  anthropic.py  custom_openai_compat.py
+    router.py  health.py   ranking, circuit breaker, fail-over
+    structured.py    JSON-schema output with repair retries
+    retry.py         jittered backoff
+    _http.py         status-code -> exception mapping
+    fake.py          deterministic provider for tests
+  cache/             cache key (sha256 of the request) and disk store
+  eval/              golden-set loader, replay, metrics, calibrate, CLI
+  web/index.html     the web page
+  ui/                Streamlit client
+app.py               `streamlit run app.py` entry point
+docs/                contract.md (API contract), openapi.yaml
+tests/               offline test suite and golden sets
+legacy/              the v1 app, reference only
 ```
 
-## Legacy v1 app (reference only)
+## Design decisions
 
-The original Streamlit demo: RAG over a local knowledge base with a
-claim-extraction/fact-verification pass on top. Superseded by v2 above -
-its detector had structural defects (substring-matched verdicts, no quote
-grounding, a self-learning loop that fed hallucinated answers back into
-its own knowledge base) that v2's design specifically avoids.
+- **Quotes are checked by the service, not trusted.** Fuzzy matching was
+  tried and dropped: it scored a quote reading "built in 1999" against
+  evidence reading "built in 1932" at 96/100. Only whitespace is
+  normalized, because that can't hide a change in content.
+- **Failures are typed.** Providers raise `LLMAuthError`,
+  `LLMModelAccessError`, `LLMRateLimitError`, `LLMTimeoutError`,
+  `LLMResponseError` or `LLMSchemaValidationError`, chosen by status code
+  and exception type. Nothing branches on error-message text.
+- **No vendor SDKs.** Every backend is a small httpx client behind one
+  `LLMProvider` protocol, so adding a backend is a single file.
+- **`NOT_ENOUGH_INFO` results aren't cached.** A flaky model reply can
+  only ever cause a false `NOT_ENOUGH_INFO` (a missing quote), never a
+  false `SUPPORTED`, so that is the one verdict worth recomputing.
+- **The cache degrades.** If the cache directory can't be written (for
+  example a read-only filesystem), the service logs a warning and runs
+  uncached rather than failing requests.
+
+## Known limitations
+
+- Free models are inconsistent. On NVIDIA's free tier, calls are slow and
+  often overloaded. Expect occasional 502s when every model tried fails.
+- `NOT_ENOUGH_INFO` is the least reliable verdict: in the golden sets,
+  about a third of those answers were actually correct, and the model just
+  failed to quote the evidence.
+- The rate limiter, model health table and cache are per process. Running
+  several instances needs a shared store (for example Redis).
+- Gemini, OpenAI and Anthropic backends are tested against mocked
+  responses only.
+- Provider 5xx errors aren't retried on the same model; the free pool
+  just moves to the next model.
+- OpenRouter's model catalog is fetched again on every request. It has a
+  24-hour cache, but that cache isn't shared between requests yet.
+- An optional NLI cross-encoder signal exists only as a stub
+  (`detect/nli.py`) and isn't wired in.
+
+See [`CHANGELOG.md`](CHANGELOG.md) for release history.
+
+## Legacy v1 app
+
+`legacy/` holds the original Streamlit self-RAG demo, kept for reference.
+Don't use its output as a verdict. Its verifier matched verdicts by
+substring, didn't check quotes, told the model to use its own knowledge
+when evidence was silent, returned hardcoded "60% supported" results when
+model calls failed, and fed its own answers back into its knowledge base
+as fact. This service was built to replace it.
 
 ```bash
 pip install -r legacy/requirements.txt
-python legacy/init_legacy_app.py   # first-time setup: builds the vector store
-streamlit run legacy/app.py        # http://localhost:8501
+python legacy/init_legacy_app.py   # builds the vector store once
+streamlit run legacy/app.py
 ```
 
-Configuration lives in `legacy/config.py` / `.env` (`GOOGLE_API_KEY`,
-`OPENROUTER_API_KEY_1`, `OPENROUTER_API_KEY_2`). These are different names
-from v2's: setting `OPENROUTER_API_KEY` configures v2 only, and the legacy
-app will not see it.
-
-Do not use its output as a verdict. When its model calls fail it does not
-report an error: `legacy/detection/fact_verifier.py` substitutes hardcoded
-fallback results, so with no working key it still renders a score
-("PARTIALLY SUPPORTED, 60%") built from no model output at all. Its
-verification prompt also tells the model to use its own general
-knowledge when the evidence is silent. The same detector backs `legacy/demo.py`
-and `legacy/evaluate.py`, so numbers from either inherit both problems.
+It reads `GOOGLE_API_KEY`, `OPENROUTER_API_KEY_1` and
+`OPENROUTER_API_KEY_2`, which are separate from the v2 settings above.
