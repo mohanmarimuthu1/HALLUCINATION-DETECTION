@@ -35,6 +35,10 @@ paths:
           description: Missing or invalid API key
         '429':
           description: Rate limit exceeded
+        '502':
+          description: Every model tried failed (up to the free-pool attempt and time limits)
+        '503':
+          description: No model is available to try
 
   /healthz:
     get:

@@ -82,6 +82,13 @@ class Candidate:
     health: HealthTracker | None
 
 
+def _require_free_pool_allowed(model_prefs: ModelPrefsIn) -> None:
+    if not model_prefs.allow_free_pool:
+        raise ResolutionError(
+            "model_prefs.allow_free_pool is false: set model_prefs.pinned_model or choose another provider"
+        )
+
+
 def _secret(value: SecretStr | None) -> str | None:
     return value.get_secret_value() if value is not None else None
 
@@ -144,6 +151,8 @@ def resolve_provider(model_prefs: ModelPrefsIn, settings: Settings) -> tuple[LLM
     returned.
     """
     if model_prefs.provider == ModelProvider.OPENROUTER:
+        if not model_prefs.pinned_model:
+            _require_free_pool_allowed(model_prefs)
         api_key = _secret(settings.openrouter_api_key)
         catalog = FreeModelCatalog(api_key)
         router = Router(
@@ -194,6 +203,7 @@ def resolve_candidates(model_prefs: ModelPrefsIn, settings: Settings) -> Iterato
         yield Candidate(provider, model_used, health)
         return
 
+    _require_free_pool_allowed(model_prefs)
     openrouter_key = _secret(settings.openrouter_api_key)
     if openrouter_key:
         try:

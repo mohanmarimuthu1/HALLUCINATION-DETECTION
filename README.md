@@ -118,7 +118,9 @@ By default every request is served through this deployment's free-model
 pool (`model_prefs.provider: openrouter`, the default): OpenRouter's free
 models ranked by health, then NVIDIA-hosted models if `NVIDIA_API_KEY` is
 set. If a model fails mid-request, the request is re-run on the next one,
-up to `FREE_POOL_MAX_ATTEMPTS` (default 3); `model_used` names the model
+up to `FREE_POOL_MAX_ATTEMPTS` (default 3) and with no new attempt
+after `FREE_POOL_BUDGET_S` (default 90s); free-pool models aren't retried
+on a timeout, the next model is tried instead. `model_used` names the model
 that produced the result. `NVIDIA_MODELS` overrides the NVIDIA list; most
 models NVIDIA lists are retired or take over a minute per call, so check
 a model responds before adding it. A caller can instead route a single
@@ -155,8 +157,9 @@ curl -X POST http://localhost:8000/v1/verify \
 - `model_prefs.pinned_model` - forces a specific model id, bypassing
   OpenRouter's free-pool rotation. Required for `custom`, optional
   everywhere else (each provider falls back to its own default model).
-- `model_prefs.allow_free_pool` - set `false` to require a pinned/paid
-  model instead of ever falling back to the shared free pool.
+- `model_prefs.allow_free_pool` - set `false` to keep a request off the
+  shared free pool. With `provider: openrouter` it then needs a
+  `pinned_model`, or the request is rejected with 400.
 
 ### Layout
 

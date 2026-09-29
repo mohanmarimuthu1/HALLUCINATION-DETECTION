@@ -522,3 +522,24 @@ def test_no_new_attempt_starts_once_the_time_budget_is_spent(client, monkeypatch
     assert "stopped after" in response.json()["detail"]
     assert calls == ["free/a"]
 
+
+def test_allow_free_pool_false_without_a_pinned_model_is_400(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    response = client.post(
+        "/v1/verify",
+        json={**_EVIDENCE_REQUEST, "model_prefs": {"allow_free_pool": False}},
+        headers=_AUTH_HEADERS,
+    )
+    assert response.status_code == 400
+    assert "allow_free_pool" in response.json()["detail"]
+
+
+def test_allow_free_pool_false_with_a_pinned_model_runs(client, monkeypatch):
+    _script_by_model(monkeypatch, openrouter.OpenRouterProvider, {"paid/model": list(_ONE_SUPPORTED_CLAIM)})
+    response = client.post(
+        "/v1/verify",
+        json={**_EVIDENCE_REQUEST, "model_prefs": {"allow_free_pool": False, "pinned_model": "paid/model"}},
+        headers=_AUTH_HEADERS,
+    )
+    assert response.status_code == 200
+    assert response.json()["model_used"] == {"provider": "openrouter", "model": "paid/model"}
