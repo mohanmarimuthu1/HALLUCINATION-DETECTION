@@ -5,7 +5,7 @@ API keys required. Covers: successful parse, missing-key auth error,
 import httpx
 import pytest
 
-from halludetect.llm import anthropic, custom_openai_compat, gemini, openai, openrouter
+from halludetect.llm import anthropic, custom_openai_compat, gemini, nvidia, openai, openrouter
 from halludetect.llm.exceptions import (
     LLMAuthError,
     LLMModelAccessError,
@@ -243,3 +243,30 @@ def test_custom_openai_compat_null_content_raises_response_error(monkeypatch):
     provider = custom_openai_compat.CustomOpenAICompatProvider(base_url="https://local.invalid/v1", model="m")
     with pytest.raises(LLMResponseError):
         provider.complete("hi")
+
+
+# ---- NVIDIA ----
+
+def test_nvidia_success_reports_nvidia_as_provider(monkeypatch):
+    seen = {}
+
+    def _post(url, **kwargs):
+        seen["url"] = url
+        return fake_response(200, {"choices": [{"message": {"content": "hi"}}], "usage": {}})
+
+    monkeypatch.setattr(custom_openai_compat.httpx, "post", _post)
+    result = nvidia.NvidiaProvider(api_key="key", model="nv/model").complete("hi")
+    assert result.provider == "nvidia"
+    assert result.model == "nv/model"
+    assert seen["url"] == "https://integrate.api.nvidia.com/v1/chat/completions"
+
+
+def test_nvidia_no_key_raises_auth_error():
+    with pytest.raises(LLMAuthError):
+        nvidia.NvidiaProvider(api_key=None).complete("hi")
+
+
+def test_nvidia_403_raises_model_access_error(monkeypatch):
+    monkeypatch.setattr(custom_openai_compat.httpx, "post", lambda *a, **k: fake_response(403, {"error": "no"}))
+    with pytest.raises(LLMModelAccessError, match="nvidia"):
+        nvidia.NvidiaProvider(api_key="key").complete("hi")
