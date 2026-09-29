@@ -157,8 +157,8 @@ def _render_result(result: dict[str, Any]) -> None:
 
     st.caption(
         f"p_hallucinated = {result['p_hallucinated']:.2f} from `{result['calibration_version']}`, "
-        "a hand-set scoring that has not been fitted to data yet - rely on the per-claim labels "
-        f"and quotes. Cost ${result['cost_usd']:.4f}."
+        "fitted on 150 labeled golden-set answers - a rough guide; the per-claim labels "
+        f"and quotes are the evidence. Cost ${result['cost_usd']:.4f}."
     )
     with st.expander("Raw API response"):
         st.json(result)

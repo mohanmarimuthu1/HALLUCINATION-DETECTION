@@ -541,7 +541,7 @@
       });
     }
 
-    frag.append(el("p", "note", "Trust the claim labels and quotes. The overall probability in the raw response (p_hallucinated) comes from a hand-set scoring that hasn't been fitted to data yet."));
+    frag.append(el("p", "note", "Trust the claim labels and quotes. The overall probability in the raw response (p_hallucinated) is fitted on 150 labeled test answers, so treat it as a rough guide."));
 
     const raw = el("details", "raw");
     raw.append(el("summary", "", "Raw API response"));
