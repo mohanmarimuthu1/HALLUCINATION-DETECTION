@@ -21,6 +21,7 @@ from halludetect.cache.base import CacheStore
 from halludetect.cache.key import compute_cache_key
 from halludetect.cache.store import DiskCacheStore
 from halludetect.detect import pipeline
+from halludetect.detect.fuse import rescore
 from halludetect.detect.schemas import AnalysisResult, Timings, Verdict
 from halludetect.llm.exceptions import LLMError
 from halludetect.logging import bind_request_id, configure_logging, get_logger
@@ -100,7 +101,7 @@ def verify(request: VerifyRequestIn, api_key: str = Depends(enforce_rate_limit))
         cached = cache_store.get(cache_key)
         if cached is not None:
             _logger.info("verify_cache_hit", cache_key=cache_key)
-            return cached.model_copy(
+            return rescore(cached).model_copy(
                 update={
                     "request_id": request_id,
                     "timings_ms": Timings(total=0, retrieval=0, extraction=0, verification=0),

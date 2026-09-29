@@ -41,6 +41,7 @@ from halludetect.api.resolve import resolve_provider
 from halludetect.api.schemas import ModelPrefsIn, ModelProvider
 from halludetect.cache.key import compute_cache_key
 from halludetect.detect import pipeline
+from halludetect.detect.fuse import rescore
 from halludetect.detect.schemas import AnalysisResult, ModelUsed
 from halludetect.eval.datasets import GoldenItem, load_golden_set
 from halludetect.eval.replay import EvalReplayStore
@@ -227,7 +228,9 @@ def run_suite(
                     f"(key {cache_key}) and --record was not passed; run "
                     "`python -m halludetect.eval --suite golden --record` to populate it"
                 )
-            result = already_recorded
+            # Replays hold what the LLM said; scoring is re-run so the
+            # report reflects the current calibration, not the recorded one.
+            result = rescore(already_recorded)
 
         outcomes.append(EvalOutcome(item=item, result=result))
 

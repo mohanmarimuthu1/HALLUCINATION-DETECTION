@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from halludetect.detect.fuse import CALIBRATION_VERSION
 from halludetect.detect.schemas import AnalysisResult, ModelUsed, Timings, Verdict
 from halludetect.eval.datasets import load_golden_set
 from halludetect.eval.replay import EvalReplayStore
@@ -27,7 +28,7 @@ def _stub_result(request_id: str) -> AnalysisResult:
         model_used=ModelUsed(provider="openrouter", model="free/a"),
         cost_usd=0.0,
         timings_ms=Timings(total=10, retrieval=1, extraction=4, verification=5),
-        calibration_version="heuristic-v0",
+        calibration_version=CALIBRATION_VERSION,
     )
 
 
