@@ -9,6 +9,7 @@ import httpx
 from halludetect.llm.exceptions import (
     LLMAuthError,
     LLMError,
+    LLMModelAccessError,
     LLMRateLimitError,
     LLMResponseError,
     LLMTimeoutError,
@@ -18,8 +19,10 @@ DEFAULT_TIMEOUT_S = 30.0
 
 
 def raise_for_provider_error(response: httpx.Response, provider: str) -> None:
-    if response.status_code in (401, 403):
-        raise LLMAuthError(f"{provider}: authentication failed (HTTP {response.status_code})")
+    if response.status_code == 401:
+        raise LLMAuthError(f"{provider}: authentication failed (HTTP 401)")
+    if response.status_code == 403:
+        raise LLMModelAccessError(f"{provider}: access to this model denied (HTTP 403): {response.text[:300]}")
     if response.status_code == 429:
         raise LLMRateLimitError(f"{provider}: rate limited (HTTP 429)")
     if response.status_code >= 400:

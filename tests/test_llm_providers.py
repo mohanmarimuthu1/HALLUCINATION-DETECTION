@@ -1,12 +1,18 @@
 """Provider tests, run fully offline by monkeypatching httpx.post - no live
 API keys required. Covers: successful parse, missing-key auth error,
-401/429 classification, and timeout classification, per provider.
+401/403/429 classification, and timeout classification, per provider.
 """
 import httpx
 import pytest
 
 from halludetect.llm import anthropic, custom_openai_compat, gemini, openai, openrouter
-from halludetect.llm.exceptions import LLMAuthError, LLMRateLimitError, LLMResponseError, LLMTimeoutError
+from halludetect.llm.exceptions import (
+    LLMAuthError,
+    LLMModelAccessError,
+    LLMRateLimitError,
+    LLMResponseError,
+    LLMTimeoutError,
+)
 
 
 def fake_response(status_code: int, json_body: dict) -> httpx.Response:
@@ -43,6 +49,13 @@ def test_openai_401_raises_auth_error(monkeypatch):
     monkeypatch.setattr(openai.httpx, "post", lambda *a, **k: fake_response(401, {"error": "bad key"}))
     provider = openai.OpenAIProvider(api_key="key")
     with pytest.raises(LLMAuthError):
+        provider.complete("hi")
+
+
+def test_openai_403_raises_model_access_error(monkeypatch):
+    monkeypatch.setattr(openai.httpx, "post", lambda *a, **k: fake_response(403, {"error": "not allowed"}))
+    provider = openai.OpenAIProvider(api_key="key")
+    with pytest.raises(LLMModelAccessError):
         provider.complete("hi")
 
 

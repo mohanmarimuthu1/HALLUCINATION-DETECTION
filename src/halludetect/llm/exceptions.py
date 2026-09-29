@@ -12,7 +12,14 @@ class LLMError(Exception):
 
 
 class LLMAuthError(LLMError):
-    """No API key configured, or the provider rejected the key (401/403)."""
+    """No API key configured, or the provider rejected the key (401)."""
+
+
+class LLMModelAccessError(LLMError):
+    """The key is valid but may not use this model (403). OpenRouter
+    returns this for models restricted to specific clients; another model
+    on the same key can still succeed, unlike `LLMAuthError`.
+    """
 
 
 class LLMRateLimitError(LLMError):

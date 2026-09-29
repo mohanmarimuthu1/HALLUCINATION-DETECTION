@@ -3,7 +3,7 @@ every model. Covers pinned -> free pool -> user key -> explicit fail, and
 that a failing model never causes a crash, only a fail-over."""
 import pytest
 
-from halludetect.llm.exceptions import LLMResponseError, LLMTimeoutError
+from halludetect.llm.exceptions import LLMAuthError, LLMModelAccessError, LLMResponseError, LLMTimeoutError
 from halludetect.llm.fake import FakeProvider, fake_response
 from halludetect.llm.health import HealthTracker
 from halludetect.llm.openrouter import FreeModelCatalog
@@ -95,3 +95,49 @@ def test_respects_max_free_models_tried_cap():
         router.complete("hi")
     attempted = [model for model, p in providers.items() if p.call_count > 0]
     assert len(attempted) == 3
+
+
+def test_model_access_denied_fails_over_to_next_free_model():
+    providers = {
+        "free/restricted": FakeProvider([LLMModelAccessError("403")]),
+        "free/b": FakeProvider([fake_response("ok")]),
+    }
+    health = HealthTracker()
+    router = Router(
+        catalog=make_catalog(["free/restricted", "free/b"]),
+        provider_factory=lambda model: providers[model],
+        health=health,
+    )
+    assert router.complete("hi").text == "ok"
+    assert health.get("free/restricted").consecutive_failures == 1
+
+
+def test_rejected_key_stops_free_pool_and_goes_to_user_provider():
+    providers = {f"free/{i}": FakeProvider([LLMAuthError("401")]) for i in range(3)}
+    user_provider = FakeProvider([fake_response("user key answer")])
+    health = HealthTracker()
+    router = Router(
+        catalog=make_catalog(list(providers.keys())),
+        provider_factory=lambda model: providers[model],
+        health=health,
+        user_provider=user_provider,
+    )
+    assert router.complete("hi").text == "user key answer"
+    attempted = [model for model, p in providers.items() if p.call_count > 0]
+    assert len(attempted) == 1
+    assert health.get(attempted[0]).consecutive_failures == 0
+
+
+def test_rejected_key_on_pinned_model_skips_free_pool():
+    providers = {
+        "pinned/model": FakeProvider([LLMAuthError("401")]),
+        "free/a": FakeProvider([fake_response("should not be reached")]),
+    }
+    router = Router(
+        catalog=make_catalog(["free/a"]),
+        provider_factory=lambda model: providers[model],
+        pinned_model="pinned/model",
+    )
+    with pytest.raises(LLMResponseError, match="401"):
+        router.complete("hi")
+    assert providers["free/a"].call_count == 0

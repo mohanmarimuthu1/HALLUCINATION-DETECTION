@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from time import monotonic
 
 from halludetect.llm.base import LLMProvider, LLMResponse
-from halludetect.llm.exceptions import LLMError, LLMRateLimitError, LLMResponseError
+from halludetect.llm.exceptions import LLMAuthError, LLMError, LLMRateLimitError, LLMResponseError
 from halludetect.llm.health import HealthTracker
 from halludetect.llm.openrouter import FreeModelCatalog
 
@@ -34,22 +34,34 @@ class Router:
     def complete(self, prompt: str, *, max_tokens: int = 1024) -> LLMResponse:
         tried: set[str] = set()
         errors: list[str] = []
+        # Pinned and free-pool models share one OpenRouter key, so a
+        # rejected key fails every one of them; skip straight to the
+        # user's own key instead of spending quota proving it.
+        key_rejected = False
 
         if self.pinned_model:
-            result = self._try_model(self.pinned_model, prompt, max_tokens, errors)
+            try:
+                result = self._try_model(self.pinned_model, prompt, max_tokens, errors)
+            except LLMAuthError:
+                key_rejected = True
+                result = None
             if result is not None:
                 return result
             tried.add(self.pinned_model)
 
-        try:
-            free_models = self.catalog.get_models()
-        except LLMError as exc:
-            errors.append(f"free-model catalog fetch failed: {exc}")
-            free_models = []
+        free_models: list[str] = []
+        if not key_rejected:
+            try:
+                free_models = self.catalog.get_models()
+            except LLMError as exc:
+                errors.append(f"free-model catalog fetch failed: {exc}")
 
         ranked = [m for m in self.health.rank_available(free_models) if m not in tried]
         for model in ranked[: self.max_free_models_tried]:
-            result = self._try_model(model, prompt, max_tokens, errors)
+            try:
+                result = self._try_model(model, prompt, max_tokens, errors)
+            except LLMAuthError:
+                break
             if result is not None:
                 return result
             tried.add(model)
@@ -97,6 +109,10 @@ class Router:
         start = monotonic()
         try:
             response = provider.complete(prompt, max_tokens=max_tokens)
+        except LLMAuthError as exc:
+            # A key problem, not a model problem: leave the model's health alone.
+            errors.append(f"{model}: {exc}")
+            raise
         except LLMError as exc:
             self.health.record_failure(model, rate_limited=isinstance(exc, LLMRateLimitError))
             errors.append(f"{model}: {exc}")
