@@ -1,11 +1,12 @@
 # HALLUDETECT API Contract
 
-`contract_version: v1.1`
+`contract_version: v1.2`
 
 | Version | Change |
 |---|---|
 | v1 | Initial frozen contract (Phase 0). |
 | v1.1 | Added optional `reason` to the response. Rules 1 and 2 below already promised a reason (`no_evidence_configured`) but v1's schema table never defined the field, so no implementation could return it. Additive: every v1 field is unchanged, and a v1 client that ignores unknown fields is unaffected. |
+| v1.2 | Added `nvidia` to `model_prefs.provider`. The default free pool now spans OpenRouter's free models and, when configured, NVIDIA-hosted models; a model that fails mid-request is replaced by the next one, and `model_used` names the one that produced the result. Additive: no existing value changed meaning. |
 
 This document is the single source of truth for the `/v1/verify` request and
 response schema. Per the project plan (Phase 0, "Spec lock"), it is frozen
@@ -39,9 +40,9 @@ or `GROUNDED` verdict — absence of evidence always resolves to
 | `question` | string | optional | The question the answer responds to. Improves claim extraction; not required for verification itself. |
 | `evidence` | array of strings | optional | Caller-supplied evidence chunks. If present, the answer is verified against this evidence **only** — no other evidence source is consulted. |
 | `evidence_source` | enum: `none \| web \| custom` | required | Where evidence comes from when `evidence` is not supplied directly. `none` = no evidence acquisition attempted. `web` = service performs a web search (only if a search provider key is configured). `custom` = caller's own retriever/RAG plugin acts as the evidence source (Phase 3.4). |
-| `model_prefs` | object | optional | See `ModelPrefs` below. If omitted, defaults to the OpenRouter free-model pool. |
-| `model_prefs.provider` | enum: `openrouter \| gemini \| openai \| anthropic \| custom` | optional | LLM backend to use. Default `openrouter`. |
-| `model_prefs.allow_free_pool` | boolean | optional | Whether the OpenRouter free-model pool may be used. Default `true`. |
+| `model_prefs` | object | optional | See `ModelPrefs` below. If omitted, defaults to the free-model pool. |
+| `model_prefs.provider` | enum: `openrouter \| gemini \| openai \| anthropic \| nvidia \| custom` | optional | LLM backend to use. Default `openrouter`, which with no `pinned_model` means the free-model pool: OpenRouter's free models, then NVIDIA-hosted models if the deployment has an NVIDIA key (v1.2). |
+| `model_prefs.allow_free_pool` | boolean | optional | Whether the free-model pool may be used. Default `true`. |
 | `model_prefs.pinned_model` | string or null | optional | Force a specific model id, bypassing rotation. Default `null`. |
 | `model_prefs.user_api_key` | string or null | optional | Caller's own provider API key. Required if `provider` is not `openrouter` and the caller wants to use their own key rather than the shared free pool. Never logged, never echoed back in the response. |
 
