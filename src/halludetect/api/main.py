@@ -9,13 +9,15 @@ resolution (`api.resolve`), and response serialization against
 """
 from __future__ import annotations
 
+from collections.abc import Iterator
 from importlib.resources import files
+from time import monotonic
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 
 from halludetect.api.ratelimit import enforce_rate_limit
-from halludetect.api.resolve import ResolutionError, resolve_evidence_source, resolve_provider
+from halludetect.api.resolve import Candidate, ResolutionError, resolve_candidates, resolve_evidence_source
 from halludetect.api.schemas import VerifyRequestIn
 from halludetect.cache.base import CacheStore
 from halludetect.cache.key import compute_cache_key
@@ -23,7 +25,8 @@ from halludetect.cache.store import DiskCacheStore
 from halludetect.detect import pipeline
 from halludetect.detect.fuse import rescore
 from halludetect.detect.schemas import AnalysisResult, Timings, Verdict
-from halludetect.llm.exceptions import LLMError
+from halludetect.evidence.base import EvidenceSource
+from halludetect.llm.exceptions import LLMAuthError, LLMError, LLMRateLimitError
 from halludetect.logging import bind_request_id, configure_logging, get_logger
 from halludetect.settings import Settings, get_settings
 
@@ -80,6 +83,65 @@ def healthz() -> dict:
     return {"status": "ok"}
 
 
+def _run_with_failover(
+    request: VerifyRequestIn,
+    evidence_source: EvidenceSource,
+    candidates: Iterator[Candidate],
+    request_id: str,
+    settings: Settings,
+) -> AnalysisResult:
+    """Runs the pipeline on each candidate model in turn until one
+    succeeds, reporting every outcome to that model's pool health so later
+    requests rank it accordingly. One result always comes from one model.
+    A rejected key (401) skips the rest of that provider's models, since
+    they share the key.
+    """
+    errors: list[str] = []
+    rejected_providers: set[str] = set()
+    attempts = 0
+    try:
+        for candidate in candidates:
+            model_used = candidate.model_used
+            if model_used.provider in rejected_providers:
+                continue
+            if attempts >= settings.free_pool_max_attempts:
+                break
+            attempts += 1
+            start = monotonic()
+            try:
+                result = pipeline.run(
+                    answer=request.answer,
+                    question=request.question,
+                    evidence_source=evidence_source,
+                    provider=candidate.provider,
+                    request_id=request_id,
+                    model_used=model_used,
+                )
+            except LLMAuthError as exc:
+                rejected_providers.add(model_used.provider)
+                errors.append(f"{model_used.provider}/{model_used.model}: {exc}")
+            except LLMError as exc:
+                if candidate.health is not None:
+                    candidate.health.record_failure(
+                        model_used.model, rate_limited=isinstance(exc, LLMRateLimitError)
+                    )
+                errors.append(f"{model_used.provider}/{model_used.model}: {exc}")
+                _logger.warning(
+                    "verify_llm_error", model=model_used.model, provider=model_used.provider, error=str(exc)
+                )
+            else:
+                if candidate.health is not None:
+                    candidate.health.record_success(model_used.model, (monotonic() - start) * 1000)
+                return result
+    except LLMError as exc:
+        # resolve_provider failed for a pinned or named provider.
+        raise HTTPException(status_code=503, detail=f"no LLM provider available: {exc}") from exc
+
+    if attempts == 0 and not errors:
+        raise HTTPException(status_code=503, detail="no LLM provider available: no free-pool model is configured")
+    raise HTTPException(status_code=502, detail="LLM provider failed: " + "; ".join(errors))
+
+
 @app.post("/v1/verify", response_model=AnalysisResult)
 def verify(request: VerifyRequestIn, api_key: str = Depends(enforce_rate_limit)) -> AnalysisResult:
     request_id = bind_request_id()
@@ -110,24 +172,10 @@ def verify(request: VerifyRequestIn, api_key: str = Depends(enforce_rate_limit))
 
     try:
         evidence_source = resolve_evidence_source(request, settings, app.state.custom_evidence_source)
-        provider, model_used = resolve_provider(request.model_prefs, settings)
+        candidates = resolve_candidates(request.model_prefs, settings)
+        result = _run_with_failover(request, evidence_source, candidates, request_id, settings)
     except ResolutionError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except LLMError as exc:
-        raise HTTPException(status_code=503, detail=f"no LLM provider available: {exc}") from exc
-
-    try:
-        result = pipeline.run(
-            answer=request.answer,
-            question=request.question,
-            evidence_source=evidence_source,
-            provider=provider,
-            request_id=request_id,
-            model_used=model_used,
-        )
-    except LLMError as exc:
-        _logger.warning("verify_llm_error", error=str(exc))
-        raise HTTPException(status_code=502, detail=f"LLM provider failed: {exc}") from exc
 
     # A NOT_ENOUGH_INFO verdict isn't cached: it's the only verdict a flaky
     # model response can produce (a missing quote downgrades SUPPORTED to

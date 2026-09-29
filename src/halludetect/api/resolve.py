@@ -9,6 +9,7 @@ here, once, up front.
 """
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 from pydantic import SecretStr
@@ -23,15 +24,21 @@ from halludetect.llm.anthropic import DEFAULT_MODEL as ANTHROPIC_DEFAULT_MODEL
 from halludetect.llm.anthropic import AnthropicProvider
 from halludetect.llm.base import LLMProvider
 from halludetect.llm.custom_openai_compat import CustomOpenAICompatProvider
+from halludetect.llm.exceptions import LLMError
 from halludetect.llm.gemini import DEFAULT_MODEL as GEMINI_DEFAULT_MODEL
 from halludetect.llm.gemini import GeminiProvider
 from halludetect.llm.health import HealthTracker
+from halludetect.llm.nvidia import DEFAULT_MODEL as NVIDIA_DEFAULT_MODEL
+from halludetect.llm.nvidia import NvidiaProvider
 from halludetect.llm.openai import DEFAULT_MODEL as OPENAI_DEFAULT_MODEL
 from halludetect.llm.openai import OpenAIProvider
 from halludetect.llm.openrouter import FreeModelCatalog, OpenRouterProvider
 from halludetect.llm.retry import RetryingProvider
 from halludetect.llm.router import Router
+from halludetect.logging import get_logger
 from halludetect.settings import Settings
+
+_logger = get_logger(__name__)
 
 
 class ResolutionError(Exception):
@@ -54,12 +61,25 @@ class _NamedProvider:
 # breaker (Phase 2.5) and success-rate ranking actually accumulate signal
 # across requests instead of resetting on every call.
 _openrouter_health = HealthTracker()
+_nvidia_health = HealthTracker()
 
 _NAMED_PROVIDERS: dict[ModelProvider, _NamedProvider] = {
     ModelProvider.GEMINI: _NamedProvider(GeminiProvider, GEMINI_DEFAULT_MODEL, "gemini_api_key"),
     ModelProvider.OPENAI: _NamedProvider(OpenAIProvider, OPENAI_DEFAULT_MODEL, "openai_api_key"),
     ModelProvider.ANTHROPIC: _NamedProvider(AnthropicProvider, ANTHROPIC_DEFAULT_MODEL, "anthropic_api_key"),
+    ModelProvider.NVIDIA: _NamedProvider(NvidiaProvider, NVIDIA_DEFAULT_MODEL, "nvidia_api_key"),
 }
+
+
+@dataclass(frozen=True)
+class Candidate:
+    """One model a request may run on. `health` is the pool tracker the
+    outcome is reported to, or `None` for a model the caller chose.
+    """
+
+    provider: LLMProvider
+    model_used: ModelUsed
+    health: HealthTracker | None
 
 
 def _secret(value: SecretStr | None) -> str | None:
@@ -154,3 +174,39 @@ def resolve_provider(model_prefs: ModelPrefsIn, settings: Settings) -> tuple[LLM
     model = model_prefs.pinned_model or named.default_model
     provider = named.provider_cls(api_key, model)
     return _with_retry(provider, settings), ModelUsed(provider=model_prefs.provider.value, model=model)
+
+
+def resolve_candidates(model_prefs: ModelPrefsIn, settings: Settings) -> Iterator[Candidate]:
+    """Models to try for one request, best first.
+
+    The default request (`provider: openrouter`, nothing pinned) walks the
+    free pool: OpenRouter's free models ranked by health, then the
+    configured NVIDIA models. A tier whose key is missing, or whose
+    catalog can't be fetched, is skipped. Anything the caller pinned or
+    chose yields exactly one candidate, via `resolve_provider`.
+
+    Lazy, so the NVIDIA tier costs nothing when an OpenRouter model answers.
+    """
+    if model_prefs.provider != ModelProvider.OPENROUTER or model_prefs.pinned_model:
+        provider, model_used = resolve_provider(model_prefs, settings)
+        health = _openrouter_health if model_prefs.provider == ModelProvider.OPENROUTER else None
+        yield Candidate(provider, model_used, health)
+        return
+
+    openrouter_key = _secret(settings.openrouter_api_key)
+    if openrouter_key:
+        try:
+            free_models = FreeModelCatalog(openrouter_key).get_models()
+        except LLMError as exc:
+            _logger.warning("free_pool_catalog_failed", provider="openrouter", error=str(exc))
+            free_models = []
+        for model in _openrouter_health.rank_available(free_models):
+            provider = _with_retry(OpenRouterProvider(openrouter_key, model), settings)
+            yield Candidate(provider, ModelUsed(provider="openrouter", model=model), _openrouter_health)
+
+    nvidia_key = _secret(settings.nvidia_api_key)
+    if nvidia_key:
+        nvidia_models = [m.strip() for m in settings.nvidia_models.split(",") if m.strip()]
+        for model in _nvidia_health.rank_available(nvidia_models):
+            provider = _with_retry(NvidiaProvider(nvidia_key, model), settings)
+            yield Candidate(provider, ModelUsed(provider="nvidia", model=model), _nvidia_health)

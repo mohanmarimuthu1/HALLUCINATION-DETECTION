@@ -20,6 +20,12 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
     anthropic_api_key: SecretStr | None = None
 
+    # NVIDIA-hosted models: `provider: nvidia`, and the second tier of the
+    # default free pool after OpenRouter's free models. Comma-separated;
+    # see llm/nvidia.py for why this is a list and not discovered.
+    nvidia_api_key: SecretStr | None = None
+    nvidia_models: str = "nvidia/nemotron-3-super-120b-a12b,nvidia/ising-calibration-1.5-31b"
+
     custom_provider_base_url: str | None = None
     custom_provider_api_key: SecretStr | None = None
 
@@ -57,6 +63,10 @@ class Settings(BaseSettings):
     retry_max_attempts: int = 3
     retry_base_delay_s: float = 0.5
     retry_max_delay_s: float = 8.0
+
+    # How many free-pool models one /v1/verify request tries before giving
+    # up with a 502. Each attempt is a full pipeline run on a new model.
+    free_pool_max_attempts: int = 3
 
 
 @lru_cache

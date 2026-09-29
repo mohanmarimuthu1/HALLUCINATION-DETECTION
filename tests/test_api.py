@@ -14,8 +14,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from halludetect.api import main, ratelimit
-from halludetect.api.resolve import _openrouter_health
-from halludetect.llm import openrouter
+from halludetect.api.resolve import _nvidia_health, _openrouter_health
+from halludetect.llm import nvidia, openrouter
+from halludetect.llm.exceptions import LLMAuthError, LLMResponseError
 from halludetect.settings import Settings, get_settings
 
 _VALID_KEY = "test-key"
@@ -56,6 +57,7 @@ def _reset_state(tmp_path, monkeypatch):
     _use_settings(_settings(), monkeypatch)
     main.app.state.custom_evidence_source = None
     _openrouter_health._health.clear()
+    _nvidia_health._health.clear()
     ratelimit._limiter = None
     main._cache_store = None
     main._cache_unavailable = False
@@ -376,3 +378,120 @@ def test_not_enough_info_is_not_cached_so_a_flaky_response_is_not_sticky(client,
 
     assert flaky.json()["verdict"] == "NOT_ENOUGH_INFO"
     assert retry.json()["verdict"] == "GROUNDED"  # recomputed, not served from cache
+
+
+_ONE_SUPPORTED_CLAIM = [
+    json.dumps({"claims": [{"text": "Paris is the capital of France.", "claim_type": "FACTUAL"}]}),
+    json.dumps(
+        {
+            "claim_verdicts": [
+                {
+                    "claim_id": "claim-0",
+                    "label": "SUPPORTED",
+                    "confidence": 0.9,
+                    "evidence_chunk_ids": ["direct-0"],
+                    "quote": "Paris is the capital of France.",
+                }
+            ]
+        }
+    ),
+]
+
+_EVIDENCE_REQUEST = {
+    "answer": "Paris is the capital of France.",
+    "evidence": ["Paris is the capital of France."],
+    "evidence_source": "none",
+}
+
+
+def _script_by_model(monkeypatch, cls, outcomes: dict[str, list]):
+    """Patches `cls.complete` so each model plays its own script; an
+    exception in a script is raised instead of returned.
+    """
+    from halludetect.llm.base import LLMResponse, TokenUsage
+
+    queues = {model: deque(script) for model, script in outcomes.items()}
+    calls: list[str] = []
+
+    def _complete(self, prompt, *, max_tokens=1024):
+        calls.append(self._model)
+        item = queues[self._model].popleft()
+        if isinstance(item, Exception):
+            raise item
+        usage = TokenUsage(prompt_tokens=1, completion_tokens=1)
+        return LLMResponse(text=item, provider="x", model=self._model, usage=usage)
+
+    monkeypatch.setattr(cls, "complete", _complete)
+    return calls
+
+
+def test_failed_free_model_fails_over_to_the_next_within_one_request(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    calls = _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {"free/a": [LLMResponseError("no choices")], "free/b": list(_ONE_SUPPORTED_CLAIM)},
+    )
+    response = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    assert response.json()["model_used"] == {"provider": "openrouter", "model": "free/b"}
+    assert calls == ["free/a", "free/b", "free/b"]
+    assert _openrouter_health.get("free/a").consecutive_failures == 1
+    assert _openrouter_health.get("free/b").successes == 1
+
+
+def test_nvidia_models_back_up_the_openrouter_pool(client, monkeypatch):
+    _use_settings(_settings(nvidia_api_key="nv", nvidia_models="nv/one"), monkeypatch)
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    _script_by_model(monkeypatch, openrouter.OpenRouterProvider, {"free/a": [LLMResponseError("down")]})
+    _script_by_model(monkeypatch, nvidia.NvidiaProvider, {"nv/one": list(_ONE_SUPPORTED_CLAIM)})
+    response = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    assert response.json()["model_used"] == {"provider": "nvidia", "model": "nv/one"}
+    assert _nvidia_health.get("nv/one").successes == 1
+
+
+def test_nvidia_serves_alone_when_no_openrouter_key(client, monkeypatch):
+    _use_settings(_settings(openrouter_api_key=None, nvidia_api_key="nv", nvidia_models="nv/one"), monkeypatch)
+    _script_by_model(monkeypatch, nvidia.NvidiaProvider, {"nv/one": list(_ONE_SUPPORTED_CLAIM)})
+    response = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    assert response.json()["model_used"]["provider"] == "nvidia"
+
+
+def test_rejected_openrouter_key_skips_its_other_models(client, monkeypatch):
+    _use_settings(_settings(nvidia_api_key="nv", nvidia_models="nv/one"), monkeypatch)
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    calls = _script_by_model(
+        monkeypatch, openrouter.OpenRouterProvider, {"free/a": [LLMAuthError("401")], "free/b": []}
+    )
+    _script_by_model(monkeypatch, nvidia.NvidiaProvider, {"nv/one": list(_ONE_SUPPORTED_CLAIM)})
+    response = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    assert calls == ["free/a"]
+    assert _openrouter_health.get("free/a").consecutive_failures == 0
+
+
+def test_every_candidate_failing_is_502_after_the_attempt_cap(client, monkeypatch):
+    _use_settings(_settings(free_pool_max_attempts=2), monkeypatch)
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b", "free/c"])
+    calls = _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {m: [LLMResponseError("down")] for m in ("free/a", "free/b", "free/c")},
+    )
+    response = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 502
+    assert calls == ["free/a", "free/b"]
+
+
+def test_pinned_nvidia_model_is_used_as_is(client, monkeypatch):
+    _use_settings(_settings(nvidia_api_key="nv"), monkeypatch)
+    _script_by_model(monkeypatch, nvidia.NvidiaProvider, {"nv/pinned": list(_ONE_SUPPORTED_CLAIM)})
+    response = client.post(
+        "/v1/verify",
+        json={**_EVIDENCE_REQUEST, "model_prefs": {"provider": "nvidia", "pinned_model": "nv/pinned"}},
+        headers=_AUTH_HEADERS,
+    )
+    assert response.status_code == 200
+    assert response.json()["model_used"] == {"provider": "nvidia", "model": "nv/pinned"}

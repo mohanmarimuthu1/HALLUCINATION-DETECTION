@@ -55,11 +55,10 @@ from halludetect.settings import Settings, get_settings
 # per-call failover does that (see router.py's pick_model docstring). A
 # fresh CLI process's HealthTracker starts empty every run, so a model
 # that fails mid-item would otherwise get picked again forever. Recording
-# is the one caller in this codebase that needs its own bounded retry
-# across models: production /v1/verify requests deliberately resolve once
-# and let a mid-request failure surface as a 502 (Phase 5.1), which is
-# correct for a live request but useless for building an offline replay
-# fixture that must eventually get a real answer for every item.
+# keeps its own retry rather than reusing /v1/verify's fail-over
+# (api.main._run_with_failover) because it needs more attempts, a pause
+# between them, and an optionally pinned model: an offline replay fixture
+# must eventually get a real answer for every item.
 _MAX_RECORD_ATTEMPTS_PER_ITEM = 8
 
 # A pause between items, record mode only - discovered live, recording a

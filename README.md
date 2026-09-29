@@ -114,10 +114,16 @@ working copy that has a `.env`: a local build bundles it into the output.
 
 ### Bring your own key
 
-By default every request is served through this deployment's own
-OpenRouter free-model pool (`model_prefs.provider: openrouter`, the
-default). A caller can instead route a single request through their own
-Gemini, OpenAI, or Anthropic key via `model_prefs`:
+By default every request is served through this deployment's free-model
+pool (`model_prefs.provider: openrouter`, the default): OpenRouter's free
+models ranked by health, then NVIDIA-hosted models if `NVIDIA_API_KEY` is
+set. If a model fails mid-request, the request is re-run on the next one,
+up to `FREE_POOL_MAX_ATTEMPTS` (default 3); `model_used` names the model
+that produced the result. `NVIDIA_MODELS` overrides the NVIDIA list; most
+models NVIDIA lists are retired or take over a minute per call, so check
+a model responds before adding it. A caller can instead route a single
+request through their own Gemini, OpenAI, Anthropic or NVIDIA key via
+`model_prefs`:
 
 ```bash
 curl -X POST http://localhost:8000/v1/verify \
@@ -137,7 +143,7 @@ curl -X POST http://localhost:8000/v1/verify \
 ```
 
 - `model_prefs.provider` - `openrouter` (default) | `gemini` | `openai` |
-  `anthropic` | `custom`. `custom` needs the deployment's own
+  `anthropic` | `nvidia` | `custom`. `custom` needs the deployment's own
   `CUSTOM_PROVIDER_BASE_URL` set in `.env` first - it's a
   deployment-level endpoint, not something a caller can point anywhere
   per-request.

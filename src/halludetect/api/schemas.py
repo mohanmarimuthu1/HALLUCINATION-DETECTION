@@ -19,6 +19,7 @@ class ModelProvider(str, Enum):
     GEMINI = "gemini"
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
+    NVIDIA = "nvidia"
     CUSTOM = "custom"
 
 
