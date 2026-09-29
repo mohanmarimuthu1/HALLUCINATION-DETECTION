@@ -67,6 +67,10 @@ class Settings(BaseSettings):
     # How many free-pool models one /v1/verify request tries before giving
     # up with a 502. Each attempt is a full pipeline run on a new model.
     free_pool_max_attempts: int = 3
+    # No new attempt starts after this many seconds. Bounds a request to
+    # roughly this plus one attempt (two 30s model calls, more with repair
+    # retries), which keeps it inside Vercel's 300s function limit.
+    free_pool_budget_s: float = 90.0
 
 
 @lru_cache

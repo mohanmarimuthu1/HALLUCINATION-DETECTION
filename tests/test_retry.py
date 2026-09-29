@@ -94,3 +94,11 @@ def test_backoff_delay_grows_and_is_capped():
 def test_supports_json_schema_delegates_to_wrapped_provider():
     retrying, _ = _retrying(FakeProvider([fake_response("x")], supports_json_schema=False))
     assert retrying.supports_json_schema() is False
+
+
+def test_retry_on_can_exclude_timeouts():
+    inner = FakeProvider([LLMTimeoutError("slow"), fake_response("never reached")])
+    provider = RetryingProvider(inner, sleep=lambda _: None, retry_on=(LLMRateLimitError,))
+    with pytest.raises(LLMTimeoutError):
+        provider.complete("hi")
+    assert inner.call_count == 1

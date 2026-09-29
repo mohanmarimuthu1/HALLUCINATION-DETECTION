@@ -24,7 +24,7 @@ from halludetect.llm.anthropic import DEFAULT_MODEL as ANTHROPIC_DEFAULT_MODEL
 from halludetect.llm.anthropic import AnthropicProvider
 from halludetect.llm.base import LLMProvider
 from halludetect.llm.custom_openai_compat import CustomOpenAICompatProvider
-from halludetect.llm.exceptions import LLMError
+from halludetect.llm.exceptions import LLMError, LLMRateLimitError, LLMTimeoutError
 from halludetect.llm.gemini import DEFAULT_MODEL as GEMINI_DEFAULT_MODEL
 from halludetect.llm.gemini import GeminiProvider
 from halludetect.llm.health import HealthTracker
@@ -116,7 +116,7 @@ def resolve_evidence_source(
     return NoEvidenceSource()
 
 
-def _with_retry(provider: LLMProvider, settings: Settings) -> LLMProvider:
+def _with_retry(provider: LLMProvider, settings: Settings, *, retry_timeouts: bool = True) -> LLMProvider:
     """Wraps every resolved provider in jittered-backoff retry (Phase 6.2)
     - applied here, once, so it's uniform across every `model_prefs.provider`
     branch below rather than each branch remembering to add it itself.
@@ -126,6 +126,7 @@ def _with_retry(provider: LLMProvider, settings: Settings) -> LLMProvider:
         max_attempts=settings.retry_max_attempts,
         base_delay_s=settings.retry_base_delay_s,
         max_delay_s=settings.retry_max_delay_s,
+        retry_on=(LLMTimeoutError, LLMRateLimitError) if retry_timeouts else (LLMRateLimitError,),
     )
 
 
@@ -201,12 +202,12 @@ def resolve_candidates(model_prefs: ModelPrefsIn, settings: Settings) -> Iterato
             _logger.warning("free_pool_catalog_failed", provider="openrouter", error=str(exc))
             free_models = []
         for model in _openrouter_health.rank_available(free_models):
-            provider = _with_retry(OpenRouterProvider(openrouter_key, model), settings)
+            provider = _with_retry(OpenRouterProvider(openrouter_key, model), settings, retry_timeouts=False)
             yield Candidate(provider, ModelUsed(provider="openrouter", model=model), _openrouter_health)
 
     nvidia_key = _secret(settings.nvidia_api_key)
     if nvidia_key:
         nvidia_models = [m.strip() for m in settings.nvidia_models.split(",") if m.strip()]
         for model in _nvidia_health.rank_available(nvidia_models):
-            provider = _with_retry(NvidiaProvider(nvidia_key, model), settings)
+            provider = _with_retry(NvidiaProvider(nvidia_key, model), settings, retry_timeouts=False)
             yield Candidate(provider, ModelUsed(provider="nvidia", model=model), _nvidia_health)

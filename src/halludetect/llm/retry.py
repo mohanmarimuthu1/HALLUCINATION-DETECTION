@@ -39,13 +39,16 @@ class RetryingProvider:
     # Injectable so tests never actually sleep or depend on real randomness.
     sleep: Callable[[float], None] = time.sleep
     jitter: Callable[[float, float], float] = random.uniform
+    # Free-pool callers drop LLMTimeoutError: another model is usually a
+    # faster way out of a hung one than three more 30s waits on it.
+    retry_on: tuple[type[Exception], ...] = _RETRYABLE
 
     def complete(self, prompt: str, *, max_tokens: int = 1024) -> LLMResponse:
         attempt = 0
         while True:
             try:
                 return self.provider.complete(prompt, max_tokens=max_tokens)
-            except _RETRYABLE:
+            except self.retry_on:
                 attempt += 1
                 if attempt >= self.max_attempts:
                     raise

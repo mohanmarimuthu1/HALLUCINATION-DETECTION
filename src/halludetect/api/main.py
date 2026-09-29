@@ -99,12 +99,16 @@ def _run_with_failover(
     errors: list[str] = []
     rejected_providers: set[str] = set()
     attempts = 0
+    started = monotonic()
     try:
         for candidate in candidates:
             model_used = candidate.model_used
             if model_used.provider in rejected_providers:
                 continue
             if attempts >= settings.free_pool_max_attempts:
+                break
+            if attempts and monotonic() - started >= settings.free_pool_budget_s:
+                errors.append(f"stopped after {settings.free_pool_budget_s:.0f}s")
                 break
             attempts += 1
             start = monotonic()

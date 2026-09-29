@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 from halludetect.api import main, ratelimit
 from halludetect.api.resolve import _nvidia_health, _openrouter_health
 from halludetect.llm import nvidia, openrouter
-from halludetect.llm.exceptions import LLMAuthError, LLMResponseError
+from halludetect.llm.exceptions import LLMAuthError, LLMResponseError, LLMTimeoutError
 from halludetect.settings import Settings, get_settings
 
 _VALID_KEY = "test-key"
@@ -495,3 +495,30 @@ def test_pinned_nvidia_model_is_used_as_is(client, monkeypatch):
     )
     assert response.status_code == 200
     assert response.json()["model_used"] == {"provider": "nvidia", "model": "nv/pinned"}
+
+
+def test_free_pool_timeout_moves_to_the_next_model_without_retrying(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/slow", "free/b"])
+    calls = _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {"free/slow": [LLMTimeoutError("timed out")], "free/b": list(_ONE_SUPPORTED_CLAIM)},
+    )
+    response = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    assert calls.count("free/slow") == 1
+
+
+def test_no_new_attempt_starts_once_the_time_budget_is_spent(client, monkeypatch):
+    _use_settings(_settings(free_pool_budget_s=0.0), monkeypatch)
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    calls = _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {"free/a": [LLMResponseError("down")], "free/b": list(_ONE_SUPPORTED_CLAIM)},
+    )
+    response = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 502
+    assert "stopped after" in response.json()["detail"]
+    assert calls == ["free/a"]
+
