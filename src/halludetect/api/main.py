@@ -23,6 +23,8 @@ from halludetect.api.ratelimit import enforce_rate_limit
 from halludetect.api.resolve import (
     Candidate,
     ResolutionError,
+    mark_model_refused,
+    mark_quota_exhausted,
     pool_health,
     resolve_candidates,
     resolve_evidence_source,
@@ -37,7 +39,13 @@ from halludetect.detect.fuse import rescore
 from halludetect.detect.schemas import AbstentionReason, AnalysisResult, ModelUsed, Timings, Verdict
 from halludetect.evidence.base import EvidenceSource
 from halludetect.llm.base import LLMProvider, LLMResponse
-from halludetect.llm.exceptions import LLMAuthError, LLMError, LLMRateLimitError
+from halludetect.llm.exceptions import (
+    LLMAuthError,
+    LLMError,
+    LLMModelAccessError,
+    LLMQuotaExhaustedError,
+    LLMRateLimitError,
+)
 from halludetect.logging import bind_request_id, configure_logging, get_logger
 from halludetect.observe import Role, observer
 from halludetect.settings import Settings, get_settings
@@ -126,7 +134,11 @@ def _run_with_failover(
     reporting every outcome to that model's pool health (so later requests
     rank it accordingly) and to the model observer. One result always
     comes from one model. A rejected key (401) skips the rest of that
-    provider's models, since they share the key.
+    provider's models, since they share the key. A used-up quota or a
+    model that refuses the key (402/403) is recorded in `api.resolve`,
+    whose candidate list then leaves those models out. These answer at
+    once and say nothing about the model's health, so they don't count
+    against it or use up one of the request's attempts.
 
     `started` lets several loops in one request share one
     `free_pool_budget_s`.
@@ -150,8 +162,15 @@ def _run_with_failover(
             counted = _CallCounter(candidate.provider)
             try:
                 result = attempt(counted, model_used)
-            except LLMAuthError as exc:
-                rejected_providers.add(model_used.provider)
+            except (LLMAuthError, LLMQuotaExhaustedError, LLMModelAccessError) as exc:
+                if isinstance(exc, LLMAuthError):
+                    rejected_providers.add(model_used.provider)
+                elif isinstance(exc, LLMQuotaExhaustedError):
+                    mark_quota_exhausted(model_used.provider, model_used.model, exc.reset_at)
+                    attempts -= 1
+                elif candidate.health is not None:
+                    mark_model_refused(model_used.provider, model_used.model)
+                    attempts -= 1
                 observer.record_failure(model_used.provider, model_used.model, role, str(exc))
                 errors.append(f"{model_used.provider}/{model_used.model}: {exc}")
             except LLMError as exc:

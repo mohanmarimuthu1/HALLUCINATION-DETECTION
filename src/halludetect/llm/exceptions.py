@@ -26,6 +26,18 @@ class LLMRateLimitError(LLMError):
     """Provider returned 429 / quota exhausted."""
 
 
+class LLMQuotaExhaustedError(LLMError):
+    """429 whose limit resets far in the future: the account's quota is
+    used up (OpenRouter's free tier allows 50 free-model requests a day),
+    so every model on that key will fail until `reset_at` (epoch
+    seconds). Not an `LLMRateLimitError`, so it is never retried.
+    """
+
+    def __init__(self, message: str, reset_at: float | None = None):
+        super().__init__(message)
+        self.reset_at = reset_at
+
+
 class LLMTimeoutError(LLMError):
     """Request exceeded its timeout."""
 

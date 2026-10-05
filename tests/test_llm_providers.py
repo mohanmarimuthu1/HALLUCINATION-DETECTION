@@ -270,3 +270,42 @@ def test_nvidia_403_raises_model_access_error(monkeypatch):
     monkeypatch.setattr(custom_openai_compat.httpx, "post", lambda *a, **k: fake_response(403, {"error": "no"}))
     with pytest.raises(LLMModelAccessError, match="nvidia"):
         nvidia.NvidiaProvider(api_key="key").complete("hi")
+
+
+# ---- shared status mapping (_http) ----
+
+def _status(code: int, headers: dict | None = None) -> httpx.Response:
+    request = httpx.Request("POST", "https://example.invalid")
+    return httpx.Response(code, json={"error": {}}, headers=headers or {}, request=request)
+
+
+def test_402_is_model_access_not_a_generic_failure():
+    from halludetect.llm._http import raise_for_provider_error
+
+    with pytest.raises(LLMModelAccessError, match="HTTP 402"):
+        raise_for_provider_error(_status(402), "openrouter")
+
+
+def test_429_with_a_far_reset_is_a_used_up_quota():
+    import time
+
+    from halludetect.llm._http import raise_for_provider_error
+    from halludetect.llm.exceptions import LLMQuotaExhaustedError
+
+    reset_ms = int((time.time() + 5 * 3600) * 1000)
+    headers = {"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(reset_ms)}
+    with pytest.raises(LLMQuotaExhaustedError) as info:
+        raise_for_provider_error(_status(429, headers), "openrouter")
+    assert info.value.reset_at == pytest.approx(reset_ms / 1000)
+    assert not isinstance(info.value, LLMRateLimitError)  # never retried
+
+
+def test_429_with_a_near_reset_or_no_headers_is_a_retryable_rate_limit():
+    import time
+
+    from halludetect.llm._http import raise_for_provider_error
+
+    near = {"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(int((time.time() + 30) * 1000))}
+    for headers in (near, {}, {"x-ratelimit-remaining": "3", "x-ratelimit-reset": "9999999999999"}):
+        with pytest.raises(LLMRateLimitError):
+            raise_for_provider_error(_status(429, headers), "openrouter")

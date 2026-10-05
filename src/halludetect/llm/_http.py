@@ -4,26 +4,57 @@ Centralized so every provider maps transport failures to the same
 halludetect.llm.exceptions hierarchy by status code / exception type,
 not by inspecting response text.
 """
+import time
+
 import httpx
 
 from halludetect.llm.exceptions import (
     LLMAuthError,
     LLMError,
     LLMModelAccessError,
+    LLMQuotaExhaustedError,
     LLMRateLimitError,
     LLMResponseError,
     LLMTimeoutError,
 )
 
 DEFAULT_TIMEOUT_S = 30.0
+# A 429 whose limit resets further out than this is a used-up quota, not
+# a burst limit worth retrying.
+QUOTA_RESET_MIN_S = 15 * 60
+
+
+def _quota_reset_at(response: httpx.Response) -> float | None:
+    """Epoch seconds the quota resets, if the 429's rate-limit headers say
+    nothing is left until well past a retry's horizon.
+    """
+    if response.headers.get("x-ratelimit-remaining") != "0":
+        return None
+    try:
+        reset = float(response.headers["x-ratelimit-reset"])
+    except (KeyError, ValueError):
+        return None
+    reset_s = reset / 1000 if reset > 1e11 else reset  # OpenRouter sends milliseconds
+    return reset_s if reset_s - time.time() >= QUOTA_RESET_MIN_S else None
 
 
 def raise_for_provider_error(response: httpx.Response, provider: str) -> None:
     if response.status_code == 401:
         raise LLMAuthError(f"{provider}: authentication failed (HTTP 401)")
-    if response.status_code == 403:
-        raise LLMModelAccessError(f"{provider}: access to this model denied (HTTP 403): {response.text[:300]}")
+    if response.status_code in (402, 403):
+        # 402: OpenRouter lists some models at $0 that still need purchased
+        # credits; like 403, another model on the same key can work.
+        raise LLMModelAccessError(
+            f"{provider}: access to this model denied (HTTP {response.status_code}): {response.text[:300]}"
+        )
     if response.status_code == 429:
+        reset_at = _quota_reset_at(response)
+        if reset_at is not None:
+            raise LLMQuotaExhaustedError(
+                f"{provider}: quota used up until {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(reset_at))}"
+                " (HTTP 429)",
+                reset_at=reset_at,
+            )
         raise LLMRateLimitError(f"{provider}: rate limited (HTTP 429)")
     if response.status_code >= 400:
         raise LLMResponseError(f"{provider}: HTTP {response.status_code}: {response.text[:300]}")

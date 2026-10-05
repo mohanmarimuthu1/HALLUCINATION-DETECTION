@@ -709,3 +709,69 @@ def test_chat_answer_and_check_share_one_time_budget(client, monkeypatch):
     assert response.status_code == 502
     assert "stopped after" in response.json()["detail"]
     assert calls == ["free/a", "free/b"]
+
+
+def test_used_up_free_quota_skips_free_variants_until_the_reset(client, monkeypatch):
+    import time
+
+    from halludetect.api import resolve
+    from halludetect.api.schemas import ModelPrefsIn
+    from halludetect.llm.exceptions import LLMQuotaExhaustedError
+
+    _use_settings(_settings(nvidia_api_key="nv", nvidia_models="nv/one"), monkeypatch)
+    monkeypatch.setattr(
+        openrouter, "fetch_free_models", lambda api_key: ["x/a:free", "x/b:free", "stealth/zero", "x/c:free"]
+    )
+    quota = LLMQuotaExhaustedError("quota", time.time() + 3600)
+    calls = _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {"x/a:free": [quota], "stealth/zero": [LLMResponseError("down")]},
+    )
+    _script_by_model(monkeypatch, nvidia.NvidiaProvider, {"nv/one": list(_ONE_SUPPORTED_CLAIM) * 2})
+
+    first = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert first.status_code == 200
+    assert first.json()["model_used"]["provider"] == "nvidia"
+    # x/b:free and x/c:free are skipped; the unsuffixed zero-priced model is not.
+    assert calls == ["x/a:free", "stealth/zero"]
+    assert _openrouter_health.get("x/a:free").attempts == 0  # not the model's fault
+
+    models = [c.model_used.model for c in resolve.resolve_candidates(ModelPrefsIn(), main.get_settings())]
+    assert models == ["stealth/zero", "nv/one"]
+
+    resolve._quota_reset["openrouter"] = time.time() - 1
+    models = [c.model_used.model for c in resolve.resolve_candidates(ModelPrefsIn(), main.get_settings())]
+    assert "x/b:free" in models
+
+
+def test_refused_and_quota_models_are_left_out_and_cost_no_attempt(client, monkeypatch):
+    import time
+
+    from halludetect.api import resolve
+    from halludetect.api.schemas import ModelPrefsIn
+    from halludetect.llm.exceptions import LLMModelAccessError, LLMQuotaExhaustedError
+
+    monkeypatch.setattr(
+        openrouter,
+        "fetch_free_models",
+        lambda api_key: ["paid/a", "paid/b", "openrouter/free", "x/c:free", "free/ok"],
+    )
+    calls = _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {
+            "paid/a": [LLMModelAccessError("HTTP 402")],
+            "paid/b": [LLMModelAccessError("HTTP 402")],
+            "openrouter/free": [LLMQuotaExhaustedError("quota", time.time() + 3600)],
+            "free/ok": list(_ONE_SUPPORTED_CLAIM),
+        },
+    )
+    # Default free_pool_max_attempts is 3; the refusals don't use any.
+    response = client.post("/v1/verify", json=_EVIDENCE_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    assert response.json()["model_used"]["model"] == "free/ok"
+    assert calls == ["paid/a", "paid/b", "openrouter/free", "free/ok", "free/ok"]
+
+    models = [c.model_used.model for c in resolve.resolve_candidates(ModelPrefsIn(), main.get_settings())]
+    assert models == ["free/ok"]

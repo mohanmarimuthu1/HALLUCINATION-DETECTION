@@ -10,6 +10,7 @@ here, once, up front.
 from __future__ import annotations
 
 import threading
+import time
 from collections.abc import Iterator
 from dataclasses import dataclass
 
@@ -69,6 +70,48 @@ _nvidia_health = HealthTracker()
 # every request. Keyed by API key because the list is fetched with it.
 _catalogs: dict[str | None, FreeModelCatalog] = {}
 _catalogs_lock = threading.Lock()
+
+
+# Free-pool models left out until a time (epoch seconds), so a request
+# doesn't spend its attempts on calls that can't succeed yet:
+# - `_quota_reset[provider]`: the account quota is used up. OpenRouter's
+#   daily free-tier limit covers its `:free` variants (zero-priced models
+#   without the suffix mostly kept answering while it was used up); NVIDIA's
+#   covers every model.
+# - `_blocked[(provider, model)]`: that model refused this key (402 needs
+#   purchased credits even when listed at $0; 403 is access denied), or
+#   hit the quota itself without a `:free` suffix (`openrouter/free`).
+_quota_reset: dict[str, float] = {}
+_blocked: dict[tuple[str, str], float] = {}
+MODEL_BLOCK_S = 6 * 60 * 60
+
+
+def mark_quota_exhausted(provider: str, model: str, reset_at: float | None) -> None:
+    until = reset_at if reset_at is not None else time.time() + MODEL_BLOCK_S
+    _quota_reset[provider] = until
+    _blocked[(provider, model)] = until
+
+
+def mark_model_refused(provider: str, model: str) -> None:
+    _blocked[(provider, model)] = time.time() + MODEL_BLOCK_S
+
+
+def _still_until(table: dict, key: object) -> bool:
+    until = table.get(key)
+    if until is None:
+        return False
+    if time.time() >= until:
+        table.pop(key, None)
+        return False
+    return True
+
+
+def _skipped(provider: str, model: str) -> bool:
+    if _still_until(_blocked, (provider, model)):
+        return True
+    if provider == "openrouter" and not model.endswith(":free"):
+        return False
+    return _still_until(_quota_reset, provider)
 
 
 def _catalog_for(api_key: str | None) -> FreeModelCatalog:
@@ -238,6 +281,8 @@ def resolve_candidates(model_prefs: ModelPrefsIn, settings: Settings) -> Iterato
             _logger.warning("free_pool_catalog_failed", provider="openrouter", error=str(exc))
             free_models = []
         for model in _openrouter_health.rank_available(free_models):
+            if _skipped("openrouter", model):
+                continue
             provider = _with_retry(OpenRouterProvider(openrouter_key, model), settings, retry_timeouts=False)
             yield Candidate(provider, ModelUsed(provider="openrouter", model=model), _openrouter_health)
 
@@ -245,5 +290,7 @@ def resolve_candidates(model_prefs: ModelPrefsIn, settings: Settings) -> Iterato
     if nvidia_key:
         nvidia_models = [m.strip() for m in settings.nvidia_models.split(",") if m.strip()]
         for model in _nvidia_health.rank_available(nvidia_models):
+            if _skipped("nvidia", model):
+                continue
             provider = _with_retry(NvidiaProvider(nvidia_key, model), settings, retry_timeouts=False)
             yield Candidate(provider, ModelUsed(provider="nvidia", model=model), _nvidia_health)
