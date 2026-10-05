@@ -114,14 +114,14 @@ A partial parse is never used.
 flowchart TB
     C["Clients<br/>web page · Streamlit · curl / your code"]
 
-    subgraph API["FastAPI service (api/)"]
+    subgraph API["FastAPI service (api/): /v1/verify · /v1/chat · /v1/models/stats"]
         direction LR
-        A["Auth<br/>Bearer client key"] --> R["Rate limit<br/>per key"] --> K{"Result cache<br/>hit returns early"} --> F["Model fallback<br/>up to 3 models / 90s"]
+        A["Auth<br/>Bearer client key"] --> R["Rate limit<br/>per key"] --> K{"Result cache<br/>verify only"} --> AN["Chat only:<br/>a model answers"] --> F["Model fallback<br/>up to 3 models / 90s"]
     end
 
     subgraph Pipeline["Detection pipeline (detect/), one model per run"]
         direction LR
-        E["Get evidence"] --> X["Extract claims"] --> V["Verify claims"] --> Q["Check quotes"] --> Z["Score and calibrate"]
+        E["Get evidence"] --> X["Extract claims"] --> V["Verify claims"] --> Q["Check quotes"] --> RC["Recheck<br/>NOT_ENOUGH_INFO"] --> Z["Score and calibrate"]
     end
 
     subgraph Evidence["Evidence sources (evidence/)"]
@@ -134,11 +134,13 @@ flowchart TB
         OR["OpenRouter free"] ~~~ NV["NVIDIA-hosted"] ~~~ BY["Gemini · OpenAI<br/>Anthropic · custom"]
     end
 
-    H[("Per-model health<br/>+ circuit breaker")]
+    H[("Per-model health, circuit breaker,<br/>quota and refusal skips")]
+    S[("Model stats<br/>(observe.py)")]
     OUT["AnalysisResult<br/>verdict · claims · quotes · p_hallucinated"]
 
     C --> API
     API -. "rank / record" .- H
+    API -. "record" .- S
     API --> Pipeline
     Pipeline -. "evidence" .-> Evidence
     Pipeline -. "extract + verify calls" .-> Models
@@ -159,6 +161,7 @@ sequenceDiagram
     loop up to 3 models, no new attempt after 90s
         API->>Model: extract claims
         API->>Model: verify claims against evidence
+        API->>Model: recheck NOT_ENOUGH_INFO claims, if any
         alt model fails (error, empty reply, timeout)
             API->>Pool: record failure, take next model
         else success
@@ -168,6 +171,10 @@ sequenceDiagram
     API->>API: check quotes, score, cache
     API-->>Client: AnalysisResult (model_used = the model that answered)
 ```
+
+`POST /v1/chat` runs the same loop twice under one 90s budget: first to
+get an answer from a model, then to verify that answer, preferring a
+different model for the check.
 
 One result always comes from one model: if a model fails partway through,
 the whole pipeline re-runs on the next one, so `model_used` is exact.
@@ -540,7 +547,10 @@ request, with no API keys.
 Each item's model output was recorded once against a real free model
 into a `*.replay.json` file. The eval replays those recordings, so it's
 offline, and two runs produce byte-identical reports. A missing
-recording is an error, never a live call.
+recording is an error, never a live call. Because it replays final
+results, the gate does not exercise pipeline changes made after the
+recording, such as the recheck; those were measured with live runs (see
+[Known limitations](#known-limitations)).
 
 The gate fails if any item that should abstain doesn't return
 `NOT_VERIFIABLE`, or if any `SUPPORTED` claim lacks a verified quote. The
@@ -579,10 +589,10 @@ src/halludetect/
   detect/
     answer.py        answer generation for /v1/chat
     claims.py        typed claim extraction
-    verify.py        claim verification, joined by claim_id
+    verify.py        claim verification (joined by claim_id) and recheck
     quote_check.py   quote-in-evidence check
     fuse.py          verdict, calibrated score, Wilson interval, rescore
-    pipeline.py      runs the steps above for one request
+    pipeline.py      runs the steps above for one request, plus the recheck
     schemas.py       AnalysisResult, ClaimResult, labels, verdicts
   evidence/          direct, web search (Tavily), custom retriever, none
   llm/
