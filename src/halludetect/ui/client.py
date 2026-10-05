@@ -1,4 +1,5 @@
-"""HTTP client the demo UI uses to call `/v1/verify`.
+"""HTTP client the demo UI uses to call `/v1/verify`, `/v1/chat` and
+`/v1/models/stats`.
 
 Kept free of Streamlit imports so it is unit-testable on its own.
 
@@ -20,6 +21,9 @@ DEFAULT_API_URL = "http://127.0.0.1:8000"
 # Extraction plus verification against a free reasoning model regularly
 # takes 15-45s (golden set B p95 was ~46s); leave room above that.
 DEFAULT_TIMEOUT_S = 180.0
+
+# Matches the API's own cap (api.schemas.MAX_CHAT_HISTORY).
+MAX_HISTORY_TURNS = 20
 
 START_API_HINT = "Start it with: .venv/Scripts/python.exe -m uvicorn halludetect.api.main:app"
 
@@ -82,32 +86,30 @@ def _detail(response: httpx.Response) -> str:
     return detail if isinstance(detail, str) else str(detail)
 
 
-def verify(
-    base_url: str,
-    api_key: str | None,
-    *,
-    answer: str,
-    question: str | None = None,
-    evidence: list[str] | None = None,
-    timeout_s: float = DEFAULT_TIMEOUT_S,
-) -> dict[str, Any]:
+def _require_key(api_key: str | None) -> str:
     if not api_key:
         raise ApiError(
             "No API key to send.",
             hint="Set CLIENT_API_KEYS in .env (the service's own key list), or HALLUDETECT_API_KEY for this UI.",
         )
+    return api_key
 
-    payload: dict[str, Any] = {"answer": answer, "evidence": evidence or [], "evidence_source": "none"}
-    if question:
-        payload["question"] = question
 
+def _request(
+    method: str,
+    url: str,
+    api_key: str,
+    *,
+    payload: dict[str, Any] | None = None,
+    timeout_s: float,
+) -> dict[str, Any]:
+    base_url = url.split("/v1/")[0]
+    headers = {"Authorization": f"Bearer {api_key}"}
     try:
-        response = httpx.post(
-            f"{base_url}/v1/verify",
-            json=payload,
-            headers={"Authorization": f"Bearer {api_key}"},
-            timeout=timeout_s,
-        )
+        if method == "POST":
+            response = httpx.post(url, json=payload, headers=headers, timeout=timeout_s)
+        else:
+            response = httpx.get(url, headers=headers, timeout=timeout_s)
     except httpx.ConnectError as exc:
         raise ApiError(f"Could not reach the API at {base_url}.", hint=START_API_HINT) from exc
     except httpx.TimeoutException as exc:
@@ -143,3 +145,45 @@ def verify(
     if status in (400, 422):
         raise ApiError(f"The API rejected the request: {_detail(response)}", status=status)
     raise ApiError(f"Unexpected HTTP {status} from the API: {_detail(response)}", status=status)
+
+
+def verify(
+    base_url: str,
+    api_key: str | None,
+    *,
+    answer: str,
+    question: str | None = None,
+    evidence: list[str] | None = None,
+    timeout_s: float = DEFAULT_TIMEOUT_S,
+) -> dict[str, Any]:
+    key = _require_key(api_key)
+    payload: dict[str, Any] = {"answer": answer, "evidence": evidence or [], "evidence_source": "none"}
+    if question:
+        payload["question"] = question
+    return _request("POST", f"{base_url}/v1/verify", key, payload=payload, timeout_s=timeout_s)
+
+
+def chat(
+    base_url: str,
+    api_key: str | None,
+    *,
+    question: str,
+    history: list[dict[str, str]] | None = None,
+    evidence: list[str] | None = None,
+    timeout_s: float = DEFAULT_TIMEOUT_S,
+) -> dict[str, Any]:
+    """With no evidence this asks for `web`, which the service treats as
+    `none` (NOT_VERIFIABLE) unless it has a search key.
+    """
+    key = _require_key(api_key)
+    payload: dict[str, Any] = {
+        "question": question,
+        "history": (history or [])[-MAX_HISTORY_TURNS:],
+        "evidence": evidence or [],
+        "evidence_source": "none" if evidence else "web",
+    }
+    return _request("POST", f"{base_url}/v1/chat", key, payload=payload, timeout_s=timeout_s)
+
+
+def model_stats(base_url: str, api_key: str | None, *, timeout_s: float = 10.0) -> dict[str, Any]:
+    return _request("GET", f"{base_url}/v1/models/stats", _require_key(api_key), timeout_s=timeout_s)

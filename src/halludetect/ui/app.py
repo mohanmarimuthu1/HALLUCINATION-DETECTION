@@ -4,8 +4,8 @@
     streamlit run src/halludetect/ui/app.py
 
 Needs the API running (`uvicorn halludetect.api.main:app`). Presentation
-only: every verdict, label and quote shown here comes from `/v1/verify`
-unchanged.
+only: every answer, verdict, label and quote shown here comes from the API
+(`/v1/chat`, `/v1/verify`, `/v1/models/stats`) unchanged.
 """
 from __future__ import annotations
 
@@ -15,12 +15,16 @@ import streamlit as st
 
 from halludetect.ui.client import (
     ApiError,
+    chat,
     default_api_key,
     default_api_url,
     is_healthy,
+    model_stats,
     parse_evidence,
     verify,
 )
+
+_MODES = ["Ask", "Check an answer", "Model performance"]
 
 _EXAMPLES: dict[str, dict[str, str]] = {
     "Grounded - every claim is in the evidence": {
@@ -71,6 +75,11 @@ _VERDICT_STYLE = {
     "NOT_VERIFIABLE": (st.info, "NOT VERIFIABLE", ""),
 }
 
+_CHAT_NO_EVIDENCE = (
+    "This answer was not checked: no sources were given and this deployment has no web search "
+    "configured. Do not treat it as correct. Paste sources above to check the next answer against them."
+)
+
 _REASON_TEXT = {
     "no_evidence_configured": (
         "No evidence was supplied, so there was nothing to check the answer against. "
@@ -119,11 +128,11 @@ def _sidebar() -> tuple[str, str | None]:
     return api_url, api_key or None
 
 
-def _render_result(result: dict[str, Any]) -> None:
+def _render_result(result: dict[str, Any], *, reason_text: dict[str, str] = _REASON_TEXT) -> None:
     verdict = result["verdict"]
     show, title, blurb = _VERDICT_STYLE.get(verdict, (st.info, verdict, ""))
     if verdict == "NOT_VERIFIABLE":
-        blurb = _REASON_TEXT.get(result.get("reason") or "", "The service abstained from giving a verdict.")
+        blurb = reason_text.get(result.get("reason") or "", "The service abstained from giving a verdict.")
     show(f"**{title}**  \n{blurb}")
 
     n = result["n_verifiable_claims"]
@@ -164,17 +173,12 @@ def _render_result(result: dict[str, Any]) -> None:
         st.json(result)
 
 
-def main() -> None:
-    st.set_page_config(page_title="HALLUDETECT", layout="wide")
-    st.title("HALLUDETECT")
+def _verify_mode(api_url: str, api_key: str | None) -> None:
     st.write(
         "Checks whether an answer is supported by the evidence you give it. Every claim marked "
         "supported carries a quote that was found verbatim in that evidence; with no evidence, "
         "it refuses to guess."
     )
-
-    api_url, api_key = _sidebar()
-
     st.selectbox(
         "Try an example",
         ["-", *_EXAMPLES],
@@ -215,6 +219,140 @@ def main() -> None:
         st.error(f"**{error.message}**" + (f"  \n{error.hint}" if error.hint else ""))
     elif "result" in st.session_state:
         _render_result(st.session_state["result"])
+
+
+def _render_turn(turn: dict[str, Any]) -> None:
+    with st.chat_message(turn["role"]):
+        if "error" in turn:
+            error = turn["error"]
+            st.error(f"**{error.message}**" + (f"  \n{error.hint}" if error.hint else ""))
+            return
+        st.markdown(turn["content"])
+        reply = turn.get("reply")
+        if reply is None:
+            return
+        verification = reply["verification"]
+        caption = f"Answered by {reply['answer_model']['model']} in {reply['answer_ms'] / 1000:.1f}s"
+        # With no evidence the pipeline returns before calling any model.
+        if verification.get("reason") != "no_evidence_configured":
+            caption += f", checked by {verification['model_used']['model']}"
+        st.caption(caption + ".")
+        _render_result(reply["verification"], reason_text={**_REASON_TEXT, "no_evidence_configured": _CHAT_NO_EVIDENCE})
+
+
+def _chat_mode(api_url: str, api_key: str | None) -> None:
+    st.write(
+        "Ask a question. A model answers it, then a different model checks every claim in the "
+        "answer against the sources. Without sources (or web search on the server) the answer "
+        "is shown but marked as not checked."
+    )
+    turns: list[dict[str, Any]] = st.session_state.setdefault("chat", [])
+    with st.expander("Sources (optional) - one passage per paragraph"):
+        st.text_area("Sources", key="chat_evidence", height=150, label_visibility="collapsed")
+    if turns and st.button("New chat"):
+        turns.clear()
+
+    for past in turns:
+        _render_turn(past)
+
+    question = st.chat_input("Ask a question")
+    if not question:
+        return
+    history = [
+        {"role": t["role"], "content": t["content"]} for t in turns if "error" not in t and t.get("content")
+    ]
+    user_turn = {"role": "user", "content": question}
+    turns.append(user_turn)
+    _render_turn(user_turn)
+    with st.spinner("Answering, then checking each claim (usually 20-90s)..."):
+        try:
+            reply = chat(
+                api_url,
+                api_key,
+                question=question,
+                history=history,
+                evidence=parse_evidence(st.session_state.get("chat_evidence", "")),
+            )
+            turn: dict[str, Any] = {"role": "assistant", "content": reply["answer"], "reply": reply}
+        except ApiError as exc:
+            turn = {"role": "assistant", "error": exc}
+    turns.append(turn)
+    _render_turn(turn)
+
+
+def _fmt_rate(value: float | None) -> str:
+    return "-" if value is None else f"{value:.0%}"
+
+
+def _fmt_seconds(value: float | None) -> str:
+    return "-" if value is None else f"{value / 1000:.1f}s"
+
+
+def _stats_mode(api_url: str, api_key: str | None) -> None:
+    st.write(
+        "How each model has done on this API instance: as the answering model, how often its "
+        "answers had unsupported or contradicted claims; as the checking model, how fast and "
+        "reliable it was."
+    )
+    if st.button("Refresh") or "stats" not in st.session_state:
+        try:
+            st.session_state["stats"] = model_stats(api_url, api_key)
+            st.session_state.pop("stats_error", None)
+        except ApiError as exc:
+            st.session_state["stats_error"] = exc
+            st.session_state.pop("stats", None)
+
+    error = st.session_state.get("stats_error")
+    if error is not None:
+        st.error(f"**{error.message}**" + (f"  \n{error.hint}" if error.hint else ""))
+        return
+    stats = st.session_state["stats"]
+    rows = sorted(stats["models"], key=lambda r: r["last_used"] or "", reverse=True)
+    if not rows:
+        st.info(f"No model has been called since {stats['since']}.")
+        return
+    st.dataframe(
+        [
+            {
+                "Model": row["model"],
+                "Provider": row["provider"],
+                "Answers": f"{row['answer']['calls']} ({row['answer']['failures']} failed)",
+                "Unsupported": _fmt_rate(row["answer"]["unsupported_rate"]),
+                "Contradicted": _fmt_rate(row["answer"]["contradicted_rate"]),
+                "Groundedness": _fmt_rate(row["answer"]["mean_groundedness"]),
+                "Answer avg / p95": (
+                    f"{_fmt_seconds(row['answer']['avg_latency_ms'])} / "
+                    f"{_fmt_seconds(row['answer']['p95_latency_ms'])}"
+                ),
+                "Checks": f"{row['verify']['calls']} ({row['verify']['failures']} failed)",
+                "Check avg": _fmt_seconds(row["verify"]["avg_latency_ms"]),
+                "Checks unsupported": _fmt_rate(row["verify"]["unsupported_rate"]),
+                "Status": "cooling down" if row["in_cooldown"] else (row["last_error"] or "ok"),
+                "Last used": row["last_used"] or "-",
+            }
+            for row in rows
+        ],
+        hide_index=True,
+    )
+    st.caption(
+        f"Since {stats['since']}, for this API instance only; the numbers reset when it restarts. "
+        "Rates count answers with at least 3 checkable claims and some evidence. A high "
+        "'Checks unsupported' rate points at the checking model, not the answers it checked."
+    )
+
+
+def main() -> None:
+    st.set_page_config(page_title="HALLUDETECT", layout="wide")
+    st.title("HALLUDETECT")
+    api_url, api_key = _sidebar()
+
+    mode = st.radio("Mode", _MODES, key="mode", horizontal=True, label_visibility="collapsed")
+    if mode == "Ask":
+        _chat_mode(api_url, api_key)
+    elif mode == "Check an answer":
+        _verify_mode(api_url, api_key)
+    else:
+        _stats_mode(api_url, api_key)
 
 
 # Streamlit runs a script with __name__ == "__main__"; the guard keeps the

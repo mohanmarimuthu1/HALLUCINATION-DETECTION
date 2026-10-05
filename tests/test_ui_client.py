@@ -117,3 +117,38 @@ def test_default_api_key_is_none_when_nothing_configured(monkeypatch):
     fake = settings_module.Settings(_env_file=None)
     monkeypatch.setattr(settings_module, "get_settings", lambda: fake)
     assert client.default_api_key() is None
+
+
+def test_chat_asks_for_web_evidence_when_none_is_given(monkeypatch):
+    calls: list = []
+    _post_returning(monkeypatch, _Response(200, {"answer": "a"}), calls)
+    history = [{"role": "user", "content": str(i)} for i in range(25)]
+    assert client.chat("http://api", "k", question="q", history=history) == {"answer": "a"}
+    [call] = calls
+    assert call["url"] == "http://api/v1/chat"
+    assert call["json"]["evidence_source"] == "web"
+    assert len(call["json"]["history"]) == client.MAX_HISTORY_TURNS
+    assert call["json"]["history"][-1]["content"] == "24"
+
+
+def test_chat_with_sources_checks_against_them_only(monkeypatch):
+    calls: list = []
+    _post_returning(monkeypatch, _Response(200, {}), calls)
+    client.chat("http://api", "k", question="q", evidence=["src"])
+    assert calls[0]["json"]["evidence"] == ["src"]
+    assert calls[0]["json"]["evidence_source"] == "none"
+
+
+def test_model_stats_sends_key_and_maps_errors(monkeypatch):
+    seen: list = []
+
+    def _get(url, *, headers, timeout):
+        seen.append((url, headers))
+        return _Response(401, {"detail": "invalid API key"})
+
+    monkeypatch.setattr(client.httpx, "get", _get)
+    with pytest.raises(ApiError, match="rejected the key"):
+        client.model_stats("http://api", "k")
+    assert seen == [("http://api/v1/models/stats", {"Authorization": "Bearer k"})]
+    with pytest.raises(ApiError, match="No API key"):
+        client.model_stats("http://api", None)
