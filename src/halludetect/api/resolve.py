@@ -9,6 +9,7 @@ here, once, up front.
 """
 from __future__ import annotations
 
+import threading
 from collections.abc import Iterator
 from dataclasses import dataclass
 
@@ -62,6 +63,20 @@ class _NamedProvider:
 # across requests instead of resetting on every call.
 _openrouter_health = HealthTracker()
 _nvidia_health = HealthTracker()
+
+# Same reasoning for the free-model catalog: a catalog built per request
+# never reuses its 24h cache, so OpenRouter's /models would be fetched on
+# every request. Keyed by API key because the list is fetched with it.
+_catalogs: dict[str | None, FreeModelCatalog] = {}
+_catalogs_lock = threading.Lock()
+
+
+def _catalog_for(api_key: str | None) -> FreeModelCatalog:
+    with _catalogs_lock:
+        catalog = _catalogs.get(api_key)
+        if catalog is None:
+            catalog = _catalogs[api_key] = FreeModelCatalog(api_key)
+        return catalog
 
 _NAMED_PROVIDERS: dict[ModelProvider, _NamedProvider] = {
     ModelProvider.GEMINI: _NamedProvider(GeminiProvider, GEMINI_DEFAULT_MODEL, "gemini_api_key"),
@@ -154,9 +169,8 @@ def resolve_provider(model_prefs: ModelPrefsIn, settings: Settings) -> tuple[LLM
         if not model_prefs.pinned_model:
             _require_free_pool_allowed(model_prefs)
         api_key = _secret(settings.openrouter_api_key)
-        catalog = FreeModelCatalog(api_key)
         router = Router(
-            catalog=catalog,
+            catalog=_catalog_for(api_key),
             provider_factory=lambda model: OpenRouterProvider(api_key, model),
             health=_openrouter_health,
             pinned_model=model_prefs.pinned_model,
@@ -207,7 +221,7 @@ def resolve_candidates(model_prefs: ModelPrefsIn, settings: Settings) -> Iterato
     openrouter_key = _secret(settings.openrouter_api_key)
     if openrouter_key:
         try:
-            free_models = FreeModelCatalog(openrouter_key).get_models()
+            free_models = _catalog_for(openrouter_key).get_models()
         except LLMError as exc:
             _logger.warning("free_pool_catalog_failed", provider="openrouter", error=str(exc))
             free_models = []

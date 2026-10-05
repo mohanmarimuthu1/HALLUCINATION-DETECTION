@@ -12,6 +12,7 @@ from halludetect.api.resolve import (
     ResolutionError,
     _nvidia_health,
     _openrouter_health,
+    resolve_candidates,
     resolve_evidence_source,
     resolve_provider,
 )
@@ -112,6 +113,25 @@ def test_openrouter_no_pinned_and_no_free_models_raises(monkeypatch):
     prefs = ModelPrefsIn(provider=ModelProvider.OPENROUTER)
     with pytest.raises(LLMResponseError):
         resolve_provider(prefs, _settings())
+
+
+def test_free_model_catalog_is_shared_across_requests(monkeypatch):
+    calls = []
+
+    def fetch(api_key):
+        calls.append(api_key)
+        return ["free/a"]
+
+    monkeypatch.setattr(openrouter, "fetch_free_models", fetch)
+    prefs = ModelPrefsIn(provider=ModelProvider.OPENROUTER)
+    settings = _settings(openrouter_api_key="key")
+    for _ in range(3):
+        next(resolve_candidates(prefs, settings))
+    resolve_provider(prefs, settings)
+    assert calls == ["key"]
+
+    next(resolve_candidates(prefs, _settings(openrouter_api_key="other")))
+    assert calls == ["key", "other"]
 
 
 def test_named_provider_uses_user_api_key_and_pinned_model():

@@ -313,7 +313,7 @@ its schema at `/openapi.json` and `/docs`.
 model, a request tries:
 
 1. OpenRouter's free models: models whose prompt and completion prices
-   are both 0, read from OpenRouter's model catalog.
+   are both 0, read from OpenRouter's model catalog (cached for 24 hours).
 2. Then the NVIDIA models in `NVIDIA_MODELS`, if `NVIDIA_API_KEY` is set.
 
 Within each tier, models are ranked by success rate, then average
@@ -557,14 +557,13 @@ legacy/              the v1 app, reference only
 - `NOT_ENOUGH_INFO` is the least reliable verdict: in the golden sets,
   about a third of those answers were actually correct, and the model just
   failed to quote the evidence.
-- The rate limiter, model health table and cache are per process. Running
+- The rate limiter, model health table, free-model catalog and cache are
+  per process. Running
   several instances needs a shared store (for example Redis).
 - Gemini, OpenAI and Anthropic backends are tested against mocked
   responses only.
 - Provider 5xx errors aren't retried on the same model; the free pool
   just moves to the next model.
-- OpenRouter's model catalog is fetched again on every request. It has a
-  24-hour cache, but that cache isn't shared between requests yet.
 - An optional NLI cross-encoder signal exists only as a stub
   (`detect/nli.py`) and isn't wired in.
 
