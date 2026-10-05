@@ -13,6 +13,12 @@
 - Web page and Streamlit UI: new Ask and Models modes alongside Check an
   answer.
 
+### Verification
+
+- Claims left `NOT_ENOUGH_INFO` get one quote-first recheck on the same
+  model. A label only changes to `SUPPORTED` or `CONTRADICTED` with a
+  verified quote; a failed recheck keeps the first result.
+
 ### Models (contract v1.2)
 
 - NVIDIA provider, and an NVIDIA tier in the default free pool after

@@ -95,11 +95,16 @@ Real output for an answer with one planted error ("Berlin"):
    (exact match after collapsing whitespace). A `SUPPORTED` label whose
    quote isn't found is downgraded to `NOT_ENOUGH_INFO` before the
    response is built.
-5. **Score.** Combine the claim labels into a verdict, a calibrated
+5. **Recheck.** Claims left `NOT_ENOUGH_INFO` get one more call on the
+   same model, asking for the evidence sentence first and the label
+   second. A claim changes only to a `SUPPORTED` or `CONTRADICTED` label
+   whose quote passes the same check; anything else, or a failed call,
+   keeps the first result.
+6. **Score.** Combine the claim labels into a verdict, a calibrated
    `p_hallucinated`, a groundedness fraction and its Wilson 95% interval.
    Fewer than 3 checkable claims forces `NOT_VERIFIABLE`.
 
-Both LLM calls ask for JSON matching a schema. Output that doesn't
+Every LLM call asks for JSON matching a schema. Output that doesn't
 validate gets up to 2 repair retries, then the call fails with an error.
 A partial parse is never used.
 
@@ -616,7 +621,12 @@ legacy/              the v1 app, reference only
   often overloaded. Expect occasional 502s when every model tried fails.
 - `NOT_ENOUGH_INFO` is the least reliable verdict: in the golden sets,
   about a third of those answers were actually correct, and the model just
-  failed to quote the evidence.
+  failed to quote the evidence. The recheck (step 5) recovers some of
+  them: on a live run over the 51 golden items it can affect, correct
+  verdicts went from 9 to 11 of 17 grounded answers and 7 to 8 of 12
+  contradicted ones, with no new false `GROUNDED`. A recheck that hits a
+  rate limit changes nothing. The calibration (`verdict-rate-v1`) was
+  fitted before the recheck existed.
 - The rate limiter, model health table, model stats, free-model catalog
   and cache are per process. Running several instances needs a shared
   store (for example Redis).
