@@ -1,6 +1,7 @@
 import pytest
 
 from halludetect.api import resolve
+from halludetect.observe import observer
 
 
 @pytest.fixture(autouse=True)
@@ -10,3 +11,9 @@ def _fresh_catalogs():
     resolve._catalogs.clear()
     yield
     resolve._catalogs.clear()
+
+
+@pytest.fixture(autouse=True)
+def _fresh_observer():
+    observer.reset()
+    yield

@@ -15,7 +15,7 @@ from dataclasses import dataclass
 
 from pydantic import SecretStr
 
-from halludetect.api.schemas import EvidenceSourceKind, ModelPrefsIn, ModelProvider, VerifyRequestIn
+from halludetect.api.schemas import ChatRequestIn, EvidenceSourceKind, ModelPrefsIn, ModelProvider, VerifyRequestIn
 from halludetect.detect.schemas import ModelUsed
 from halludetect.evidence.base import EvidenceSource
 from halludetect.evidence.direct import DirectEvidence
@@ -86,6 +86,18 @@ _NAMED_PROVIDERS: dict[ModelProvider, _NamedProvider] = {
 }
 
 
+def pool_health() -> dict[tuple[str, str], bool]:
+    """`(provider, model) -> in cooldown` for every model the free-pool
+    trackers have seen.
+    """
+    pools = {"openrouter": _openrouter_health, "nvidia": _nvidia_health}
+    return {
+        (provider, model): not tracker.is_available(model)
+        for provider, tracker in pools.items()
+        for model in tracker.models()
+    }
+
+
 @dataclass(frozen=True)
 class Candidate:
     """One model a request may run on. `health` is the pool tracker the
@@ -109,7 +121,7 @@ def _secret(value: SecretStr | None) -> str | None:
 
 
 def resolve_evidence_source(
-    request: VerifyRequestIn,
+    request: VerifyRequestIn | ChatRequestIn,
     settings: Settings,
     custom_evidence_source: EvidenceSource | None,
 ) -> EvidenceSource:

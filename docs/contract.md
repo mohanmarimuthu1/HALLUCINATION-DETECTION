@@ -1,15 +1,17 @@
 # HALLUDETECT API Contract
 
-`contract_version: v1.2`
+`contract_version: v1.3`
 
 | Version | Change |
 |---|---|
 | v1 | Initial frozen contract (Phase 0). |
 | v1.1 | Added optional `reason` to the response. Rules 1 and 2 below already promised a reason (`no_evidence_configured`) but v1's schema table never defined the field, so no implementation could return it. Additive: every v1 field is unchanged, and a v1 client that ignores unknown fields is unaffected. |
+| v1.3 | Added `POST /v1/chat` (a model answers a question; the answer is verified exactly like a `/v1/verify` answer) and `GET /v1/models/stats` (per-model counters). Additive: `/v1/verify` is unchanged. |
 | v1.2 | Added `nvidia` to `model_prefs.provider`. The default free pool now spans OpenRouter's free models and, when configured, NVIDIA-hosted models; a model that fails mid-request is replaced by the next one, and `model_used` names the one that produced the result. Additive: no existing value changed meaning. |
 
 This document is the single source of truth for the `/v1/verify` request and
-response schema. Per the project plan (Phase 0, "Spec lock"), it is frozen
+response schema, and for the `/v1/chat` and `/v1/models/stats` endpoints
+built on it. Per the project plan (Phase 0, "Spec lock"), it is frozen
 once committed and must not change without a version bump to
 `contract_version`. Implementation code in later phases must conform to this
 document, not the other way around.
@@ -94,6 +96,65 @@ or `GROUNDED` verdict — absence of evidence always resolves to
 3. **`SUPPORTED` requires a verified quote.** A claim can only carry `label: SUPPORTED` if `quote_verified: true`. If the quote-grounding check fails, the claim is downgraded to `label: NOT_ENOUGH_INFO` server-side, flagged `quote_unverified`, before the response is returned. A `SUPPORTED` label with an unverified quote must never reach a caller.
 
 These three rules are the direct fix for the defect that made v1 unusable: a model was allowed to fall back to its own general knowledge and have that labeled "supported."
+
+---
+
+## `POST /v1/chat` (v1.3)
+
+A model writes an answer to `question`; that answer is then verified as if
+it had been sent to `/v1/verify` with the same `question`, `evidence` and
+`evidence_source`. The three contract rules above apply to it unchanged.
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `question` | string, 1-4000 chars | required | The question to answer. |
+| `history` | array of `{role: user \| assistant, content: string}`, max 20 | optional | Prior turns, oldest first. Context for the answering model only, never evidence. |
+| `evidence` | array of strings | optional | If non-empty, the answering model is told to use only these, and the answer is verified against these only. |
+| `evidence_source` | enum: `none \| web \| custom` | optional | Default `web`. Same meaning as in `/v1/verify`; `web` with no search key behaves as `none`. |
+| `model_prefs` | object | optional | As in `/v1/verify`; applies to both the answer and the check. |
+
+Response:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `request_id` | string | Same id as `verification.request_id`. |
+| `answer` | string | The model's answer. |
+| `answer_model` | `{provider, model}` | The model that wrote the answer. |
+| `answer_ms` | integer | Time spent getting the answer. |
+| `verification` | `AnalysisResult` | The check of `answer`. `verification.model_used` is the checking model. |
+
+Rules:
+- The answer is never evidence. Its claims are checked only against
+  `evidence` or the configured evidence source; with neither, the verdict
+  is `NOT_VERIFIABLE` / `no_evidence_configured` and the answer is returned
+  unchecked.
+- The checking model is a different model from `answer_model` whenever
+  the pool offers one; the same model is used only as a last resort.
+- Failures follow `/v1/verify`: 502 when every model tried failed (for the
+  answer or for the check), 503 when none was available. An empty answer
+  counts as a failed model.
+- Not cached.
+
+## `GET /v1/models/stats` (v1.3)
+
+Same Bearer auth as `/v1/verify`; not rate limited. Returns `since` (when
+counting started, UTC) and one row per `(provider, model)` that has been
+called, each with an `answer` and a `verify` block, `in_cooldown`,
+`last_error` and `last_used`. Full field list in `docs/openapi.yaml`
+(`ModelStats`).
+
+- `answer`: the model as the `/v1/chat` answering model. `verdicts` are
+  the verdicts its answers received, so `unsupported_rate` ((CONTRADICTED +
+  NOT_ENOUGH_INFO) / scored) and `contradicted_rate` measure how often it
+  hallucinated.
+- `verify`: the model as the checking model on `/v1/verify` and
+  `/v1/chat`. `verdicts` are the verdicts it gave. A checker that fails to
+  quote turns correct answers into NOT_ENOUGH_INFO, so a high
+  `unsupported_rate` here points at the checker.
+- Scored means GROUNDED, CONTRADICTED or NOT_ENOUGH_INFO; rates are `null`
+  until a model has one. NOT_VERIFIABLE results are counted but not scored.
+- Counters are in memory, per process: they reset on restart and each
+  instance (for example each serverless instance) has its own.
 
 ---
 

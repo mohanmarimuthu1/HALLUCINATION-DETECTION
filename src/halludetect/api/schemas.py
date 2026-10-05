@@ -13,6 +13,11 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
+from halludetect.detect.answer import ChatTurn
+from halludetect.detect.schemas import AnalysisResult, ModelUsed
+
+MAX_CHAT_HISTORY = 20
+
 
 class ModelProvider(str, Enum):
     OPENROUTER = "openrouter"
@@ -42,3 +47,19 @@ class VerifyRequestIn(BaseModel):
     evidence: list[str] = Field(default_factory=list)
     evidence_source: EvidenceSourceKind
     model_prefs: ModelPrefsIn = Field(default_factory=ModelPrefsIn)
+
+
+class ChatRequestIn(BaseModel):
+    question: str = Field(min_length=1, max_length=4000)
+    history: list[ChatTurn] = Field(default_factory=list, max_length=MAX_CHAT_HISTORY)
+    evidence: list[str] = Field(default_factory=list)
+    evidence_source: EvidenceSourceKind = EvidenceSourceKind.WEB
+    model_prefs: ModelPrefsIn = Field(default_factory=ModelPrefsIn)
+
+
+class ChatResult(BaseModel):
+    request_id: str
+    answer: str
+    answer_model: ModelUsed
+    answer_ms: int
+    verification: AnalysisResult

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: HALLUDETECT API
-  version: "1.2.0"
+  version: "1.3.0"
   description: >
     Standalone hallucination verification service. Verifies whether a given
     answer is grounded in supplied or fetched evidence. Never falls back to
@@ -39,6 +39,58 @@ paths:
           description: Every model tried failed (up to the free-pool attempt and time limits)
         '503':
           description: No model is available to try
+
+  /chat:
+    post:
+      operationId: chat
+      summary: Answer a question with a model, then verify that answer
+      description: >
+        The answer is checked the same way /verify checks any answer, against
+        `evidence` or `evidence_source` only. The checking model is a
+        different one from the answering model whenever the pool has one.
+        Not cached.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: The answer and its verification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResult'
+        '400':
+          description: Malformed request
+        '401':
+          description: Missing or invalid API key
+        '422':
+          description: Request failed validation (empty question, more than 20 history turns)
+        '429':
+          description: Rate limit exceeded
+        '502':
+          description: Every model tried failed, for the answer or for the check
+        '503':
+          description: No model is available to try
+
+  /models/stats:
+    get:
+      operationId: modelStats
+      summary: Per-model performance since this server process started
+      description: >
+        In memory, per process; resets on restart and is not shared between
+        instances. Not rate limited.
+      responses:
+        '200':
+          description: One row per model that has been called
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelStats'
+        '401':
+          description: Missing or invalid API key
 
   /healthz:
     get:
@@ -259,3 +311,115 @@ components:
             (contract v1.1). no_evidence_configured - no evidence was
             available to verify against. insufficient_verifiable_claims -
             fewer than 3 FACTUAL claims were extracted.
+
+    ChatTurn:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+      required: [role, content]
+
+    ChatRequest:
+      type: object
+      properties:
+        question:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        history:
+          type: array
+          maxItems: 20
+          description: Prior turns, oldest first. Context for the answering model only; never used as evidence.
+          items:
+            $ref: '#/components/schemas/ChatTurn'
+        evidence:
+          type: array
+          items:
+            type: string
+          description: If non-empty, the answering model is told to use only these, and the answer is verified against these only.
+        evidence_source:
+          allOf:
+            - $ref: '#/components/schemas/EvidenceSource'
+          default: web
+        model_prefs:
+          $ref: '#/components/schemas/ModelPrefs'
+      required: [question]
+
+    ChatResult:
+      type: object
+      properties:
+        request_id:
+          type: string
+        answer:
+          type: string
+        answer_model:
+          $ref: '#/components/schemas/ModelUsed'
+        answer_ms:
+          type: integer
+        verification:
+          $ref: '#/components/schemas/AnalysisResult'
+      required: [request_id, answer, answer_model, answer_ms, verification]
+
+    VerdictCounts:
+      type: object
+      properties:
+        GROUNDED: {type: integer}
+        CONTRADICTED: {type: integer}
+        NOT_ENOUGH_INFO: {type: integer}
+        NOT_VERIFIABLE: {type: integer}
+
+    RoleStats:
+      type: object
+      description: >
+        `calls` includes failures. Latency is over the last 200 successful
+        calls. Rates are over scored verdicts (GROUNDED, CONTRADICTED,
+        NOT_ENOUGH_INFO) and null when there are none.
+      properties:
+        calls: {type: integer}
+        failures: {type: integer}
+        rate_limited: {type: integer}
+        avg_latency_ms: {type: number, nullable: true}
+        p95_latency_ms: {type: number, nullable: true}
+        verdicts:
+          $ref: '#/components/schemas/VerdictCounts'
+        contradicted_rate: {type: number, nullable: true}
+        unsupported_rate:
+          type: number
+          nullable: true
+          description: (CONTRADICTED + NOT_ENOUGH_INFO) / scored.
+        mean_groundedness:
+          type: number
+          nullable: true
+          description: Answer role only.
+
+    ModelStatsRow:
+      type: object
+      properties:
+        provider: {type: string}
+        model: {type: string}
+        answer:
+          allOf:
+            - $ref: '#/components/schemas/RoleStats'
+          description: As the /chat answering model; verdicts are the ones its answers received.
+        verify:
+          allOf:
+            - $ref: '#/components/schemas/RoleStats'
+          description: As the checking model, on /verify and /chat; verdicts are the ones it gave.
+        in_cooldown: {type: boolean}
+        last_error: {type: string, nullable: true}
+        last_used: {type: string, format: date-time, nullable: true}
+
+    ModelStats:
+      type: object
+      properties:
+        since:
+          type: string
+          format: date-time
+        models:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModelStatsRow'
+      required: [since, models]

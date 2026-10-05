@@ -552,3 +552,158 @@ def test_a_request_that_never_calls_the_model_leaves_its_health_alone(client, mo
     )
     assert response.status_code == 200
     assert _openrouter_health.get("free/a").attempts == 0
+
+
+# --- /v1/chat and /v1/models/stats (contract v1.3) --------------------------
+
+_CHAT_REQUEST = {
+    "question": "What is the capital of France?",
+    "evidence": ["Paris is the capital of France."],
+}
+
+
+def test_chat_answer_is_checked_by_a_different_model(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    calls = _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {"free/a": ["Paris is the capital of France."], "free/b": list(_ONE_SUPPORTED_CLAIM)},
+    )
+    response = client.post("/v1/chat", json=_CHAT_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["answer"] == "Paris is the capital of France."
+    assert body["answer_model"] == {"provider": "openrouter", "model": "free/a"}
+    assert body["verification"]["model_used"] == {"provider": "openrouter", "model": "free/b"}
+    assert body["verification"]["claims"][0]["label"] == "SUPPORTED"
+    assert calls == ["free/a", "free/b", "free/b"]
+
+
+def test_chat_without_evidence_answers_but_never_verifies_from_model_knowledge(client, monkeypatch):
+    # Default evidence_source is web; with no TAVILY_API_KEY that is the
+    # same as none, so the answer must come back NOT_VERIFIABLE.
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    calls = _script_by_model(
+        monkeypatch, openrouter.OpenRouterProvider, {"free/a": ["Paris is the capital of France."]}
+    )
+    response = client.post("/v1/chat", json={"question": "Capital of France?"}, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["answer"] == "Paris is the capital of France."
+    assert body["verification"]["verdict"] == "NOT_VERIFIABLE"
+    assert body["verification"]["reason"] == "no_evidence_configured"
+    assert calls == ["free/a"]
+    rows = {row["model"]: row for row in client.get("/v1/models/stats", headers=_AUTH_HEADERS).json()["models"]}
+    assert "free/b" not in rows
+
+
+def test_chat_fails_over_when_the_answering_model_fails(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    calls = _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {
+            "free/a": [LLMTimeoutError("slow")],
+            "free/b": ["   "],
+        },
+    )
+    response = client.post("/v1/chat", json=_CHAT_REQUEST, headers=_AUTH_HEADERS)
+    # free/a times out and free/b's blank answer counts as a failure too.
+    assert response.status_code == 502
+    assert calls == ["free/a", "free/b"]
+
+
+def test_chat_empty_answer_moves_to_next_model(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {"free/a": ["", *_ONE_SUPPORTED_CLAIM], "free/b": ["Paris is the capital of France."]},
+    )
+    response = client.post("/v1/chat", json=_CHAT_REQUEST, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["answer_model"]["model"] == "free/b"
+    assert body["verification"]["model_used"]["model"] == "free/a"
+
+
+def test_chat_sends_history_and_sources_to_the_answering_model(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a"])
+    prompts: list[str] = []
+
+    def _complete(self, prompt, *, max_tokens=1024):
+        from halludetect.llm.base import LLMResponse, TokenUsage
+
+        prompts.append(prompt)
+        text = "It is Paris." if len(prompts) == 1 else _ONE_SUPPORTED_CLAIM[len(prompts) - 2]
+        return LLMResponse(text=text, provider="x", model=self._model, usage=TokenUsage(1, 1))
+
+    monkeypatch.setattr(openrouter.OpenRouterProvider, "complete", _complete)
+    request = {
+        **_CHAT_REQUEST,
+        "history": [{"role": "user", "content": "Hi"}, {"role": "assistant", "content": "Hello."}],
+    }
+    response = client.post("/v1/chat", json=request, headers=_AUTH_HEADERS)
+    assert response.status_code == 200
+    assert "[1] Paris is the capital of France." in prompts[0]
+    assert "USER: Hi\nASSISTANT: Hello." in prompts[0]
+    assert prompts[0].endswith("USER: What is the capital of France?\nASSISTANT:")
+
+
+def test_chat_rejects_bad_requests(client):
+    assert client.post("/v1/chat", json={"question": ""}, headers=_AUTH_HEADERS).status_code == 422
+    too_long = {"question": "q", "history": [{"role": "user", "content": "x"}] * 21}
+    assert client.post("/v1/chat", json=too_long, headers=_AUTH_HEADERS).status_code == 422
+    assert client.post("/v1/chat", json={"question": "q"}).status_code == 401
+
+
+def test_model_stats_reports_answer_and_verify_roles(client, monkeypatch):
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    _script_by_model(
+        monkeypatch,
+        openrouter.OpenRouterProvider,
+        {
+            "free/a": [LLMResponseError("bad"), *_ONE_SUPPORTED_CLAIM],
+            "free/b": ["Paris is the capital of France."],
+        },
+    )
+    assert client.post("/v1/chat", json=_CHAT_REQUEST, headers=_AUTH_HEADERS).status_code == 200
+
+    assert client.get("/v1/models/stats").status_code == 401
+    stats = client.get("/v1/models/stats", headers=_AUTH_HEADERS).json()
+    rows = {row["model"]: row for row in stats["models"]}
+    assert rows["free/a"]["answer"]["calls"] == 1
+    assert rows["free/a"]["answer"]["failures"] == 1
+    assert rows["free/a"]["last_error"] == "bad"
+    assert rows["free/b"]["answer"]["calls"] == 1
+    assert rows["free/b"]["answer"]["verdicts"]["NOT_VERIFIABLE"] == 1
+    # One claim is too few to score, so no rate yet.
+    assert rows["free/b"]["answer"]["unsupported_rate"] is None
+    assert rows["free/b"]["verify"]["calls"] == 0
+    assert rows["free/a"]["verify"]["calls"] == 1
+    assert rows["free/a"]["verify"]["avg_latency_ms"] is not None
+    assert stats["since"].endswith("Z")
+
+
+def test_chat_answer_and_check_share_one_time_budget(client, monkeypatch):
+    import time
+
+    from halludetect.llm.base import LLMResponse, TokenUsage
+
+    _use_settings(_settings(free_pool_budget_s=0.05), monkeypatch)
+    monkeypatch.setattr(openrouter, "fetch_free_models", lambda api_key: ["free/a", "free/b"])
+    calls: list[str] = []
+
+    def _complete(self, prompt, *, max_tokens=1024):
+        calls.append(self._model)
+        if len(calls) == 1:
+            time.sleep(0.1)
+            return LLMResponse(text="Paris.", provider="x", model=self._model, usage=TokenUsage(1, 1))
+        raise LLMResponseError("down")
+
+    monkeypatch.setattr(openrouter.OpenRouterProvider, "complete", _complete)
+    response = client.post("/v1/chat", json=_CHAT_REQUEST, headers=_AUTH_HEADERS)
+    # The slow answer used up the budget: the check gets one attempt, not two.
+    assert response.status_code == 502
+    assert "stopped after" in response.json()["detail"]
+    assert calls == ["free/a", "free/b"]
