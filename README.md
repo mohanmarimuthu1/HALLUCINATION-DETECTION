@@ -7,6 +7,11 @@ any person, and the evidence it should be based on. It splits the answer
 into claims, checks each claim against that evidence, and returns a
 verdict with the exact quote that backs or contradicts each claim.
 
+It can also act as a checked chatbot: ask a question, a model answers it,
+and a different model checks every claim in that answer against the
+sources. A model performance view tracks, per model, how often its
+answers turned out unsupported or contradicted.
+
 **Live:** https://hallucination-detection-azure.vercel.app (needs an
 access key, see [Web page](#web-page)).
 
@@ -269,7 +274,7 @@ Streamlit client only: `HALLUDETECT_API_URL` (default
 ## API reference
 
 The contract is versioned and frozen: [`docs/contract.md`](docs/contract.md)
-(currently v1.2), with a machine-readable copy in
+(currently v1.3), with a machine-readable copy in
 [`docs/openapi.yaml`](docs/openapi.yaml). The running service also serves
 its schema at `/openapi.json` and `/docs`.
 
@@ -278,6 +283,8 @@ its schema at `/openapi.json` and `/docs`.
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
 | `POST` | `/v1/verify` | Bearer client key | Verify an answer. |
+| `POST` | `/v1/chat` | Bearer client key | Answer a question with a model, then verify that answer. |
+| `GET` | `/v1/models/stats` | Bearer client key | Per-model performance since the process started. |
 | `GET` | `/healthz` | none | Liveness: `{"status": "ok"}`. |
 | `GET` | `/` | none | Web page. |
 | `GET` | `/docs`, `/openapi.json` | none | API docs. |
@@ -294,6 +301,48 @@ its schema at `/openapi.json` and `/docs`.
 | `model_prefs.pinned_model` | string | Use exactly this model, with no fallback. Required for `custom`. |
 | `model_prefs.user_api_key` | string | Your own key for the chosen provider. Never logged or returned. |
 | `model_prefs.allow_free_pool` | bool | Default `true`. `false` with `provider: openrouter` needs `pinned_model`, otherwise 400. |
+
+### Chat
+
+`POST /v1/chat` takes `question`, optional `history` (up to 20
+`{role, content}` turns, context for the answer only), `evidence`,
+`evidence_source` (default `web`) and `model_prefs`. It returns
+`answer`, `answer_model`, `answer_ms` and `verification`, a normal
+`AnalysisResult` for that answer.
+
+- The answer is checked exactly like a `/v1/verify` answer. It is never
+  evidence for itself: with no `evidence` and no `TAVILY_API_KEY`, the
+  answer comes back `NOT_VERIFIABLE` / `no_evidence_configured`,
+  unchecked.
+- The checking model is a different model from the answering one
+  whenever the pool has one.
+- Both steps fail over across the free pool like `/v1/verify`. An empty
+  answer counts as a failed model.
+
+```bash
+curl -s http://127.0.0.1:8000/v1/chat \
+  -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+  -d '{"question": "How tall is the Eiffel Tower?",
+       "evidence": ["The Eiffel Tower is 330 metres (1,083 ft) tall."]}'
+```
+
+### Model stats
+
+`GET /v1/models/stats` returns one row per model that has been called,
+with two blocks:
+
+- `answer`: the model as the chat answering model. Calls, failures,
+  latency (avg, p95), the verdicts its answers received, and
+  `unsupported_rate` ((CONTRADICTED + NOT_ENOUGH_INFO) / scored) and
+  `contradicted_rate`. This is the per-model hallucination measure.
+- `verify`: the model as the checking model, with the verdicts it gave. A
+  checker that fails to quote turns correct answers into
+  `NOT_ENOUGH_INFO`, so a high unsupported rate here points at the checker,
+  not at the answers it checked.
+
+Rates count GROUNDED, CONTRADICTED and NOT_ENOUGH_INFO only and are `null`
+until there is one. The counters are in memory and per process: on Vercel
+each serverless instance has its own, and they reset on a cold start.
 
 ### Status codes
 
@@ -398,17 +447,26 @@ version bump needs no new model calls.
 
 ### Web page
 
-Served at `/`. Paste an answer and its sources. It shows each claim, its
-label and quote, and highlights the quoted passage in the sources. The
-page has no key built in: visitors enter an **access key** (one of
+Served at `/`, with three modes:
+
+- **Ask**: a chat. Each reply shows the answer, which model wrote it and
+  which checked it, and the claim-by-claim result. Paste sources under
+  "Sources" to check answers against them.
+- **Check an answer**: paste an answer and its sources. It shows each
+  claim, its label and quote, and highlights the quoted passage in the
+  sources.
+- **Models**: the `/v1/models/stats` table.
+
+ The page has no key built in: visitors enter an **access key** (one of
 `CLIENT_API_KEYS`), which is kept in their browser's local storage until
 they press "Forget key", or cleared automatically on a 401. Model output
 is inserted as text, never as HTML.
 
 ### Streamlit UI
 
-Local only (Streamlit needs a long-running server). Like the web page, it
-only calls the API.
+Local only (Streamlit needs a long-running server). The same three modes
+as the web page (Ask, Check an answer, Model performance); like the web
+page, it only calls the API.
 
 ```bash
 pip install -e ".[ui]"
@@ -504,7 +562,9 @@ src/halludetect/
     auth.py          Bearer client-key check
     ratelimit.py     token bucket per client key
     schemas.py       request models
+  observe.py         per-model counters for /v1/models/stats
   detect/
+    answer.py        answer generation for /v1/chat
     claims.py        typed claim extraction
     verify.py        claim verification, joined by claim_id
     quote_check.py   quote-in-evidence check
@@ -557,9 +617,12 @@ legacy/              the v1 app, reference only
 - `NOT_ENOUGH_INFO` is the least reliable verdict: in the golden sets,
   about a third of those answers were actually correct, and the model just
   failed to quote the evidence.
-- The rate limiter, model health table, free-model catalog and cache are
-  per process. Running
-  several instances needs a shared store (for example Redis).
+- The rate limiter, model health table, model stats, free-model catalog
+  and cache are per process. Running several instances needs a shared
+  store (for example Redis).
+- Chat without pasted sources is only checked when `TAVILY_API_KEY` is
+  set. Production does not set it yet, so there those answers come back
+  unchecked.
 - Gemini, OpenAI and Anthropic backends are tested against mocked
   responses only.
 - Provider 5xx errors aren't retried on the same model; the free pool

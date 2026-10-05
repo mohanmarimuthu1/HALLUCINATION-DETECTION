@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+### API (contract v1.3)
+
+- `POST /v1/chat`: a model answers a question (with optional chat
+  history and sources), then a different model checks the answer exactly
+  like `/v1/verify`. Without sources or a search key the answer is
+  returned unchecked (`NOT_VERIFIABLE`).
+- `GET /v1/models/stats`: per-model calls, failures, latency, and the
+  verdicts each model's answers received and gave as checker.
+- Web page and Streamlit UI: new Ask and Models modes alongside Check an
+  answer.
+
+### Models (contract v1.2)
+
+- NVIDIA provider, and an NVIDIA tier in the default free pool after
+  OpenRouter's free models.
+- A model that fails mid-request is replaced by the next one in the pool.
+  Free-pool timeouts move on instead of retrying, and a request stops
+  starting new attempts after `FREE_POOL_BUDGET_S` (90s).
+- `allow_free_pool: false` is enforced (400 unless a model is pinned or
+  another provider is chosen).
+- Model health is only updated for models that were actually called.
+- The OpenRouter free-model list is cached per process instead of fetched
+  on every request.
+
 ## 1.0.0 - 2026-09-29
 
 First release of HALLUDETECT v2, a standalone service that checks whether
