@@ -20,7 +20,8 @@ def test_index_serves_the_page(monkeypatch):
     assert response.headers["content-type"].startswith("text/html")
     assert response.headers["x-content-type-options"] == "nosniff"
     assert "Check answer" in response.text
-    assert 'fetch("/v1/verify"' in response.text
+    for call in ('"POST", "/v1/verify"', '"POST", "/v1/chat"', '"GET", "/v1/models/stats"'):
+        assert f"callApi({call}" in response.text
 
 
 def test_index_never_carries_a_server_side_key(monkeypatch):

@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HALLUDETECT: check an answer against its sources</title>
+<title>HALLUDETECT: answers checked against sources</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23c9f0b5'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='700' text-anchor='middle' fill='%231b2a41'%3EH%3C/text%3E%3C/svg%3E">
-<meta name="description" content="Check whether an answer is backed by the sources it should come from. A claim only counts when an exact quote supports it.">
+<meta name="description" content="Ask a question or paste an answer, and see which claims the sources back. A claim only counts when an exact quote supports it.">
 <style>
   :root {
     --page: #f4f6f9;
@@ -24,6 +24,7 @@
   }
 
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
 
   body {
     margin: 0;
@@ -38,24 +39,42 @@
   .masthead { border-bottom: 1px solid var(--rule); background: var(--sheet); }
   .masthead-inner {
     max-width: 1240px; margin: 0 auto; padding: 22px 28px 20px;
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 28px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
   }
   .wordmark {
     margin: 0; font: 700 26px/1 var(--serif); letter-spacing: 0.02em;
   }
-  .lede { margin: 0; max-width: 62ch; color: var(--ink-soft); }
+  .lede { margin: 0; max-width: 54ch; color: var(--ink-soft); }
+
+  .keybar { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .keybar-label { font-weight: 600; font-size: 15px; }
+  .keybar .input { width: 15em; padding: 6px 9px; font-size: 15px; }
+  .keybar-hint { flex-basis: 100%; margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+
+  .modes-bar { max-width: 1240px; margin: 0 auto; padding: 24px 28px 0; }
+  .modes {
+    display: inline-flex; gap: 3px; padding: 3px; max-width: 100%;
+    background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px;
+  }
+  .mode {
+    font: 600 15.5px/1 var(--sans); color: var(--ink-soft); background: none;
+    border: 0; border-radius: 4px; padding: 10px 16px; cursor: pointer; white-space: nowrap;
+  }
+  .mode:hover { color: var(--ink); }
+  .mode[aria-selected="true"] { background: var(--ink); color: #ffffff; }
 
   .desk {
-    max-width: 1240px; margin: 0 auto; padding: 28px;
-    display: grid; gap: 28px; grid-template-columns: 1fr;
+    max-width: 1240px; margin: 0 auto; padding: 20px 28px 28px;
+    display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr);
   }
   @media (min-width: 980px) {
     .desk { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+    .desk-single { grid-template-columns: minmax(0, 1fr); }
   }
 
   .sheet {
     background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px;
-    padding: 26px 28px 30px;
+    padding: 26px 28px 30px; min-width: 0;
   }
   .sheet-title { margin: 0 0 18px; font: 600 15px/1.3 var(--sans); color: var(--ink-soft); }
 
@@ -94,9 +113,6 @@
   }
   .link-button:hover { color: var(--ink-soft); }
 
-  .key-row { display: flex; gap: 12px; align-items: center; }
-  .key-row .input { flex: 1; }
-
   .primary {
     font: 600 17px/1 var(--sans); color: #ffffff; background: var(--ink);
     border: 1px solid var(--ink); border-radius: 4px; padding: 13px 22px; cursor: pointer;
@@ -104,28 +120,35 @@
   .primary:hover { background: #2c3e5a; }
   .primary[disabled] { opacity: 0.6; cursor: progress; }
 
+  .secondary {
+    font: 600 15px/1 var(--sans); color: var(--ink); background: var(--sheet);
+    border: 1px solid var(--ink-soft); border-radius: 4px; padding: 9px 16px; cursor: pointer;
+  }
+  .secondary:hover { border-color: var(--ink); }
+  .secondary[disabled] { opacity: 0.6; cursor: progress; }
+
   .empty { color: var(--ink-soft); max-width: 46ch; }
 
   .verdict { margin: 0 0 6px; font: 600 34px/1.18 var(--serif); }
   .verdict-mark { padding: 0 0.12em; border-radius: 3px; }
   .summary { margin: 0 0 22px; font-size: 17.5px; max-width: 60ch; }
 
-  .facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 18px; margin: 0 0 26px; font-size: 15px; }
+  .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 18px; margin: 0 0 26px; font-size: 15px; }
   .facts dt { color: var(--ink-soft); }
-  .facts dd { margin: 0; }
+  .facts dd { margin: 0; overflow-wrap: anywhere; }
 
   .section-title { margin: 26px 0 12px; font: 600 15px/1.3 var(--sans); color: var(--ink-soft); }
 
   .claims { list-style: none; margin: 0; padding: 0; }
-  .claim { display: grid; grid-template-columns: 30px 1fr; gap: 0 12px; padding: 14px 0; border-top: 1px solid var(--rule); }
+  .claim { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 0 12px; padding: 14px 0; border-top: 1px solid var(--rule); }
   .claim:first-child { border-top: 0; padding-top: 4px; }
   .claim-num {
     width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
     font: 600 14px/1 var(--sans); margin-top: 3px;
   }
   .claim-status { font-weight: 600; font-size: 15px; }
-  .claim-text { margin: 2px 0 0; font: 18px/1.5 var(--serif); }
-  .claim-quote { margin: 10px 0 0; padding-left: 14px; border-left: 3px solid var(--rule); font: italic 16.5px/1.55 var(--serif); color: var(--ink-soft); }
+  .claim-text { margin: 2px 0 0; font: 18px/1.5 var(--serif); overflow-wrap: break-word; }
+  .claim-quote { margin: 10px 0 0; padding-left: 14px; border-left: 3px solid var(--rule); font: italic 16.5px/1.55 var(--serif); color: var(--ink-soft); overflow-wrap: break-word; }
   .claim-note { margin: 6px 0 0; font-size: 14.5px; color: var(--ink-soft); }
 
   .is-backed { background: var(--mark-backed); }
@@ -137,7 +160,7 @@
 
   .source { margin: 0 0 16px; }
   .source-name { font-size: 15px; color: var(--ink-soft); margin-bottom: 2px; }
-  .source-text { margin: 0; font: 18px/1.65 var(--serif); max-width: 68ch; }
+  .source-text { margin: 0; font: 18px/1.65 var(--serif); max-width: 68ch; overflow-wrap: break-word; }
   .source-mark { padding: 1px 0; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
   .source-ref { font: 600 11.5px/1 var(--sans); vertical-align: super; margin-left: 1px; }
 
@@ -150,6 +173,39 @@
   .raw { margin-top: 22px; font-size: 14.5px; }
   .raw summary { cursor: pointer; color: var(--ink-soft); }
   .raw pre { overflow: auto; background: var(--page); border-radius: 4px; padding: 12px; font-size: 13px; }
+
+  /* Ask */
+  .chat > * { max-width: 880px; }
+  .transcript { list-style: none; margin: 0; padding: 0; }
+  .turn { padding: 20px 0; border-top: 1px solid var(--rule); }
+  .turn:first-child { border-top: 0; padding-top: 0; }
+  .turn-who { display: block; font: 600 14px/1.3 var(--sans); color: var(--ink-soft); margin-bottom: 4px; }
+  .turn-question { margin: 0; font: 600 19px/1.45 var(--serif); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .turn-meta { margin: 0 0 8px; font-size: 14.5px; color: var(--ink-soft); overflow-wrap: anywhere; }
+  .answer-text { margin: 0 0 20px; font: 18px/1.65 var(--serif); max-width: 68ch; white-space: pre-wrap; overflow-wrap: break-word; }
+  .turn-check { border-left: 3px solid var(--rule); padding-left: 16px; }
+  .turn .verdict { font-size: 24px; }
+  .turn .summary { font-size: 16.5px; }
+  .turn-action { margin: 0 0 22px; }
+  .composer { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--rule); }
+  .ask-sources { margin: 14px 0 20px; }
+  .ask-sources summary { cursor: pointer; font-weight: 600; }
+  .ask-sources-body { padding-top: 8px; }
+  .composer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+  .composer-status:not(:empty) { margin-top: 16px; }
+
+  /* Models */
+  .models-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .models-head .sheet-title { margin: 0; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .stats { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  .stats th, .stats td { text-align: left; vertical-align: top; padding: 9px 14px 9px 0; border-top: 1px solid var(--rule); }
+  .stats thead th { border-top: 0; font-weight: 600; color: var(--ink-soft); }
+  .stats .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .stats-model { font-weight: 600; white-space: nowrap; }
+  .stats-sub { display: block; font-weight: 400; font-size: 13px; color: var(--ink-soft); }
+  .stats-status { display: block; max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stats-when { white-space: nowrap; }
 
   .foot { max-width: 1240px; margin: 0 auto; padding: 0 28px 36px; font-size: 14.5px; color: var(--ink-soft); }
   .foot a { color: var(--ink); }
@@ -168,10 +224,14 @@
   }
 
   @media (max-width: 560px) {
-    .masthead-inner, .desk { padding-left: 16px; padding-right: 16px; }
+    .masthead-inner, .modes-bar, .desk, .foot { padding-left: 16px; padding-right: 16px; }
     .sheet { padding: 20px 18px 24px; }
     .verdict { font-size: 28px; }
-    .key-row { flex-wrap: wrap; }
+    .keybar { margin-left: 0; width: 100%; }
+    .keybar .input { flex: 1; width: auto; min-width: 0; }
+    .modes { display: flex; }
+    .mode { flex: 1 1 auto; padding: 10px 8px; font-size: 15px; }
+    .turn-check { padding-left: 12px; }
   }
 </style>
 </head>
@@ -179,63 +239,111 @@
 <header class="masthead">
   <div class="masthead-inner">
     <h1 class="wordmark">HALLUDETECT</h1>
-    <p class="lede">Paste an answer and the sources it should come from. A claim only counts as backed when an exact quote from a source supports it.</p>
+    <p class="lede">Ask a question or paste an answer. A claim only counts as backed when an exact quote from a source supports it.</p>
+    <div class="keybar">
+      <label class="keybar-label" for="key">Access key</label>
+      <input class="input input-key" id="key" type="password" autocomplete="off" spellcheck="false" aria-describedby="key-hint">
+      <button type="button" class="link-button" id="forget-key" hidden>Forget key</button>
+      <p class="keybar-hint" id="key-hint">Ask whoever runs this site. It's kept in this browser only.</p>
+    </div>
   </div>
 </header>
 
-<main class="desk">
-  <section class="sheet" aria-labelledby="input-title">
-    <h2 id="input-title" class="sheet-title">What to check</h2>
-
-    <div class="examples">
-      <span class="examples-label">Try an example:</span>
-      <button type="button" class="chip" data-example="backed">A backed answer</button>
-      <button type="button" class="chip" data-example="wrong">Wrong facts</button>
-      <button type="button" class="chip" data-example="nosource">No sources</button>
+<main>
+  <div class="modes-bar">
+    <div class="modes" role="tablist" aria-label="Mode">
+      <button type="button" class="mode" role="tab" id="tab-ask" aria-controls="panel-ask" aria-selected="true">Ask</button>
+      <button type="button" class="mode" role="tab" id="tab-check" aria-controls="panel-check" aria-selected="false" tabindex="-1">Check an answer</button>
+      <button type="button" class="mode" role="tab" id="tab-models" aria-controls="panel-models" aria-selected="false" tabindex="-1">Models</button>
     </div>
+  </div>
 
-    <form id="check-form" novalidate>
-      <div class="field">
-        <label class="field-label" for="question">Question <span class="field-optional">(optional)</span></label>
-        <input class="input" id="question" type="text" autocomplete="off">
-        <p class="field-hint">Helps split the answer into claims.</p>
-      </div>
+  <div class="desk desk-single" role="tabpanel" id="panel-ask" aria-labelledby="tab-ask">
+    <section class="sheet chat" aria-labelledby="ask-title">
+      <h2 id="ask-title" class="sheet-title">Conversation</h2>
+      <p class="empty chat-empty" id="chat-empty">A model answers your question, then each claim in the answer is checked against the sources you give or, if this server has web search set up, the web. With neither, the answer is shown unchecked.</p>
+      <ol class="transcript" id="transcript" aria-live="polite"></ol>
 
-      <div class="field">
-        <label class="field-label" for="answer">Answer</label>
-        <textarea class="input" id="answer" rows="4"></textarea>
-      </div>
+      <form id="ask-form" class="composer" novalidate>
+        <label class="field-label" for="ask-question">Question</label>
+        <textarea class="input" id="ask-question" rows="2" aria-describedby="ask-hint"></textarea>
+        <p class="field-hint" id="ask-hint">Enter sends, Shift+Enter starts a new line.</p>
 
-      <fieldset class="sources">
-        <legend class="sources-legend">Sources</legend>
-        <p class="sources-intro">The passages the answer should come from. With none, nothing can be checked.</p>
-        <ol class="passage-list" id="passages"></ol>
-        <button type="button" class="link-button" id="add-passage">Add a source</button>
-      </fieldset>
+        <details class="ask-sources">
+          <summary>Sources <span class="field-optional">(optional)</span></summary>
+          <div class="ask-sources-body">
+            <p class="sources-intro">If you paste passages, answers are checked against these only. Leave empty to have the server search the web, if it's set up to.</p>
+            <ol class="passage-list" id="ask-passages"></ol>
+            <button type="button" class="link-button" id="ask-add-passage">Add a source</button>
+          </div>
+        </details>
 
-      <div class="field">
-        <label class="field-label" for="key">Access key</label>
-        <div class="key-row">
-          <input class="input input-key" id="key" type="password" autocomplete="off" spellcheck="false">
-          <button type="button" class="link-button" id="forget-key" hidden>Forget key</button>
+        <div class="composer-actions">
+          <button type="submit" class="primary" id="ask-submit">Ask</button>
+          <button type="button" class="link-button" id="new-chat">New chat</button>
         </div>
-        <p class="field-hint">Ask whoever runs this site. It's kept in this browser only.</p>
+        <div class="composer-status" id="ask-status"></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="desk" role="tabpanel" id="panel-check" aria-labelledby="tab-check" hidden>
+    <section class="sheet" aria-labelledby="input-title">
+      <h2 id="input-title" class="sheet-title">What to check</h2>
+
+      <div class="examples">
+        <span class="examples-label">Try an example:</span>
+        <button type="button" class="chip" data-example="backed">A backed answer</button>
+        <button type="button" class="chip" data-example="wrong">Wrong facts</button>
+        <button type="button" class="chip" data-example="nosource">No sources</button>
       </div>
 
-      <button type="submit" class="primary" id="submit">Check answer</button>
-    </form>
-  </section>
+      <form id="check-form" novalidate>
+        <div class="field">
+          <label class="field-label" for="question">Question <span class="field-optional">(optional)</span></label>
+          <input class="input" id="question" type="text" autocomplete="off">
+          <p class="field-hint">Helps split the answer into claims.</p>
+        </div>
 
-  <section class="sheet sheet-result" aria-labelledby="result-title">
-    <h2 id="result-title" class="sheet-title">Result</h2>
-    <div id="result" aria-live="polite">
-      <p class="empty">The verdict, each claim, and the sources marked up with their quotes appear here. Try an example to see how it works.</p>
-    </div>
-  </section>
+        <div class="field">
+          <label class="field-label" for="answer">Answer</label>
+          <textarea class="input" id="answer" rows="4"></textarea>
+        </div>
+
+        <fieldset class="sources">
+          <legend class="sources-legend">Sources</legend>
+          <p class="sources-intro">The passages the answer should come from. With none, nothing can be checked.</p>
+          <ol class="passage-list" id="passages"></ol>
+          <button type="button" class="link-button" id="add-passage">Add a source</button>
+        </fieldset>
+
+        <button type="submit" class="primary" id="submit">Check answer</button>
+      </form>
+    </section>
+
+    <section class="sheet sheet-result" aria-labelledby="result-title">
+      <h2 id="result-title" class="sheet-title">Result</h2>
+      <div id="result" aria-live="polite">
+        <p class="empty">The verdict, each claim, and the sources marked up with their quotes appear here. Try an example to see how it works.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="desk desk-single" role="tabpanel" id="panel-models" aria-labelledby="tab-models" hidden>
+    <section class="sheet" aria-labelledby="models-title">
+      <div class="models-head">
+        <h2 id="models-title" class="sheet-title">How each model has done</h2>
+        <button type="button" class="secondary" id="models-refresh">Refresh</button>
+      </div>
+      <div id="models" aria-live="polite">
+        <p class="empty">Answer and check counts, failure rates and timings for every model this server has called.</p>
+      </div>
+    </section>
+  </div>
 </main>
 
 <footer class="foot">
-  <p>Calls the same <a href="/docs">/v1/verify API</a> you can use directly. Nothing here is judged on the model's own knowledge: no source, no verdict.</p>
+  <p>Calls the same <a href="/docs">/v1/chat, /v1/verify and /v1/models/stats APIs</a> you can use directly. Nothing here is judged on the model's own knowledge: no source, no verdict.</p>
 </footer>
 
 <script>
@@ -244,6 +352,7 @@
 
   const TIMEOUT_MS = 180000;
   const KEY_STORE = "halludetect.accessKey";
+  const HISTORY_TURNS = 20;
 
   const TOWER_A = "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is 330 metres (1,083 ft) tall.";
   const TOWER_B = "Construction of the Eiffel Tower began in 1887 and it was completed in 1889 for the World Fair.";
@@ -280,7 +389,6 @@
 
   const $ = (id) => document.getElementById(id);
   const form = $("check-form");
-  const passageList = $("passages");
   const result = $("result");
   const submit = $("submit");
   const keyInput = $("key");
@@ -293,50 +401,91 @@
     return node;
   }
 
+  const seconds = (ms) => (ms / 1000).toFixed(1) + " s";
+  const modelName = (m) => (m && m.model) || "unknown";
+
+  // ---- modes -------------------------------------------------------------
+
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+
+  function selectTab(tab, focus) {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      $(t.getAttribute("aria-controls")).hidden = !on;
+    });
+    if (focus) tab.focus();
+    if (tab.id === "tab-models" && !modelsLoaded && keyInput.value.trim()) loadModels();
+  }
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener("click", () => selectTab(tab, false));
+    tab.addEventListener("keydown", (event) => {
+      const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      selectTab(tabs[(next + tabs.length) % tabs.length], true);
+    });
+  });
+
   // ---- sources input -------------------------------------------------
 
-  function renumberPassages() {
-    const items = passageList.querySelectorAll(".passage");
-    items.forEach((item, i) => {
-      const id = "passage-" + i;
-      item.querySelector(".passage-name").textContent = "Source " + (i + 1);
-      item.querySelector(".passage-name").htmlFor = id;
-      item.querySelector("textarea").id = id;
-      item.querySelector(".link-button").hidden = items.length === 1;
-      item.querySelector(".link-button").setAttribute("aria-label", "Remove source " + (i + 1));
-    });
+  function passageEditor(list, addButton, prefix) {
+    function renumber() {
+      const items = list.querySelectorAll(".passage");
+      items.forEach((item, i) => {
+        const id = prefix + "-" + i;
+        item.querySelector(".passage-name").textContent = "Source " + (i + 1);
+        item.querySelector(".passage-name").htmlFor = id;
+        item.querySelector("textarea").id = id;
+        item.querySelector(".link-button").hidden = items.length === 1;
+        item.querySelector(".link-button").setAttribute("aria-label", "Remove source " + (i + 1));
+      });
+    }
+
+    function add(text) {
+      const item = el("li", "passage");
+      const head = el("div", "passage-head");
+      const name = el("label", "passage-name");
+      const remove = el("button", "link-button", "Remove");
+      remove.type = "button";
+      remove.addEventListener("click", () => { item.remove(); renumber(); });
+      head.append(name, remove);
+      const area = el("textarea", "input");
+      area.rows = 3;
+      area.value = text || "";
+      item.append(head, area);
+      list.append(item);
+      renumber();
+      return area;
+    }
+
+    function set(texts) {
+      list.replaceChildren();
+      (texts.length ? texts : [""]).forEach(add);
+    }
+
+    // Only non-empty sources are sent, so "Source N" on screen matches the
+    // API's direct-(N-1) chunk ids.
+    function values() {
+      return [...list.querySelectorAll("textarea")].map((t) => t.value.trim()).filter(Boolean);
+    }
+
+    addButton.addEventListener("click", () => add("").focus());
+    set([""]);
+    return { set, values, first: () => list.querySelector("textarea") };
   }
 
-  function addPassage(text) {
-    const item = el("li", "passage");
-    const head = el("div", "passage-head");
-    const name = el("label", "passage-name");
-    const remove = el("button", "link-button", "Remove");
-    remove.type = "button";
-    remove.addEventListener("click", () => { item.remove(); renumberPassages(); });
-    head.append(name, remove);
-    const area = el("textarea", "input");
-    area.rows = 3;
-    area.value = text || "";
-    item.append(head, area);
-    passageList.append(item);
-    renumberPassages();
-    return area;
-  }
-
-  function setPassages(texts) {
-    passageList.replaceChildren();
-    (texts.length ? texts : [""]).forEach(addPassage);
-  }
-
-  $("add-passage").addEventListener("click", () => addPassage("").focus());
+  const checkSources = passageEditor($("passages"), $("add-passage"), "passage");
+  const askSources = passageEditor($("ask-passages"), $("ask-add-passage"), "ask-passage");
 
   document.querySelectorAll("[data-example]").forEach((button) => {
     button.addEventListener("click", () => {
       const ex = EXAMPLES[button.dataset.example];
       $("question").value = ex.question;
       $("answer").value = ex.answer;
-      setPassages(ex.passages);
+      checkSources.set(ex.passages);
     });
   });
 
@@ -357,31 +506,79 @@
 
   const PROBLEMS = {
     401: ["That access key isn't accepted.", "Check it with whoever runs this site."],
-    429: ["Too many checks in a short time.", "Wait a few seconds, then check again."],
-    502: ["The language model didn't respond properly.", "This is usually a free model being briefly unavailable. Check again; another model may be used."],
+    429: ["Too many requests in a short time.", "Wait a few seconds, then try again."],
+    502: ["The language model didn't respond properly.", "This is usually a free model being briefly unavailable. Try again; another model may be used."],
     503: ["No language model is available right now.", "Try again in a minute."],
   };
 
-  function showProblem(title, hint) {
+  function showProblem(container, title, hint) {
     const box = el("div", "problem");
     box.setAttribute("role", "alert");
     box.append(el("p", "problem-title", title));
     if (hint) box.append(el("p", "problem-hint", hint));
-    result.replaceChildren(box);
+    container.replaceChildren(box);
   }
+
+  function requireKey(container) {
+    const key = keyInput.value.trim();
+    if (!key) {
+      showProblem(container, "Enter the access key first.", "It goes in the box at the top of the page. Ask whoever runs this site for one.");
+      keyInput.focus();
+      return "";
+    }
+    storeKey(key);
+    return key;
+  }
+
+  async function callApi(method, path, payload, key) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const init = { method, headers: { "Authorization": "Bearer " + key }, signal: controller.signal };
+    if (payload) {
+      init.headers["Content-Type"] = "application/json";
+      init.body = JSON.stringify(payload);
+    }
+    try {
+      const response = await fetch(path, init);
+      let body = null;
+      try { body = await response.json(); } catch { body = null; }
+      return { ok: response.ok, status: response.status, body };
+    } catch (err) {
+      return { ok: false, status: 0, body: null, timedOut: Boolean(err && err.name === "AbortError") };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // `failed` completes "... (HTTP 400)." for statuses without a fixed message.
+  function reportFailure(container, outcome, failed) {
+    if (outcome.status === 0) {
+      if (outcome.timedOut) {
+        showProblem(container, "No response after " + TIMEOUT_MS / 1000 + " seconds.", "The free model pool is slow right now. Try again in a minute.");
+      } else {
+        showProblem(container, "Couldn't reach the service.", "Check your connection, then try again.");
+      }
+    } else if (PROBLEMS[outcome.status]) {
+      const [title, hint] = PROBLEMS[outcome.status];
+      showProblem(container, title, hint);
+      if (outcome.status === 401) { storeKey(""); keyInput.focus(); }
+    } else {
+      const detail = outcome.body && typeof outcome.body.detail === "string" ? outcome.body.detail : "";
+      showProblem(container, failed + " (HTTP " + outcome.status + ").", detail);
+    }
+  }
+
+  // ---- check an answer ------------------------------------------------
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const answer = $("answer").value.trim();
     const question = $("question").value.trim();
-    const key = keyInput.value.trim();
-    // Only non-empty sources are sent, so "Source N" on screen matches the
-    // API's direct-(N-1) chunk ids.
-    const passages = [...passageList.querySelectorAll("textarea")].map((t) => t.value.trim()).filter(Boolean);
+    const passages = checkSources.values();
 
-    if (!answer) { showProblem("Enter an answer to check."); $("answer").focus(); return; }
-    if (!key) { showProblem("Enter the access key first.", "Ask whoever runs this site for one."); keyInput.focus(); return; }
-    storeKey(key);
+    if (!answer) { showProblem(result, "Enter an answer to check."); $("answer").focus(); return; }
+    const key = requireKey(result);
+    if (!key) return;
 
     const payload = { answer, evidence: passages, evidence_source: "none" };
     if (question) payload.question = question;
@@ -399,40 +596,148 @@
       ? "Splitting the answer into claims and checking each one against the sources. This usually takes 10 to 45 seconds."
       : "Checking…"));
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    try {
-      const response = await fetch("/v1/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      let body = null;
-      try { body = await response.json(); } catch { body = null; }
-
-      if (response.ok && body && body.verdict) {
-        renderResult(body, passages);
-      } else if (PROBLEMS[response.status]) {
-        const [title, hint] = PROBLEMS[response.status];
-        showProblem(title, hint);
-        if (response.status === 401) { storeKey(""); keyInput.focus(); }
-      } else {
-        const detail = body && typeof body.detail === "string" ? body.detail : "";
-        showProblem("The check didn't go through (HTTP " + response.status + ").", detail);
-      }
-    } catch (err) {
-      if (err && err.name === "AbortError") {
-        showProblem("The check took longer than " + TIMEOUT_MS / 1000 + " seconds.", "The free model pool is slow right now. Try again in a minute.");
-      } else {
-        showProblem("Couldn't reach the service.", "Check your connection, then try again.");
-      }
-    } finally {
-      clearTimeout(timer);
-      submit.disabled = false;
-      submit.textContent = "Check answer";
+    const outcome = await callApi("POST", "/v1/verify", payload, key);
+    if (outcome.ok && outcome.body && outcome.body.verdict) {
+      renderResult(result, outcome.body, passages);
+    } else {
+      reportFailure(result, outcome, "The check didn't go through");
     }
+    submit.disabled = false;
+    submit.textContent = "Check answer";
   });
+
+  // ---- ask --------------------------------------------------------------
+
+  const askForm = $("ask-form");
+  const askInput = $("ask-question");
+  const askSubmit = $("ask-submit");
+  const askStatus = $("ask-status");
+  const transcript = $("transcript");
+  const chatEmpty = $("chat-empty");
+  let history = [];
+  let chatGeneration = 0;
+  let asking = false;
+
+  function setAsking(on) {
+    asking = on;
+    askSubmit.disabled = on;
+    askSubmit.textContent = on ? "Waiting…" : "Ask";
+  }
+
+  askInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
+    event.preventDefault();
+    if (!asking) askForm.requestSubmit();
+  });
+
+  $("new-chat").addEventListener("click", () => {
+    chatGeneration += 1;
+    history = [];
+    transcript.replaceChildren();
+    askStatus.replaceChildren();
+    chatEmpty.hidden = false;
+    setAsking(false);
+    askInput.focus();
+  });
+
+  function addTurn(who, cls) {
+    const item = el("li", "turn " + cls);
+    item.append(el("span", "turn-who", who));
+    const body = el("div", "turn-body");
+    item.append(body);
+    transcript.append(item);
+    return { item, body };
+  }
+
+  askForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (asking) return;
+    const question = askInput.value.trim();
+    askStatus.replaceChildren();
+    if (!question) { askInput.focus(); return; }
+    const key = requireKey(askStatus);
+    if (!key) return;
+
+    const passages = askSources.values();
+    const payload = { question, history: history.slice(-HISTORY_TURNS) };
+    if (passages.length) {
+      payload.evidence = passages;
+      payload.evidence_source = "none";
+    } else {
+      payload.evidence_source = "web";
+    }
+
+    chatEmpty.hidden = true;
+    addTurn("You", "turn-user").body.append(el("p", "turn-question", question));
+    const reply = addTurn("Answer", "turn-reply");
+    reply.item.setAttribute("aria-busy", "true");
+    reply.body.append(el("p", "empty", "Getting an answer, then checking each claim in it. This usually takes 20 to 90 seconds."));
+    askInput.value = "";
+    setAsking(true);
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    reply.item.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "nearest" });
+
+    const generation = chatGeneration;
+    const outcome = await callApi("POST", "/v1/chat", payload, key);
+    if (generation !== chatGeneration) return;
+
+    reply.item.removeAttribute("aria-busy");
+    const body = outcome.body;
+    if (outcome.ok && body && typeof body.answer === "string" && body.verification && body.verification.verdict) {
+      renderReply(reply.body, body, passages, question);
+      history.push({ role: "user", content: question }, { role: "assistant", content: body.answer });
+    } else {
+      reportFailure(reply.body, outcome, "The question didn't go through");
+      if (!askInput.value) askInput.value = question;
+    }
+    setAsking(false);
+  });
+
+  function renderReply(container, data, passages, question) {
+    const check = data.verification;
+    const claims = check.claims || [];
+    // With no evidence the pipeline returns before calling any model.
+    const unchecked = check.reason === "no_evidence_configured";
+
+    const meta = el("p", "turn-meta", "Answered by " + modelName(data.answer_model)
+      + (typeof data.answer_ms === "number" ? " in " + seconds(data.answer_ms) : "")
+      + (unchecked ? "" : " · checked by " + modelName(check.model_used)));
+
+    // A claim is marked in the answer only where its text appears there
+    // as written; reworded claims are listed below without a mark.
+    const marks = [];
+    claims.forEach((claim, i) => {
+      const range = locate(data.answer, claim.text);
+      if (range) marks.push({ start: range[0], end: range[1], num: i + 1, label: LABEL[claim.label] || LABEL.NOT_ENOUGH_INFO });
+    });
+
+    const checkBox = el("div", "turn-check");
+    container.replaceChildren(meta, markUp(data.answer, marks, "answer-text"), checkBox);
+    renderResult(checkBox, check, passages, {
+      modelLabel: "Checked by",
+      hideModel: unchecked,
+      raw: data,
+      noEvidence: {
+        head: "This answer wasn't checked.",
+        summary: "No sources were given and this deployment has no web search set up, so there was nothing to check it against. Don't take it as correct. Paste sources under Sources and ask again, or check this answer against your own sources.",
+      },
+    });
+
+    if (check.verdict === "NOT_VERIFIABLE" && check.reason === "no_evidence_configured") {
+      const action = el("p", "turn-action");
+      const button = el("button", "link-button", "Check this answer against sources");
+      button.type = "button";
+      button.addEventListener("click", () => {
+        $("question").value = question;
+        $("answer").value = data.answer;
+        checkSources.set([""]);
+        selectTab($("tab-check"), false);
+        checkSources.first().focus();
+      });
+      action.append(button);
+      checkBox.querySelector(".summary").after(action);
+    }
+  }
 
   // ---- result ----------------------------------------------------------
 
@@ -452,7 +757,7 @@
     return found ? [found.index, found.index + found[0].length] : null;
   }
 
-  function summarize(claims, verdict) {
+  function summarize(claims) {
     const count = (label) => claims.filter((c) => c.label === label).length;
     const n = claims.length;
     if (!n) return "";
@@ -462,22 +767,27 @@
     return parts.join(", ") + ".";
   }
 
-  function renderResult(data, passages) {
+  // Renders an AnalysisResult into `container`. `opts.noEvidence` replaces
+  // the headline and summary for reason no_evidence_configured.
+  function renderResult(container, data, passages, opts = {}) {
     const frag = document.createDocumentFragment();
     const verdict = VERDICT[data.verdict] || VERDICT.NOT_VERIFIABLE;
     const claims = data.claims || [];
+    const noEvidence = data.verdict === "NOT_VERIFIABLE" && data.reason === "no_evidence_configured";
 
     const head = el("p", "verdict");
-    const headMark = el("span", "verdict-mark draw is-" + verdict.cls, verdict.text);
-    head.append(headMark);
+    const headText = noEvidence && opts.noEvidence ? opts.noEvidence.head : verdict.text;
+    head.append(el("span", "verdict-mark draw is-" + verdict.cls, headText));
     frag.append(head);
 
-    let summary = summarize(claims, data.verdict);
-    if (data.verdict === "NOT_VERIFIABLE") {
-      summary = data.reason === "no_evidence_configured"
-        ? "No sources were given, so there was nothing to check it against. It isn't judged on the model's own knowledge. Add the passages the answer should come from."
-        : "Only " + data.n_verifiable_claims + " factual " + (data.n_verifiable_claims === 1 ? "claim was" : "claims were")
-          + " found, and an overall verdict needs at least 3. " + (claims.length ? "Each claim is still checked below." : "");
+    let summary = summarize(claims);
+    if (noEvidence) {
+      summary = opts.noEvidence
+        ? opts.noEvidence.summary
+        : "No sources were given, so there was nothing to check it against. It isn't judged on the model's own knowledge. Add the passages the answer should come from.";
+    } else if (data.verdict === "NOT_VERIFIABLE") {
+      summary = "Only " + data.n_verifiable_claims + " factual " + (data.n_verifiable_claims === 1 ? "claim was" : "claims were")
+        + " found, and an overall verdict needs at least 3. " + (claims.length ? "Each claim is still checked below." : "");
     }
     if (summary) frag.append(el("p", "summary", summary));
 
@@ -487,8 +797,10 @@
       const [low, high] = data.groundedness_ci || [0, 0];
       fact("Backed share", Math.round(data.groundedness * 100) + "% (95% range " + Math.round(low * 100) + " to " + Math.round(high * 100) + "%)");
     }
-    fact("Model", (data.model_used && data.model_used.model) || "unknown");
-    fact("Time", (data.timings_ms.total / 1000).toFixed(1) + " s");
+    if (!opts.hideModel) {
+      fact(opts.modelLabel || "Model", modelName(data.model_used));
+      if (data.timings_ms) fact("Time", seconds(data.timings_ms.total));
+    }
     fact("Verdict code", data.verdict + (data.reason ? " (" + data.reason + ")" : ""));
     frag.append(facts);
 
@@ -545,16 +857,16 @@
 
     const raw = el("details", "raw");
     raw.append(el("summary", "", "Raw API response"));
-    raw.append(el("pre", "", JSON.stringify(data, null, 2)));
+    raw.append(el("pre", "", JSON.stringify(opts.raw || data, null, 2)));
     frag.append(raw);
 
-    result.replaceChildren(frag);
+    container.replaceChildren(frag);
   }
 
   // Splits `text` at every mark boundary so overlapping quotes still render;
   // a stretch covered by several claims takes the most severe label.
-  function markUp(text, ranges) {
-    const para = el("p", "source-text");
+  function markUp(text, ranges, cls) {
+    const para = el("p", cls || "source-text");
     if (!ranges.length) { para.textContent = text; return para; }
     const cuts = new Set([0, text.length]);
     ranges.forEach((r) => { cuts.add(r.start); cuts.add(r.end); });
@@ -575,7 +887,132 @@
     return para;
   }
 
-  setPassages([""]);
+  // ---- models -------------------------------------------------------------
+
+  const modelsOut = $("models");
+  const modelsRefresh = $("models-refresh");
+  let modelsLoaded = false;
+
+  const dash = "–";
+  const pct = (x) => (typeof x === "number" ? Math.round(x * 100) + "%" : dash);
+  const secs = (ms) => (typeof ms === "number" ? seconds(ms) : dash);
+
+  function when(iso) {
+    if (!iso) return dash;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  }
+
+  function timeEl(iso) {
+    const node = el("time", "", when(iso));
+    if (iso) node.dateTime = iso;
+    return node;
+  }
+
+  async function loadModels() {
+    const key = requireKey(modelsOut);
+    if (!key) return;
+    modelsRefresh.disabled = true;
+    modelsRefresh.textContent = "Loading…";
+    const outcome = await callApi("GET", "/v1/models/stats", null, key);
+    if (outcome.ok && outcome.body && Array.isArray(outcome.body.models)) {
+      modelsLoaded = true;
+      renderModels(outcome.body);
+    } else {
+      reportFailure(modelsOut, outcome, "The model numbers didn't load");
+    }
+    modelsRefresh.disabled = false;
+    modelsRefresh.textContent = "Refresh";
+  }
+
+  modelsRefresh.addEventListener("click", loadModels);
+
+  function countCell(stats) {
+    const td = el("td", "num", String(stats.calls || 0));
+    if (stats.failures) td.append(el("span", "stats-sub", stats.failures + " failed"));
+    return td;
+  }
+
+  function renderModels(data) {
+    const models = [...data.models].sort((a, b) => {
+      const ta = a.last_used ? Date.parse(a.last_used) : -Infinity;
+      const tb = b.last_used ? Date.parse(b.last_used) : -Infinity;
+      return tb - ta;
+    });
+
+    if (!models.length) {
+      const empty = el("p", "empty", "No model has been called since ");
+      empty.append(timeEl(data.since), document.createTextNode("."));
+      modelsOut.replaceChildren(empty);
+      return;
+    }
+
+    const table = el("table", "stats");
+    const headRow = el("tr");
+    ["Model", "Answers", "Unsupported", "Contradicted", "Mean backed share", "Answer time (avg / p95)", "Checks", "Check time (avg)", "Checks: unsupported", "Status", "Last used"]
+      .forEach((name, i) => {
+        const th = el("th", i === 0 || i >= 9 ? "" : "num", name);
+        th.scope = "col";
+        headRow.append(th);
+      });
+    const thead = el("thead");
+    thead.append(headRow);
+    table.append(thead);
+
+    const tbody = el("tbody");
+    models.forEach((m) => {
+      const answer = m.answer || {};
+      const verify = m.verify || {};
+      const row = el("tr");
+
+      const name = el("th", "stats-model", m.model);
+      name.scope = "row";
+      name.append(el("span", "stats-sub", m.provider));
+      row.append(name);
+
+      row.append(countCell(answer));
+      row.append(el("td", "num", pct(answer.unsupported_rate)));
+      row.append(el("td", "num", pct(answer.contradicted_rate)));
+      row.append(el("td", "num", pct(answer.mean_groundedness)));
+      row.append(el("td", "num", secs(answer.avg_latency_ms) + " / " + secs(answer.p95_latency_ms)));
+      row.append(countCell(verify));
+      row.append(el("td", "num", secs(verify.avg_latency_ms)));
+      row.append(el("td", "num", pct(verify.unsupported_rate)));
+
+      let status = "OK", statusCls = "";
+      if (m.in_cooldown) {
+        status = "Cooling down" + (m.last_error ? ": " + m.last_error : "");
+        statusCls = " word-missing";
+      } else if (m.last_error) {
+        status = "Last error: " + m.last_error;
+        statusCls = " word-contra";
+      }
+      const statusText = el("span", "stats-status" + statusCls, status);
+      statusText.title = status;
+      const statusCell = el("td");
+      statusCell.append(statusText);
+      row.append(statusCell);
+
+      const last = el("td", "stats-when");
+      last.append(timeEl(m.last_used));
+      row.append(last);
+
+      tbody.append(row);
+    });
+    table.append(tbody);
+
+    const wrap = el("div", "table-wrap");
+    wrap.tabIndex = 0;
+    wrap.setAttribute("role", "region");
+    wrap.setAttribute("aria-label", "Model numbers");
+    wrap.append(table);
+
+    const note = el("p", "note", "Numbers are for this server instance since ");
+    note.append(timeEl(data.since), document.createTextNode(" and reset when it restarts. Unsupported and contradicted are shares of each model's checked answers. A high unsupported rate on a model's checks points at that checking model, not the answers it checked."));
+
+    modelsOut.replaceChildren(wrap, note);
+  }
 })();
 </script>
 </body>
