@@ -36,14 +36,19 @@ from halludetect.detect.schemas import (
     ClaimType,
     Label,
     ModelUsed,
+    RawClaimVerdict,
     Timings,
     Verdict,
 )
-from halludetect.detect.verify import verify_claims
+from halludetect.detect.verify import recheck_claims, verify_claims
 from halludetect.evidence.base import Evidence, EvidenceSource
 from halludetect.llm.base import LLMProvider
+from halludetect.llm.exceptions import LLMError
 from halludetect.llm.pricing import estimate_cost_usd
 from halludetect.llm.usage import UsageTrackingProvider
+from halludetect.logging import get_logger
+
+_logger = get_logger(__name__)
 
 
 def _elapsed_ms(start: float) -> int:
@@ -72,6 +77,53 @@ def _not_verifiable_result(
     )
 
 
+def _ground(claim: Claim, raw: RawClaimVerdict, chunks_by_id: dict[str, str]) -> ClaimResult:
+    grounded = quote_is_grounded(raw.quote, raw.evidence_chunk_ids, chunks_by_id)
+    label = raw.label
+    if label == Label.SUPPORTED and not grounded:
+        label = Label.NOT_ENOUGH_INFO
+    return ClaimResult(
+        claim_id=claim.claim_id,
+        text=claim.text,
+        label=label,
+        confidence=raw.confidence,
+        evidence_chunk_ids=raw.evidence_chunk_ids,
+        quote=raw.quote,
+        quote_verified=grounded,
+    )
+
+
+def _recheck(
+    provider: LLMProvider,
+    claims: list[Claim],
+    results: list[ClaimResult],
+    evidence: list[Evidence],
+    chunks_by_id: dict[str, str],
+) -> list[ClaimResult]:
+    """One more pass over NOT_ENOUGH_INFO claims, on the same model. A
+    claim's label changes only to SUPPORTED or CONTRADICTED backed by a
+    quote found in the cited chunk; anything else keeps the first result.
+    The recheck can't lower a label, so if it fails the first results
+    stand.
+    """
+    pending = [(i, claim) for i, (claim, r) in enumerate(zip(claims, results, strict=True))
+               if r.label == Label.NOT_ENOUGH_INFO]
+    if not pending:
+        return results
+    try:
+        raw_rechecks = recheck_claims(provider, [claim for _, claim in pending], evidence)
+    except LLMError as exc:
+        _logger.warning("recheck_failed", error=str(exc), claims=len(pending))
+        return results
+
+    updated = list(results)
+    for (i, claim), raw in zip(pending, raw_rechecks, strict=True):
+        rechecked = _ground(claim, raw, chunks_by_id)
+        if rechecked.label != Label.NOT_ENOUGH_INFO and rechecked.quote_verified:
+            updated[i] = rechecked
+    return updated
+
+
 def _verify_and_ground(
     provider: LLMProvider,
     factual_claims: list[Claim],
@@ -82,25 +134,8 @@ def _verify_and_ground(
 
     chunks_by_id = {e.chunk_id: e.text for e in evidence}
     raw_verdicts = verify_claims(provider, factual_claims, evidence)
-
-    results = []
-    for claim, raw in zip(factual_claims, raw_verdicts, strict=True):
-        grounded = quote_is_grounded(raw.quote, raw.evidence_chunk_ids, chunks_by_id)
-        label = raw.label
-        if label == Label.SUPPORTED and not grounded:
-            label = Label.NOT_ENOUGH_INFO
-        results.append(
-            ClaimResult(
-                claim_id=claim.claim_id,
-                text=claim.text,
-                label=label,
-                confidence=raw.confidence,
-                evidence_chunk_ids=raw.evidence_chunk_ids,
-                quote=raw.quote,
-                quote_verified=grounded,
-            )
-        )
-    return results
+    results = [_ground(c, raw, chunks_by_id) for c, raw in zip(factual_claims, raw_verdicts, strict=True)]
+    return _recheck(provider, factual_claims, results, evidence, chunks_by_id)
 
 
 def run(

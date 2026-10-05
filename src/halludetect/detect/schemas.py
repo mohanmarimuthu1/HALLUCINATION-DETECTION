@@ -87,6 +87,23 @@ class RawVerdict(BaseModel):
     claim_verdicts: list[RawClaimVerdict]
 
 
+class RawRecheck(BaseModel):
+    """Recheck verdict (verify.recheck_claims). Same fields as
+    `RawClaimVerdict`, with `quote` ahead of `label`, so the model writes
+    the evidence sentence before it decides.
+    """
+
+    claim_id: str
+    evidence_chunk_ids: list[str]
+    quote: str
+    label: Label
+    confidence: float = Field(ge=0.0, le=1.0)
+
+
+class RawRecheckVerdict(BaseModel):
+    claim_verdicts: list[RawRecheck]
+
+
 class ClaimResult(BaseModel):
     claim_id: str
     text: str

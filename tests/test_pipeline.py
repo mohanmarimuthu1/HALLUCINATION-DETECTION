@@ -253,3 +253,115 @@ def test_cost_usd_is_zero_when_no_evidence_and_no_calls_are_made():
         model_used=_MODEL_USED,
     )
     assert result.cost_usd == 0.0
+
+
+# --- NOT_ENOUGH_INFO recheck -------------------------------------------------
+
+_RECHECK_EVIDENCE = [
+    Evidence(chunk_id="direct-0", text="The tower is 330 metres tall.", source="direct"),
+    Evidence(chunk_id="direct-1", text="It was completed in 1889.", source="direct"),
+]
+_RECHECK_CLAIMS = [
+    {"text": "The tower is 330 metres tall.", "claim_type": "FACTUAL"},
+    {"text": "It was completed in 1889.", "claim_type": "FACTUAL"},
+]
+
+
+class _RecordingProvider(FakeProvider):
+    def __init__(self, script):
+        super().__init__(script)
+        self.prompts: list[str] = []
+
+    def complete(self, prompt, *, max_tokens=1024):
+        self.prompts.append(prompt)
+        return super().complete(prompt, max_tokens=max_tokens)
+
+
+def _verdict(claim_id: str, label: str, quote: str = "", chunk: str = "direct-0") -> dict:
+    return {
+        "claim_id": claim_id,
+        "label": label,
+        "confidence": 0.9,
+        "evidence_chunk_ids": [chunk] if quote else [],
+        "quote": quote,
+    }
+
+
+def _run_recheck(script) -> tuple[list, _RecordingProvider]:
+    provider = _RecordingProvider(script)
+    result = pipeline.run(
+        answer="The tower is 330 metres tall. It was completed in 1889.",
+        question=None,
+        evidence_source=_StaticEvidenceSource(_RECHECK_EVIDENCE),
+        provider=provider,
+        request_id="req-recheck",
+        model_used=_MODEL_USED,
+    )
+    return result.claims, provider
+
+
+def test_recheck_recovers_a_supported_claim_the_first_pass_left_unquoted():
+    claims, provider = _run_recheck([
+        _extraction_response(_RECHECK_CLAIMS),
+        _verification_response([
+            _verdict("claim-0", "SUPPORTED", "The tower is 330 metres tall."),
+            _verdict("claim-1", "NOT_ENOUGH_INFO"),
+        ]),
+        _verification_response([_verdict("claim-1", "SUPPORTED", "It was completed in 1889.", "direct-1")]),
+    ])
+    assert [c.label for c in claims] == [Label.SUPPORTED, Label.SUPPORTED]
+    assert claims[1].quote_verified
+    # Only the NOT_ENOUGH_INFO claim is rechecked.
+    assert provider.call_count == 3
+    assert "[claim-1]" in provider.prompts[2] and "[claim-0]" not in provider.prompts[2]
+
+
+def test_recheck_never_upgrades_on_a_quote_missing_from_the_evidence():
+    claims, _ = _run_recheck([
+        _extraction_response(_RECHECK_CLAIMS),
+        _verification_response([_verdict("claim-0", "NOT_ENOUGH_INFO"), _verdict("claim-1", "NOT_ENOUGH_INFO")]),
+        _verification_response([
+            _verdict("claim-0", "SUPPORTED", "The tower is 330 metres high."),
+            _verdict("claim-1", "SUPPORTED", "It was completed in 1890.", "direct-1"),
+        ]),
+    ])
+    assert [c.label for c in claims] == [Label.NOT_ENOUGH_INFO, Label.NOT_ENOUGH_INFO]
+    assert not any(c.quote_verified for c in claims)
+
+
+def test_recheck_can_find_a_contradiction():
+    claims, _ = _run_recheck([
+        _extraction_response(_RECHECK_CLAIMS),
+        _verification_response([
+            _verdict("claim-0", "SUPPORTED", "The tower is 330 metres tall."),
+            _verdict("claim-1", "NOT_ENOUGH_INFO"),
+        ]),
+        _verification_response([_verdict("claim-1", "CONTRADICTED", "It was completed in 1889.", "direct-1")]),
+    ])
+    assert claims[1].label == Label.CONTRADICTED
+
+
+def test_a_failed_recheck_keeps_the_first_pass_result():
+    from halludetect.llm.exceptions import LLMTimeoutError
+
+    claims, provider = _run_recheck([
+        _extraction_response(_RECHECK_CLAIMS),
+        _verification_response([
+            _verdict("claim-0", "SUPPORTED", "The tower is 330 metres tall."),
+            _verdict("claim-1", "NOT_ENOUGH_INFO"),
+        ]),
+        LLMTimeoutError("slow"),
+    ])
+    assert [c.label for c in claims] == [Label.SUPPORTED, Label.NOT_ENOUGH_INFO]
+    assert provider.call_count == 3
+
+
+def test_no_recheck_when_nothing_is_not_enough_info():
+    _, provider = _run_recheck([
+        _extraction_response(_RECHECK_CLAIMS),
+        _verification_response([
+            _verdict("claim-0", "SUPPORTED", "The tower is 330 metres tall."),
+            _verdict("claim-1", "CONTRADICTED", "It was completed in 1889.", "direct-1"),
+        ]),
+    ])
+    assert provider.call_count == 2

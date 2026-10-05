@@ -369,7 +369,9 @@ def test_not_enough_info_is_not_cached_so_a_flaky_response_is_not_sticky(client,
 
     _script_openrouter_completions(
         monkeypatch,
-        [claims, _verdicts("NOT_ENOUGH_INFO", False), claims, _verdicts("SUPPORTED", True)],
+        # The flaky request's recheck also comes back without quotes.
+        [claims, _verdicts("NOT_ENOUGH_INFO", False), _verdicts("NOT_ENOUGH_INFO", False),
+         claims, _verdicts("SUPPORTED", True)],
     )
     body = {"answer": "It is 330 m, done in 1889, in Paris.", "evidence": evidence, "evidence_source": "none"}
 

@@ -16,7 +16,7 @@ never actually addressed.
 """
 from __future__ import annotations
 
-from halludetect.detect.schemas import Claim, Label, RawClaimVerdict, RawVerdict
+from halludetect.detect.schemas import Claim, Label, RawClaimVerdict, RawRecheckVerdict, RawVerdict
 from halludetect.evidence.base import Evidence
 from halludetect.llm.base import LLMProvider
 from halludetect.llm.structured import complete_structured
@@ -32,6 +32,25 @@ For each claim, return:
 - evidence_chunk_ids: the chunk_id(s) (from EVIDENCE below) that support your label.
 - quote: a VERBATIM quote copied from one cited evidence chunk. Required for
   SUPPORTED and CONTRADICTED; empty string if NOT_ENOUGH_INFO.
+
+EVIDENCE:
+{evidence_block}
+
+CLAIMS:
+{claims_block}"""
+
+
+_RECHECK_PROMPT = """A first pass could not match the CLAIMS below to EVIDENCE. Check them again,
+one at a time. Use ONLY the evidence given below - never your own general
+knowledge.
+
+For each claim:
+1. Find the sentence in EVIDENCE that addresses the claim, if there is one.
+   Copy it into quote EXACTLY, character for character, and put its
+   chunk_id in evidence_chunk_ids.
+2. Then set label: SUPPORTED if that sentence states the claim,
+   CONTRADICTED if it states something incompatible with the claim,
+   NOT_ENOUGH_INFO if no sentence addresses the claim (quote empty).
 
 EVIDENCE:
 {evidence_block}
@@ -77,4 +96,36 @@ def verify_claims(
     instance, _ = complete_structured(provider, prompt, RawVerdict)
 
     by_id = {v.claim_id: v for v in instance.claim_verdicts}
+    return [by_id.get(claim.claim_id) or _default_verdict(claim) for claim in claims]
+
+
+def recheck_claims(
+    provider: LLMProvider,
+    claims: list[Claim],
+    evidence: list[Evidence],
+) -> list[RawClaimVerdict]:
+    """Second pass for claims the first pass left NOT_ENOUGH_INFO. Most of
+    those, in the golden sets, were supported claims returned with no
+    quote at all. The caller applies the same quote check to the result;
+    this only gives the model a second, quote-first chance to cite.
+    """
+    if not claims:
+        return []
+
+    prompt = _RECHECK_PROMPT.format(
+        evidence_block=_format_evidence(evidence),
+        claims_block=_format_claims(claims),
+    )
+    instance, _ = complete_structured(provider, prompt, RawRecheckVerdict)
+
+    by_id = {
+        v.claim_id: RawClaimVerdict(
+            claim_id=v.claim_id,
+            label=v.label,
+            confidence=v.confidence,
+            evidence_chunk_ids=v.evidence_chunk_ids,
+            quote=v.quote,
+        )
+        for v in instance.claim_verdicts
+    }
     return [by_id.get(claim.claim_id) or _default_verdict(claim) for claim in claims]
