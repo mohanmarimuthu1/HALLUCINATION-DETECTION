@@ -31,6 +31,9 @@
 - Model health is only updated for models that were actually called.
 - The OpenRouter free-model list is cached per process instead of fetched
   on every request.
+- A used-up daily quota (429 with a far reset) is no longer retried; the
+  models it covers are skipped until the reset. Models that answer 402 or
+  403 are left out for 6 hours. Neither uses up a request's attempts.
 
 ## 1.0.0 - 2026-09-29
 

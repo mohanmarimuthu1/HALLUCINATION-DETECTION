@@ -379,10 +379,18 @@ failures is benched for 5 minutes. Rules for moving to the next model:
 - Timeouts aren't retried on the same model: a hung free model is
   usually slower to wait out than switching.
 - A 401 (rejected key) skips the rest of that provider, since its models
-  share the key. A 403 (key valid, but this model isn't allowed) only
-  skips that model.
+  share the key.
+- A 402 or 403 (this model won't serve this key) leaves that model out of
+  the pool for 6 hours. OpenRouter lists some models at $0 that still
+  answer 402 without purchased credits.
+- A 429 whose limit resets more than 15 minutes out is a used-up quota,
+  not a burst limit, and isn't retried. OpenRouter's free tier allows 50
+  requests a day to `:free` models (1,000 with $10 of credits); once that
+  is gone, those models are left out until the reset (00:00 UTC), and
+  OpenRouter models without the suffix and NVIDIA are still tried.
 - At most `FREE_POOL_MAX_ATTEMPTS` models, and no new attempt after
-  `FREE_POOL_BUDGET_S`.
+  `FREE_POOL_BUDGET_S`. Refusals and used-up quotas answer at once and
+  don't count as an attempt or against the model's health.
 
 NVIDIA's list is set by hand because its catalog can't be trusted. On
 2026-09-29, 30 of its 43 listed chat models returned 404 and most others
