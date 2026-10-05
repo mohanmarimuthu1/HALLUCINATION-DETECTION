@@ -87,6 +87,10 @@ class HealthTracker:
                 return True
             return now >= health.cooldown_until
 
+    def models(self) -> list[str]:
+        with self._lock:
+            return list(self._health)
+
     def get(self, model: str) -> ModelHealth:
         with self._lock:
             return self._get(model)
