@@ -621,8 +621,8 @@ legacy/              the v1 app, reference only
   and cache are per process. Running several instances needs a shared
   store (for example Redis).
 - Chat without pasted sources is only checked when `TAVILY_API_KEY` is
-  set. Production does not set it yet, so there those answers come back
-  unchecked.
+  set; otherwise those answers come back unchecked. Tavily's free tier is
+  1,000 searches a month, one per chat question.
 - Gemini, OpenAI and Anthropic backends are tested against mocked
   responses only.
 - Provider 5xx errors aren't retried on the same model; the free pool
