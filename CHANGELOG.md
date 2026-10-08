@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- A model call now times out after 60s in total. OpenRouter keeps a slow
+  call open with keep-alive whitespace, so the old 30s per-read timeout
+  never fired and a request could hang for minutes and end in a 502.
+
 ## 1.1.0 - 2026-10-08
 
 ### API (contract v1.3)

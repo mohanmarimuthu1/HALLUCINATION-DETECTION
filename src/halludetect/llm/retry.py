@@ -40,7 +40,7 @@ class RetryingProvider:
     sleep: Callable[[float], None] = time.sleep
     jitter: Callable[[float, float], float] = random.uniform
     # Free-pool callers drop LLMTimeoutError: another model is usually a
-    # faster way out of a hung one than three more 30s waits on it.
+    # faster way out of a hung one than three more 60s waits on it.
     retry_on: tuple[type[Exception], ...] = _RETRYABLE
 
     def complete(self, prompt: str, *, max_tokens: int = 1024) -> LLMResponse:

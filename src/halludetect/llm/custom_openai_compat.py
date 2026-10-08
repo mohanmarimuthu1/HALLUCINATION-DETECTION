@@ -3,13 +3,12 @@ that implements the same /chat/completions shape (local models, other
 hosted providers, etc.). Caller must supply base_url and model; there is
 no sane default for either.
 """
-import httpx
 
 from halludetect.llm._http import (
     DEFAULT_TIMEOUT_S,
     extract_chat_content,
+    post_json,
     raise_for_provider_error,
-    wrap_transport_error,
 )
 from halludetect.llm.base import LLMResponse, TokenUsage
 
@@ -35,19 +34,17 @@ class CustomOpenAICompatProvider:
     def complete(self, prompt: str, *, max_tokens: int = 1024) -> LLMResponse:
         headers = {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
 
-        try:
-            response = httpx.post(
-                f"{self._base_url}/chat/completions",
-                headers=headers,
-                json={
-                    "model": self._model,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": max_tokens,
-                },
-                timeout=self._timeout_s,
-            )
-        except httpx.HTTPError as exc:
-            raise wrap_transport_error(exc, self._name) from exc
+        response = post_json(
+            f"{self._base_url}/chat/completions",
+            headers=headers,
+            json={
+                "model": self._model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+            },
+            provider=self._name,
+            timeout_s=self._timeout_s,
+        )
 
         raise_for_provider_error(response, self._name)
         data = response.json()

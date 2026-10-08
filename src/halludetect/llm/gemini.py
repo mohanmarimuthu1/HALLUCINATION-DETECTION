@@ -1,7 +1,6 @@
 """Google Gemini (generateContent) backend."""
-import httpx
 
-from halludetect.llm._http import DEFAULT_TIMEOUT_S, raise_for_provider_error, wrap_transport_error
+from halludetect.llm._http import post_json, raise_for_provider_error
 from halludetect.llm.base import LLMResponse, TokenUsage
 from halludetect.llm.exceptions import LLMAuthError, LLMResponseError
 
@@ -19,18 +18,15 @@ class GeminiProvider:
         if not self._api_key:
             raise LLMAuthError("gemini: no API key configured")
 
-        try:
-            response = httpx.post(
-                f"{self._base_url}/models/{self._model}:generateContent",
-                headers={"x-goog-api-key": self._api_key},
-                json={
-                    "contents": [{"parts": [{"text": prompt}]}],
-                    "generationConfig": {"maxOutputTokens": max_tokens},
-                },
-                timeout=DEFAULT_TIMEOUT_S,
-            )
-        except httpx.HTTPError as exc:
-            raise wrap_transport_error(exc, "gemini") from exc
+        response = post_json(
+            f"{self._base_url}/models/{self._model}:generateContent",
+            headers={"x-goog-api-key": self._api_key},
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"maxOutputTokens": max_tokens},
+            },
+            provider="gemini",
+        )
 
         raise_for_provider_error(response, "gemini")
         data = response.json()

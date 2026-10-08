@@ -385,6 +385,8 @@ failures is benched for 5 minutes. Rules for moving to the next model:
   sends the request to the next model.
 - Timeouts aren't retried on the same model: a hung free model is
   usually slower to wait out than switching.
+- A model call times out after 60s in total, even while the provider is
+  still sending keep-alive bytes.
 - A 401 (rejected key) skips the rest of that provider, since its models
   share the key.
 - A 402 or 403 (this model won't serve this key) leaves that model out of

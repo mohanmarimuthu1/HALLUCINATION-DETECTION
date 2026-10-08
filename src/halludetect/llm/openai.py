@@ -1,11 +1,9 @@
 """OpenAI chat-completions backend."""
-import httpx
 
 from halludetect.llm._http import (
-    DEFAULT_TIMEOUT_S,
     extract_chat_content,
+    post_json,
     raise_for_provider_error,
-    wrap_transport_error,
 )
 from halludetect.llm.base import LLMResponse, TokenUsage
 from halludetect.llm.exceptions import LLMAuthError
@@ -24,19 +22,16 @@ class OpenAIProvider:
         if not self._api_key:
             raise LLMAuthError("openai: no API key configured")
 
-        try:
-            response = httpx.post(
-                f"{self._base_url}/chat/completions",
-                headers={"Authorization": f"Bearer {self._api_key}"},
-                json={
-                    "model": self._model,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": max_tokens,
-                },
-                timeout=DEFAULT_TIMEOUT_S,
-            )
-        except httpx.HTTPError as exc:
-            raise wrap_transport_error(exc, "openai") from exc
+        response = post_json(
+            f"{self._base_url}/chat/completions",
+            headers={"Authorization": f"Bearer {self._api_key}"},
+            json={
+                "model": self._model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+            },
+            provider="openai",
+        )
 
         raise_for_provider_error(response, "openai")
         data = response.json()

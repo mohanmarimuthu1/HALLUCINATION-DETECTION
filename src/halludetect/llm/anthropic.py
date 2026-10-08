@@ -1,7 +1,6 @@
 """Anthropic Messages API backend."""
-import httpx
 
-from halludetect.llm._http import DEFAULT_TIMEOUT_S, raise_for_provider_error, wrap_transport_error
+from halludetect.llm._http import post_json, raise_for_provider_error
 from halludetect.llm.base import LLMResponse, TokenUsage
 from halludetect.llm.exceptions import LLMAuthError
 
@@ -20,22 +19,19 @@ class AnthropicProvider:
         if not self._api_key:
             raise LLMAuthError("anthropic: no API key configured")
 
-        try:
-            response = httpx.post(
-                f"{self._base_url}/messages",
-                headers={
-                    "x-api-key": self._api_key,
-                    "anthropic-version": ANTHROPIC_VERSION,
-                },
-                json={
-                    "model": self._model,
-                    "max_tokens": max_tokens,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=DEFAULT_TIMEOUT_S,
-            )
-        except httpx.HTTPError as exc:
-            raise wrap_transport_error(exc, "anthropic") from exc
+        response = post_json(
+            f"{self._base_url}/messages",
+            headers={
+                "x-api-key": self._api_key,
+                "anthropic-version": ANTHROPIC_VERSION,
+            },
+            json={
+                "model": self._model,
+                "max_tokens": max_tokens,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            provider="anthropic",
+        )
 
         raise_for_provider_error(response, "anthropic")
         data = response.json()
