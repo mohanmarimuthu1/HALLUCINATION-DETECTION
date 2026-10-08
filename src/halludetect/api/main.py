@@ -55,7 +55,7 @@ T = TypeVar("T")
 configure_logging()
 _logger = get_logger(__name__)
 
-app = FastAPI(title="HALLUDETECT API", version="1.0.0")
+app = FastAPI(title="HALLUDETECT API", version="1.1.0")
 
 # Registration point for an embedding deployment's own retriever
 # (docs/contract.md: evidence_source == "custom", Phase 3.4's plug-in hook).
