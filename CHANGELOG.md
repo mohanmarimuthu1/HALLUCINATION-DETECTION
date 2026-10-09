@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Removed
+
+- The unused NLI scorer stub (`detect/nli.py`, plan 4.5). Tested on the
+  golden sets, the NLI model either added false flags or accepted false
+  claims, so it won't be wired in.
+
 ### Fixed
 
 - A model call now times out after 60s in total. OpenRouter keeps a slow

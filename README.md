@@ -657,8 +657,11 @@ legacy/              the v1 app, reference only
   responses only.
 - Provider 5xx errors aren't retried on the same model; the free pool
   just moves to the next model.
-- An optional NLI cross-encoder signal exists only as a stub
-  (`detect/nli.py`) and isn't wired in.
+- There is no NLI second signal. `cross-encoder/nli-deberta-v3-base`
+  was tested on the golden sets and dropped: using it to reject
+  SUPPORTED claims only added false flags, and using it to accept
+  NOT_ENOUGH_INFO claims accepted planted false ones (it scored "was not
+  directed by X" as entailed by "directed by X").
 
 See [`CHANGELOG.md`](CHANGELOG.md) for release history.
 
